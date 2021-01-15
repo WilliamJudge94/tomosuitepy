@@ -16,6 +16,9 @@ Importing TomoSuite
     sys.path.append('/path/to/tomosuite/github/clone/tomosuite/')
     import tomosuite
 
+    from tomosuite.base.start_project import start_project
+    from tomosuite.base.extract_projections import extract
+
 The Project
 ===========
 
@@ -44,7 +47,3 @@ The Project
                         overwrite=True,
                         verbose=True,
                         save=True)
-                        
-                        
-    # Optional Step - skipping low-dose machine learning
-    tomosuite.skip_lowdose(basedir=basedir)

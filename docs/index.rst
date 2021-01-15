@@ -19,7 +19,6 @@ Python library for applying Machine Learning to **Tomography** data.
    :caption: Contents:
 
    00_introduction
-   01_importing_modules
    02_starting_project
    03_denoise_with_1
    04_denoise_with_sacra

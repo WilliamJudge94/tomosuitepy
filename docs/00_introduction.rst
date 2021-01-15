@@ -7,16 +7,16 @@ TomoSuite is a culmination of machine learning networks and data preparation met
 .. note::
 
     - Type 1 Training: train a neural network with 1 experimental dataset and apply the trained network only to that same experimental dataset.
-    
-    - Type 2 Training: train a neural network with 1 experimental dataset and apply the trained network to other datasets
+    |
+    - Type 2 Training: train a neural network with 1 experimental dataset and apply the trained network to other datasets.
 
-DeNoise Tomographic Reconstructions:
+**DeNoise Tomographic Reconstructions:**
 
 - DeNoise Projections by :ref:`denoise_type1` Training (TomoGAN)
 
 - DeNoise Projections by :ref:`denoise_type2` Training (TomoGAN)
         
-DeWedge Tomographic Reconstructions:
+**DeWedge Tomographic Reconstructions:**
 
 - DeWedge Reconstructions by :ref:`dewedge_type11` Training (DeepFillv2 + Noise2Noise)
 
@@ -24,7 +24,7 @@ DeWedge Tomographic Reconstructions:
 
 - DeWedge Reconstructions by :ref:`dewedge_type2` Training (TomoGaN)
 
-DeSparse Angle
+**DeSparse Angle:**
 
 - DeSparse Angle by :ref:`desparse_type11` Training (Noise2Noise)
 
@@ -32,7 +32,7 @@ DeSparse Angle
 
 - DeSparse Angle by :ref:`desparse_type2` Training (TomoGAn)
 
-DeRing + DeSparse Angle Artifact
+**DeRing + DeSparse Angle Artifact:**
 
 - DeMulti-artifact by :ref:`dering_type1` Training (Noise2Noise)
 
@@ -47,29 +47,32 @@ Type 1
 ------
 
 .. figure:: img/low_dose-raw.png
-    :scale: 50%
+    :scale: 25%
     :align: left
 
 .. figure:: img/low_dose-fake-noise.png
-    :scale: 50%
+    :scale: 25%
     :align: right
-    
-.. note:
 
-    This is reconstruction (GridRec) of Raw Experimental data (left) and Denoised Experimental data (right) by Fake Noise machine learning.
+|
+|
+
+This is reconstruction (GridRec) of Raw Experimental data (left) and Denoised Experimental data (right) by Fake Noise machine learning.
     
-    
+|
+|
+
 .. _denoise_type2:
 
 Type 2
 ------
 
 .. figure:: img/low_dose-raw.png
-    :scale: 50%
+    :scale: 25%
     :align: left
 
 .. figure:: img/low_dose-sacra.png
-    :scale: 50%
+    :scale: 25%
     :align: right
 
 Caption: This is reconstruction (GridRec) of Raw Experimental data (left) and Denoised Experimental data (right) by Sacraficial Sample machine learning.

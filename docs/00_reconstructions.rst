@@ -6,6 +6,89 @@ Reconstructions Through TomoPy
 
 
 
+Basic Reconstructions
+=====================
+
+.. code:: python
+
+    import sys
+    sys.path.append('/path/to/tomosuite/github/clone/tomosuite/')
+    import tomosuite
+    import tomopy
+
+    # Import TomoSuite helper functions
+    from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
+
+    # Define your own tomography reconstruction function. This is the TomoSuite's default
+    def tomo_recon(prj, theta, rot_center):
+        types='gridrec'
+        if types == 'gridrec':
+            recon = tomopy.recon(prj, theta,
+                                center=rot_center,
+                                algorithm='gridrec',
+                                ncore=30)
+            #recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
+        return recon
+
+    # Reconstruct the raw projection data
+    basedir = '/local/data/project_01/' 
+
+    slcs = reconstruct_data(basedir,
+                        rot_center,
+                        start_row=None, # If the User doesnt want to reconstruct all rows
+                        end_row=None, # If the User doesnt want to reconstruct all rows
+                        med_filter=False,
+                        all_data_med_filter=False,
+                        med_filter_kernel=(1, 3, 3),
+                        reconstruct_func=tomo_recon, # Allows the user to define their own recon function
+                        network=None, # None loads in the raw projection data
+                        wedge_removal=0, # zero out the first and last wedge_removal number of projections
+                        sparse_angle_removal=1, # only use every sparse_anlge_removal image for the recon
+                        types='denoise', # used when network='TomoGAN'
+                        second_basedir=None, # used to pull a second datasets data for the reconstruction
+                        checkpoint_num=None, # used when network='Deepfillv2'
+                        double_sparse=None)
+
+    # Plot the reconstruction
+    plot_reconstruction(slcs)
+
+
+DeNoise Type 1
+==============
+
+.. code:: python
+
+    import sys
+    sys.path.append('/path/to/tomosuite/github/clone/tomosuite/')
+    import tomosuite
+    import tomopy
+
+    # Import TomoSuite helper functions
+    from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
+
+    # Define your own tomography reconstruction function. This is the TomoSuite's default
+    def tomo_recon(prj, theta, rot_center):
+        types='gridrec'
+        if types == 'gridrec':
+            recon = tomopy.recon(prj, theta,
+                                center=rot_center,
+                                algorithm='gridrec',
+                                ncore=30)
+            #recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
+        return recon
+
+    # Reconstruct the raw projection data
+    basedir = '/local/data/project_01/' 
+
+    slcs = reconstruct_data(basedir,
+                        rot_center=600,
+                        reconstruct_func=tomo_recon, 
+                        network=None)
+
+    # Plot the reconstruction
+    plot_reconstruction(slcs)
+
+
 Raw .H5 Data
 ============
 
