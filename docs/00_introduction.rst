@@ -1,7 +1,8 @@
 =================
 What is TomoSuite
 =================
-TomoSuite is a python module which allows Users to train their own neural networks to imporove Tomographic reconstructions. The core functionalities include:
+TomoSuite is a culmination of machine learning networks and data preparation methods for those networks for the enhancement of poor-quality tomographic datasets. Novel implementations of existing architectures are available for Users to de-noise, de-wedge artifact, de-sparse angle artifact, and de-ring artifact their own datasets without the need for obtaining any true ground truth datasets. The goal of this project is not only to bring these networks into the tomographic world, but to make them as User friendly as possible, expanding the usability to novices in the machine learning domain. 
+
 
 .. note::
 
@@ -52,8 +53,10 @@ Type 1
 .. figure:: img/low_dose-fake-noise.png
     :scale: 50%
     :align: right
+    
+.. note:
 
-Caption: This is reconstruction (GridRec) of Raw Experimental data (left) and Denoised Experimental data (right) by Fake Noise machine learning.
+    This is reconstruction (GridRec) of Raw Experimental data (left) and Denoised Experimental data (right) by Fake Noise machine learning.
     
     
 .. _denoise_type2:
