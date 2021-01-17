@@ -99,7 +99,7 @@ def predict_deepfillv2(basedir, checkpoint_num,  image_height, image_width, gpu=
         result = sess.run(output, feed_dict={input_image_ph: input_image})
         return_array.append(result[0][:, :, ::-1])
 
-    return_array = convert2gray(return_array)
+    #return_array = convert2gray(return_array)
     
     if save:
         

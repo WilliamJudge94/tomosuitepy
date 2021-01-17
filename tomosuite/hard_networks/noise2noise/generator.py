@@ -33,11 +33,9 @@ class NoisyImageGenerator(Sequence):
         self.image_size = image_size
         self.basedir = basedir
         
-        if num_of_slcs != 1:
-            self.num_of_slcs = len(self.image_paths)
-        else:
-            self.num_of_slcs = num_of_slcs
-            
+        self.num_of_slcs_og = num_of_slcs[1]
+        self.num_of_slcs_real = num_of_slcs[0]
+        
         self.main_train_dir = main_train_dir
         self.corresponding_train_dir = corresponding_train_dir
         self.concat_train = concat_train
@@ -65,8 +63,15 @@ class NoisyImageGenerator(Sequence):
 
         while True:
             
-            random_image_value_pre = random.randint(0, self.num_of_slcs-1)
-            zfills = len(str(self.num_of_slcs))
+            
+            
+            if self.single_image_train is not None:
+                random_image_value_pre = self.single_image_train
+                #random_image_value_post = str(self.single_image_train).zfill(zfills)      
+            else:
+                random_image_value_pre = random.randint(0, self.num_of_slcs_real-1)
+                
+            zfills = len(str(self.num_of_slcs_og))
             random_image_value_post = str(random_image_value_pre).zfill(zfills)
             
             if self.concat_train:
@@ -78,13 +83,11 @@ class NoisyImageGenerator(Sequence):
 
             else:
                 selected_files = random.sample(self.corresponding_train_dir, 1)
-                
-                if self.single_image_train is not None:
-                    random_image_value_post = str(self.single_image_train).zfill(zfills)
-                
+                    
                 image_path1 = f'{self.basedir}noise2noise/{self.main_train_dir[0]}_recon/{random_image_value_post}.{self.im_type}'
                 image_path2 = f'{self.basedir}noise2noise/{selected_files[0]}_recon/{random_image_value_post}.{self.im_type}'
 
+            
             if self.im_type == 'png':
                 image1 = cv2.imread(str(image_path1))
                 image2 = cv2.imread(str(image_path2))
@@ -133,11 +136,10 @@ class ValGenerator(Sequence):
         self.im_type = im_type
         self.crop_im_val = crop_im_val
         self.image_num = len(image_paths)
+        zfills = len(str(self.image_num))
         self.data = []
 
         if single_image_train is not None:
-            self.image_num = 1
-            zfills = len(str(self.image_num))
             checker = str(self.single_image_train).zfill(zfills)
         else:
             checker = '.'
@@ -162,6 +164,11 @@ class ValGenerator(Sequence):
                 y = y[:(h // 16) * 16, :(w // 16) * 16]  # for stride (maximum 16)
                 x = val_noise_model(y)
                 self.data.append([np.expand_dims(x, axis=0), np.expand_dims(y, axis=0)])
+                
+                
+        if single_image_train is not None:
+            if self.data == []:
+                raise Warning(f'No images found in Validation set with number {single_image_train}. Please set single_image_val=None or save image {single_image_train} to the validation folder.')
                 
 
     def __len__(self):

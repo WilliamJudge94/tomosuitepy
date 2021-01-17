@@ -82,6 +82,7 @@ def train_noise2noise(basedir,
               concat_train=False,
               crop_im_val=None,
               single_image_train=None,
+              single_image_val=None,
               im_type='tif',
               image_size=64,
               batch_size=16,
@@ -105,9 +106,9 @@ def train_noise2noise(basedir,
     # Sometimes this can be wrong if there are .ipynb checkpoint files.
     # generator.py addresses this issue
     if single_image_train == None:
-        num_of_slcs = len(os.listdir(image_dir))
+        num_of_slcs = len(os.listdir(image_dir)), len(os.listdir(image_dir))
     else:
-        num_of_slcs = 1
+        num_of_slcs = 1, len(os.listdir(image_dir))
         
     if len(os.listdir(image_dir)) < batch_size:
         raise Warning("Batch Size is Greater Than Total Number of Directory Images")
@@ -138,7 +139,7 @@ def train_noise2noise(basedir,
                                     single_image_train=single_image_train, im_type=im_type )
     
     val_generator = ValGenerator(test_dir, val_noise_model, 
-                                 single_image_train=single_image_train, im_type=im_type, crop_im_val=crop_im_val)
+                                 single_image_train=single_image_val, im_type=im_type, crop_im_val=crop_im_val)
     
     switch_to(EAGER_MODE)
     logdir = f'{basedir}noise2noise/logs/'

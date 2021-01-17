@@ -24,6 +24,7 @@ def easy_save_noise2noise(output_path, dataset, im_type):
     
     total_length = len(dataset)
     zfill_length = len(str(total_length))
+    
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -44,7 +45,8 @@ def easy_save_noise2noise(output_path, dataset, im_type):
             raise Warning("im_type must be 'tif' or 'png'")
 
 def setup_data_noise2noise(basedir, val_name, val_crop=10, datasets=[], names=[], im_type='tif'):
-
+    val_store = {}
+    
     for dataset, name in tqdm(zip(datasets, names), total=len(names), desc='Saving Datasets'):
         
         output_path = f'{basedir}noise2noise/{name}_recon/'
@@ -53,10 +55,14 @@ def setup_data_noise2noise(basedir, val_name, val_crop=10, datasets=[], names=[]
         if name == val_name:
             output_path_val = f'{basedir}noise2noise/{name}_val_recon/'
             easy_save_noise2noise(output_path_val, dataset[::val_crop], im_type)
+            slc_nums = np.arange(0, len(dataset))[::val_crop]
+            
+            
                
     try:
         test = output_path_val
         print(f'Validation Data Created For {val_name}')
+        return slc_nums
     except:
         print(f'Validation Data NOT Created For {val_name}')
 

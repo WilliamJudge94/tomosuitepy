@@ -298,6 +298,13 @@ def save_training_images(basedir, training_images, validation_images, lr_flip=Fa
             tif.imsave(training_loc3, image_ud)
             counter += 1
             
+            if lr_flip:
+                ud_lr_image = np.fliplr(ud_image)
+                training_loc4 = f'{training_path}{str(counter).zfill(training_zfill)}.tif'
+                image_ud_lr = np.dstack((ud_lr_image, ud_lr_image, ud_lr_image))
+                tif.imsave(training_loc4, image_ud_lr)
+                counter += 1
+            
     counter = 0
     for val_image in tqdm(validation_images, desc='Saving Validation Data'):
         validation_loc1 = f'{val_path}{str(counter).zfill(val_zfill)}.tif'
