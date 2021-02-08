@@ -113,11 +113,15 @@ def random_bbox(FLAGS):
     maxt = img_height - FLAGS.vertical_margin - FLAGS.height
     maxl = img_width - FLAGS.horizontal_margin - FLAGS.width
     
-    start_position, end_position, master_heights_val, master_shape = FLAGS.mask_helper
+    start_position, end_position, master_heights_val, master_shape, random_central = FLAGS.mask_helper
     
-    output = tf.random_shuffle(
-    [start_position, end_position],)
-    t = output[0]
+    if random_central:
+        t = tf.random_uniform([], minval=start_position, maxval=end_position, dtype=tf.int32)
+    
+    else:
+        output = tf.random_shuffle(
+        [start_position, end_position],)
+        t = output[0]
     
     l = tf.constant(0)
     h = tf.constant(master_heights_val)
@@ -126,7 +130,7 @@ def random_bbox(FLAGS):
     return (t, l, h, w)
 
 
-def determing_mask_values(FLAGS, mask_type, udr='r'):
+def determing_mask_values(FLAGS, mask_type, udr='r', train_or_val='train'):
     master_shape = FLAGS.img_shapes[0]
     master_height = FLAGS.height
     half_master_height = int(master_height/2)
@@ -142,8 +146,9 @@ def determing_mask_values(FLAGS, mask_type, udr='r'):
         elif udr == 'r':
             start_position = 0
             end_position = master_shape - half_master_height - 1
+            
 
-        FLAGS.mask_helper = [start_position, end_position, half_master_height, master_shape]
+        FLAGS.mask_helper = [start_position, end_position, half_master_height, master_shape, False]
         
         
     elif mask_type == 'central':
@@ -151,8 +156,14 @@ def determing_mask_values(FLAGS, mask_type, udr='r'):
         half_master_shape = int(master_shape/2)
         start_position = half_master_shape - half_master_height
         end_position = start_position
+        random_central = False
         
-        FLAGS.mask_helper = [start_position, end_position, master_height, master_shape]
+        if udr == 'r' and train_or_val == 'train':
+            start_position = 0
+            end_position = master_shape - half_master_height - 1
+            random_central = True
+        
+        FLAGS.mask_helper = [start_position, end_position, master_height, master_shape, random_central]
         
     else:
         raise Warning("DeepFillV2 yaml file has incorrect value for mask_type. Must be 'edge' or 'central'")

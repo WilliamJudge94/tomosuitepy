@@ -355,4 +355,4 @@ def format_and_save_data4deepfillv2(basedir, number2zero, types='base', downscal
     else:
         raise Warning(f"edge_or_central value must equal 'central' or 'edge'")
         
-    return downscaled_base_training_images, base_training_images, number2zero
+    return downscaled_base_training_images, base_training_images, number2zero, max_intensity_values

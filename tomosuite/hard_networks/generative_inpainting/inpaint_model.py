@@ -242,7 +242,7 @@ class InpaintCAModel(Model):
             udr = FLAGS.udr
             
             
-        determing_mask_values(FLAGS, FLAGS.mask_type, udr=udr)
+        determing_mask_values(FLAGS, FLAGS.mask_type, udr=udr, train_or_val='val')
         
         bbox = random_bbox(FLAGS)
         
