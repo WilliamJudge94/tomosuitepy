@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import tifffile as tif
 
-def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, binning=1, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
+def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, binning=1, outlier_diff=None, air=10, outlier_size=None, starting=0, bkg_norm=False, chunk_size4bkg=10, custom_dataprep=False, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True, error_value=0.0):
     """Extract projection files from file experimental file formats. Then apply normalization, minus_log, negative, nan, and infinity corrections.
     
     Parameters
@@ -26,8 +26,20 @@ def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, bin
     binning : int
         an integer used to determine the downsampling rate of the data.
         
+    outlier_diff : int
+        Expected difference value between outlier value and the median value of the array.
+        
+    outlier_size : int
+        Size of the median filter.
+        
+    air : int
+        Number of pixels at each boundary to calculate the scaling factor.
+        
     starting : int
         the starting digit for the proj_ims files name.
+    
+    custom_dataprep : bool
+        if True this allows the User to define dataprep functions in the reconstruction script.
         
     overwrite : bool
         if True then the projections files will overwrite the designated folder.
@@ -58,22 +70,82 @@ def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, bin
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
         
+    if outlier_diff != None and outlier_size != None:
+        if verbose:
+            print('\n** Remove Outliers')
+
+        prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
+        flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
+        
     if verbose:
         print('\n** Flat field correction')  
     prj = tomopy.normalize(prj, flat, dark)
+    
+    
+    if not custom_dataprep:
+        
+        # Work in Progress
+        if False:
+            
+            z = 33
+            eng = 60
+            pxl = 0.65e-4
+            rat = 1.25e-03
+            zinger_level = 200
+            
+            prj_chunks = []
+            
+            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Retrieve Phase'):
+                prj_tmp = tomopy.prep.phase.retrieve_phase(prj_chunk, pixel_size=pxl, dist=z, energy=eng, alpha=rat, pad=True, ncore=1)
+                prj_chunks.append(prj_tmp.copy())
+                del prj_tmp
 
-    if verbose:
-        print('\n** Applying minus log')
-    prj = tomopy.minus_log(prj)
+            prj = np.concatenate(prj_chunks)
+        
+        
+        if bkg_norm:
 
-    if verbose:
-        print('\n** Removing negative and np.nan')
-    prj = tomopy.misc.corr.remove_neg(prj, val=0.001)
-    prj = tomopy.misc.corr.remove_nan(prj, val=0.001)
+            prj_chunks = []
+            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Bkg Normalize'):
+                prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
+                prj_chunks.append(prj_tmp.copy())
+                del prj_tmp
 
-    if verbose:
-        print('\n** Removing inf')
-    prj[np.where(prj == np.inf)] = 0.001
+            prj = np.concatenate(prj_chunks)
+            
+        if verbose:
+            print('\n** Applying minus log')
+
+        prj = tomopy.minus_log(prj)
+
+        if verbose:
+            print('\n** Removing np.nan')
+            
+
+        prj = tomopy.misc.corr.remove_nan(prj, val=np.nanmin(prj[prj != -np.inf]))
+
+        if verbose:
+            print('\n** Removing +inf')
+
+        prj[np.where(prj == np.inf)] = np.nanmin(prj[prj != -np.inf])
+        
+        if verbose:
+            print('\n** Removing -inf')
+        prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
+        
+        if verbose:
+            print('\n** Making positive numbers')
+        
+        if np.min(prj) < 0:
+            prj += np.abs(np.min(prj))
+            
+        else:
+            pass
+
+        
+    else:
+        if verbose:
+            print('\n** Not applying data manipulation after tomopy.normalize')
 
     if binning>0:
         if verbose:

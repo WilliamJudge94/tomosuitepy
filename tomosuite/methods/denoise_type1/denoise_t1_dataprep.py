@@ -115,7 +115,7 @@ def fake_noise_test(basedir, noise=125, image_step=20, plot=True, idx=0, figsize
         plt.show()
         
     if not plot:
-        return noise_data
+        return data[idx], noise_data[idx]
     
     
 def setup_fake_noise_train(basedir, noise=125, interval=5, dtype=np.float32):

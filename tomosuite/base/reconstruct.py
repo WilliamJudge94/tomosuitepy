@@ -1,5 +1,6 @@
 import os
 import cv2
+import math
 import tomopy
 import numpy as np
 from tqdm import tqdm
@@ -19,7 +20,7 @@ def colorbar(mappable, font_size=12):
     return fig.colorbar(mappable, cax=cax, )
 
 
-def tomo_recon(prj, theta, rot_center):
+def tomo_recon(prj, theta, rot_center, user_extra=None):
     types='gridrec'
     
     #prj = tomopy.remove_stripe_ti(prj, 2)
@@ -37,10 +38,10 @@ def tomo_recon(prj, theta, rot_center):
     #Remove ring artifacts, this comes with a slight resolution cost
     #recon = tomopy.remove_ring(recon, center_x=None, center_y=None, thresh=300.0)
     
-    return recon
+    return recon, user_extra
 
 
-def reconstruct_single_slice(prj_data, theta, rows=(604, 606), rot_center=True, med_filter=False, all_data_med_filter=False, kernel=(1, 3, 3), reconstruct_func=tomo_recon, recon_type='standard'):
+def reconstruct_single_slice(prj_data, theta, rows=(604, 606), rot_center=True, med_filter=False, all_data_med_filter=False, kernel=(1, 3, 3), reconstruct_func=tomo_recon, recon_type='standard', power2pad=False, edge_transition=None):
     
     if med_filter and all_data_med_filter:
         print('Med Filter Applied Before')
@@ -57,11 +58,34 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606), rot_center=True, 
     if med_filter and not all_data_med_filter:
         print('Med Filter Applied After')
         prj = median_filter(prj, size = kernel)
+        
+    if edge_transition is not None:
+        prj = prj[:, :, edge_transition:-edge_transition]
 
+    if power2pad:
+        shape_finder = prj.shape[2]
+        power_of_2 = int(np.ceil(math.log(shape_finder, 2)))
+        power_of_2 += 1
+        pad_value = 2 ** power_of_2
+        
+        pad = (pad_value - prj.shape[-1]) // 2
+        pad1 = pad_value - prj.shape[-1] - pad
+        prj = np.pad(
+            prj,
+            pad_width=((0, 0), (0, 0), (pad, pad1)),
+            mode='edge',  # Pad with constant zero instead to get ring back
+        )
+        
+        rot_center = rot_center + pad
+        
 
-    recon = reconstruct_func(prj, theta, rot_center=rot_center)
+    recon, user_extra = reconstruct_func(prj, theta, rot_center=rot_center)
     
-    return recon
+    if power2pad:
+        
+        recon = recon[:, pad:-pad1, pad:-pad1]
+    
+    return recon, user_extra
 
 
 def prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row):
@@ -154,6 +178,7 @@ def deal_with_sparse_angle(prj_data, theta,
 def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_row, double_sparse=None):
     
     prj_data = loading_tiff_prj(f'{basedir}extracted/projections/')
+    
     theta = np.load(f'{basedir}extracted/theta/theta.npy')
 
     shape = prj_data.shape[0]
@@ -225,7 +250,9 @@ def reconstruct_data(basedir,
                      types='denoise',
                      second_basedir=None,
                      checkpoint_num=None,
-                     double_sparse=None):
+                     double_sparse=None,
+                     power2pad=False,
+                     edge_transition=None):
 
     if network == None:
         recon_type = 'standard'
@@ -250,8 +277,10 @@ def reconstruct_data(basedir,
     elif network == 'dain':
         recon_type = 'standard'
         start, end, prj_data, theta = prepare_dain(basedir, start_row, end_row)
+        
 
-    slc_proj = reconstruct_single_slice(prj_data.copy(), 
+
+    slc_proj, user_extra = reconstruct_single_slice(prj_data.copy(), 
                                            theta,
                                            rot_center = rot_center, 
                                            rows=slice(start, end), 
@@ -259,14 +288,16 @@ def reconstruct_data(basedir,
                                            all_data_med_filter=all_data_med_filter, 
                                            kernel=med_filter_kernel, 
                                            reconstruct_func=reconstruct_func,
-                                           recon_type=recon_type)
+                                           recon_type=recon_type,
+                                           power2pad=power2pad,
+                                           edge_transition=edge_transition)
     
     
-    return slc_proj
+    return slc_proj, user_extra
 
 
 
-def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003)):
+def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r'):
     """Allow the User to plot the data that was output from the reconstruction
     
     Parameters
@@ -287,7 +318,7 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003)):
     for row, prj in enumerate(slc_proj):
         fig = plt.figure(figsize=figsize)
         plt.title(f'Row Num: {row}, Mean: {np.mean(prj)}')
-        image = plt.imshow(prj)
+        image = plt.imshow(prj, cmap=cmap)
         ax1 = plt.gca()
         ax1.tick_params(labelsize=15)
         colorbar(image)

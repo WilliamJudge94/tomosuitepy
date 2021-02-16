@@ -63,7 +63,7 @@ def skip_lowdose(basedir):
     """
 
     data = loading_tiff_prj(f'{basedir}extracted/projections/')
-    np.save(f'{basedir}low_dose/noise_exp_data.npy', data)
+    np.save(f'{basedir}tomogan/noise_exp_data.npy', data)
     
     
 def h5create_file(loc, name):
