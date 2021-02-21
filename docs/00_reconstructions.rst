@@ -9,6 +9,8 @@ Reconstructions Through TomoPy
 Basic Reconstructions
 =====================
 
+This section will show a User how to use the raw hdf5 projections to reconstruct a CT scan. The basics are to import the correct modules, define a reconstruction function, and pass that function to the reconstruct_data function which handels everything else. The reconstruct_data function is a wrapper which has the ability to pull data from many different directories. Most use cases will be explained somewhere on this page.
+
 .. code:: python
 
     import sys
@@ -20,20 +22,17 @@ Basic Reconstructions
     from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
 
     # Define your own tomography reconstruction function. This is the TomoSuite's default
-    def tomo_recon(prj, theta, rot_center):
-        types='gridrec'
-        if types == 'gridrec':
-            recon = tomopy.recon(prj, theta,
-                                center=rot_center,
-                                algorithm='gridrec',
-                                ncore=30)
-            #recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
-        return recon
+    def tomo_recon(prj, theta, rot_center, user_extra=None):
+        recon = tomopy.recon(prj, theta,
+                            center=rot_center,
+                            algorithm='gridrec',
+                            ncore=30)
+        return recon, user_extra
 
     # Reconstruct the raw projection data
     basedir = '/local/data/project_01/' 
 
-    slcs = reconstruct_data(basedir,
+    slcs, user_extra = reconstruct_data(basedir,
                         rot_center,
                         start_row=None, # If the User doesnt want to reconstruct all rows
                         end_row=None, # If the User doesnt want to reconstruct all rows
@@ -47,14 +46,20 @@ Basic Reconstructions
                         types='denoise', # used when network='TomoGAN'
                         second_basedir=None, # used to pull a second datasets data for the reconstruction
                         checkpoint_num=None, # used when network='Deepfillv2'
-                        double_sparse=None)
+                        double_sparse=None, 
+                        power2pad=False, # Force the sinogram to be of shape power2
+                        edge_transition=None # eliminate columns of sinogram which cause a harsh ring effect in the recon)
 
     # Plot the reconstruction
-    plot_reconstruction(slcs)
+    plot_reconstruction(slcs[0:1])
 
 
 DeNoise Type 1
 ==============
+
+Once the User predicts through tomogan they now have the ability to reconstruct that predicted data. In this case we are looking at DeNoise Type 1. Where the user has imput fake noise into their projections, and used tomogan to denoise the original projections. 
+
+The main concept is similar to that of the basic reconstruction. The main difference is now the User has to define the network='tomogan' and the types='denoise_fake'. This tells the reconstruct_data function to import the data related to tomogan and make sure you import the denoised data based on the fake noise. 
 
 .. code:: python
 
@@ -67,111 +72,36 @@ DeNoise Type 1
     from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
 
     # Define your own tomography reconstruction function. This is the TomoSuite's default
-    def tomo_recon(prj, theta, rot_center):
-        types='gridrec'
-        if types == 'gridrec':
-            recon = tomopy.recon(prj, theta,
-                                center=rot_center,
-                                algorithm='gridrec',
-                                ncore=30)
-            #recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
-        return recon
+    def tomo_recon(prj, theta, rot_center, user_extra=None):
+        recon = tomopy.recon(prj, theta,
+                            center=rot_center,
+                            algorithm='gridrec',
+                            ncore=30)
+        recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
+        return recon, user_extra
 
     # Reconstruct the raw projection data
     basedir = '/local/data/project_01/' 
 
-    slcs = reconstruct_data(basedir,
+    slcs, user_extra = reconstruct_data(basedir,
                         rot_center=600,
                         reconstruct_func=tomo_recon, 
-                        network=None)
+                        network='tomogan',
+                        types='denoise_fake',
+                        power2pad=True, # forces the sinogram to be in a power of 2 shape
+                        edge_transition=5 # removes harsh edge on sinogram
+                        )
 
     # Plot the reconstruction
-    plot_reconstruction(slcs)
-
-
-Raw .H5 Data
-============
-
-In order to reconstruct the raw .H5 data one must call the tomosuite.skip_lowdose() function. This saves the projection files to a numpy array inside the loction f'{basedir}low_dose/noise_exp_data.npy'. If the Low Dose portion of TomoSuite is used this file is created automatically. Along with a file falled f'{basedir}low_dose/denoise_exp_data.npy' OR f'{basedir}low_dose/denoise_fake_data.npy' depending on which method of denoising is performed.
-
-View Denoised Data - Raw H5
----------------------------
-
-
-.. code:: python
-    
-    
-    from tomosuite.base.reconstruct import reconstruct_data_tomogan, plot_reconstruction
-
-    tomosuite.skip_lowdose(basedir)
-    
-    slcs = reconstruct_data_tomogan(basedir,
-                                    rot_center=500,
-                                    start_row=None,
-                                    end_row=None,
-                                    wedge_removal=0,
-                                    sparce_angle_removal=1,
-                                    med_filter=False,
-                                    all_data_med_filter=False,
-                                    types='noise_exp',
-                                    med_filter_kernel=(1, 3, 3),
-                                    second_basedir=None,
-                                    reconstruct_func=tomo_recon)
-    plot_reconstruction(slcs[0:2])
-    
-    
-Denoised Data
-=============
-
-View Denoised Data - Low Dose
------------------------------
-
-Once the Low Dose protocol is complete use the following methods to view the resulting data.
-
-.. code:: python
-    
-    
-    from tomosuite.base.reconstruct import reconstruct_data_tomogan, plot_reconstruction
+    plot_reconstruction(slcs[0:10])
 
     
-    # Original
-    slc = reconstruct_data_tomogan(basedir,
-                                    rot_center=624,
-                                    types='noise_exp')
-    plot_reconstruction(slc[0:2])
-    
-    # Denoised
-    slc = reconstruct_data_tomogan(basedir,
-                                    types='denoise_exp')
-    plot_reconstruction(slc[0:2])
-    
-    
-Missing Wedge Data
-==================
-    
-    
-View Simulated Wedge Artifact
------------------------------
-
-After calling the 'fake_missing_wedge()' function for the DeWedge artifacting protocol, one might like to view the reconstruction of these projections.
-
-
-View Inpainted Sinogram Missing Wedge Data
-------------------------------------------
-
-
-.. code:: python
-    
-    
-    from tomosuite.base.reconstruct import reconstruct_data_deepfillv2, plot_reconstruction
-    
-    
-    slc = reconstruct_data_deepfillv2(basedir, load_epoch, rot_center=383)
-    plot_reconstruction(slc[0:10], clim=(0, 1))
 
 
 Defining Your Own Recon Function
 ================================
+
+In this seciton the User will learn how to define their own reconstruction function. to do this one must follow the template below of a function defined as tomo_recon(prj, theta, rot_center, user_extra=None). The user_extra parameter allows the user to pass data out of the recon function. This is mainly for debugging purposes. Next the User has to make sure that this tomo_recon function returns recon, user_extra. Everything in between can be set by the User. make sure you are using tomopy.recon() to reconstruct the slices.
 
 
 .. code:: python 
@@ -182,19 +112,22 @@ Defining Your Own Recon Function
     
     # This is the standard defined tomo_recon function through TomoSuite
 
-    def tomo_recon(prj, theta, rot_center):
+    def tomo_recon(prj, theta, rot_center, user_extra=None):
 
-        types='gridrec'
-
+        recon_type='gridrec'
+        
+        # Add preprocessing steps here
         #prj = tomopy.remove_stripe_ti(prj, 2)
-        if types == 'gridrec':
+        
+        
+        if recon_type == 'gridrec':
             recon = tomopy.recon(prj, theta,
                                 center=rot_center,
                                 algorithm='gridrec',
                                 ncore=16)             
             recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
             
-        elif types == 'gridrec_parzen':
+        elif recon_type == 'gridrec_parzen':
             recon = tomopy.recon(prj, theta,
                                 center=rot_center,
                                 algorithm='gridrec',
@@ -202,7 +135,7 @@ Defining Your Own Recon Function
                                 filter_name='parzen')              
             recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
 
-        elif types == 'sirt':
+        elif recon_type == 'sirt':
             extra_options ={'MinConstraint':0}
             options = {'proj_type':'cuda', 'method':'SIRT_CUDA',
                         'num_iter':200, 'extra_options': extra_options}
@@ -214,15 +147,17 @@ Defining Your Own Recon Function
         #Remove ring artifacts, this comes with a slight resolution cost
         #recon = tomopy.remove_ring(recon, center_x=None, center_y=None, thresh=300.0)
 
-        return recon
+        return recon, user_extra
         
         
     from tomosuite.base.reconstruct import reconstruct_data_deepfillv2, plot_reconstruction
     
     
-    slc = reconstruct_data_deepfillv2(basedir,
-                                    load_epoch,
-                                    rot_center=383,
-                                    reconstruct_func=tomo_recon)
-
+    slcs, user_extra = reconstruct_data(basedir,
+                        rot_center=600,
+                        reconstruct_func=tomo_recon, 
+                        network='tomogan',
+                        types='denoise_fake', # or denoise_exp
+                        )
+                        
     plot_reconstruction(slc[0:10], clim=(0, 1))
