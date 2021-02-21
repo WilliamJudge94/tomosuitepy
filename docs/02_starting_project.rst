@@ -33,17 +33,21 @@ The Project
     # The folder path where the User would like to store project data to
     basedir = '/local/data/project_01/'
     
+
+    start_project(basedir=basedir)
     
-    tomosuite.start_project(basedir=basedir)
-    
-    tomosuite.extract(datadir=datadir,
+    extract(datadir=datadir,
                         fname=fname,
                         basedir=basedir,
                         extraction_func=dxchange.read_aps_32id,
-                        binning=1,
-                        starting=0,
-                        dtype='float32',
-                        flat_roll=None,
+                        binning=1, # shink size of projections
+                        starting=0, # starting number for saved tiffs
+                        dtype='float32', 
+                        flat_roll=None, # roll the flat field image left or right
                         overwrite=True,
                         verbose=True,
-                        save=True)
+                        save=True,
+                        outlier_diff=None, # outlier_diff for remove_outlier
+                        outlier_size=None, # outlier_size for remove_outlier
+                        bkg_norm=True, # apply a background normalization
+                        custom_dataprep=False) # skip all dataprep if True
