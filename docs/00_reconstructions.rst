@@ -54,12 +54,12 @@ This section will show a User how to use the raw hdf5 projections to reconstruct
     plot_reconstruction(slcs[0:1])
 
 
-DeNoise Type 1
-==============
+DeNoise Type 1 or Type 2
+========================
 
-Once the User predicts through tomogan they now have the ability to reconstruct that predicted data. In this case we are looking at DeNoise Type 1. Where the user has imput fake noise into their projections, and used tomogan to denoise the original projections. 
+Once the User predicts through tomogan they now have the ability to reconstruct that predicted data. In this case we are looking at DeNoise Type 1 or Type 2. Type 1 is where the User has imput fake noise into their projections, and used tomogan to denoise the original projections. While Type 2 is where the User has a sacraficial sample, which contains multiple projections of the save FOV. 
 
-The main concept is similar to that of the basic reconstruction. The main difference is now the User has to define the network='tomogan' and the types='denoise_fake'. This tells the reconstruct_data function to import the data related to tomogan and make sure you import the denoised data based on the fake noise. 
+The main concept is similar to that of the basic reconstruction. The main difference is now the User has to define the network='tomogan' and the types='denoise_fake' for Type 1 or types='denoise_exp' for Type 2. This tells the reconstruct_data function to import the data related to tomogan and make sure you import the denoised data based on the fake noise training or the sacraficial sample training. 
 
 .. code:: python
 
@@ -87,7 +87,7 @@ The main concept is similar to that of the basic reconstruction. The main differ
                         rot_center=600,
                         reconstruct_func=tomo_recon, 
                         network='tomogan',
-                        types='denoise_fake',
+                        types='denoise_fake', # or denoise_exp if you are reconstructing Type 2
                         power2pad=True, # forces the sinogram to be in a power of 2 shape
                         edge_transition=5 # removes harsh edge on sinogram
                         )
