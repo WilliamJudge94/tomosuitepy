@@ -1,6 +1,6 @@
-============================
- Denoise with Second Dataset
-============================
+=====================
+ Denoise with Type 2
+=====================
 
 In this section the User will learn how to denoise tomographic projections by training a neural network on a sacraficial sample's data, then applying the trained network to another sample. 
 
@@ -34,24 +34,24 @@ the output path for the tomosuite project.
 .. code:: python
 
     # The folder location where the Users experimental .h5 file is located
-    datadir_noise = '/home/will/data/beamtime_data/'
+    datadir_noise = '/local/data/experimental/'
     
     # The name of the experimental file to load into tomosuite
-    fname_noise = 'Experiment_noise.h5'
+    fname_noise = 'Experiment_noisey.h5'
     
     # The name of the tomosuite project the User would like to create
-    basedir_noise = '/home/will/projects/experiment_noise/'
+    basedir_noise = '/local/data/project_01/'
     
     
     
     # The directory path where the raw experimental file lives
-    datadir_exp = '/local/data/experimental/'
+    datadir_clean = '/local/data/experimental/'
     
     # The file name of the data the User would like to import
-    fname_exp = 'Experiment_01.h5'
+    fname_clean = 'Experiment_clean.h5'
     
     # The folder path where the User would like to store project data to
-    basedir_exp = '/local/data/project_01/'
+    basedir_clean = '/local/data/project_02/'
     
     
     
@@ -59,11 +59,13 @@ Starting A Project
 ==================
 Now the User must start two different projects. basedir_noise is for the sacraficaial noise sample while basedir_exp is the experimental data you wan tto apply the trained denoising network to.
 
-
 .. code:: python
 
-    tomosuite.start_project(basedir=basedir_noise)
-    tomosuite.start_project(basedir=basedir_exp)
+    from tomosuite.base.start_project import start_project
+    from tomosuite.base.extract_projections import extract
+
+    start_project(basedir=basedir_noise)
+    start_project(basedir=basedir_clean)
     
 
     
@@ -74,8 +76,8 @@ Allows the User to extract the dataset projections to the project folders.
 .. code:: python
       
     # More extraction parameters can be found in the Doc-String or in the "Starting A Project" tab
-    tomosuite.extract(datadir_noise, fname_noise, basedir_noise)
-    tomosuite.extract(datadir_exp, fname_exp, basedir_exp)
+    extract(datadir_noise, fname_noise, basedir_noise)
+    extract(datadir_clean, fname_clean, basedir_clean)
     
     
 Create TomoGAN Files
@@ -85,17 +87,19 @@ In order to determine which data can be used for training (due to sample deforma
 .. code:: python
 
     from tomosuite.low_dose.data_prep import setup_tomogan_exp_noise
-    setup_tomogan_exp_noise(basedir_noise, split_amount_exp, ssim_threshold=None, split_amount_ml=2):
+    setup_tomogan_exp_noise(basedir_clean, split_amount_exp, ssim_threshold=None, split_amount_ml=2):
     
     
 Training TomoGAN
 ================
-This function allows the User to train the TomoGAN denoising network. Training progress can be viewed in Tensorboard by running tensorboard --logdir='/local/data/project_01/low_dose/logs/' --samples_per_plugin=images=300
+This function allows the User to train the TomoGAN denoising network. Training progress can be viewed in Tensorboard by running tensorboard --logdir='/local/data/project_02/low_dose/logs/' --samples_per_plugin=images=300
 
 .. code:: python
 
-    from tomosuite.low_dose.tomogan import train_tomogan
-    train_tomogan(basedir=basedir_noise, epochs=120001, gpus='0',
+    from tomosuite.low_dose.tomogan import train_tomogan, tensorboard_command_tomogan
+    
+    tensorboard_command_tomogan(basedir_clean)
+    train_tomogan(basedir=basedir_clean, epochs=120001, gpus='0',
                     lmse=0.5, lperc=2.0, 
                     ladv=20, lunet=3, depth=1,
                     itg=1, itd=2, mb_size=2,
@@ -108,16 +112,16 @@ This function allows the User to apply the trained TomoGAN network on unseen pro
 
 .. note::
 
-    The main difference between this function call and the one earlier in the Docs is that we have added the basedir=basedir_noise and second_basedir=basedir_exp variable. What this tells tomogan is to use the model created by basedir_noise and apply it to the projections found in basedir_exp. Then save those denoised projections to basedir_exp.
+    The main difference between this function call and the one earlier in the Docs is that we have added the basedir=basedir_clean and second_basedir=basedir_noise variable. What this tells tomogan is to use the model created by basedir_clean and apply it to the projections found in basedir_noise. Then save those denoised projections to basedir_noise.
     
 .. code:: python
 
     denoised_epoch = '22000'
 
     from tomosuite.low_dose.tomogan import predict_tomogan
-    output = predict_tomogan(basedir=basedir_noise, 
+    output = predict_tomogan(basedir=basedir_clean, 
                                         weights_iter=denoise_epoch,
-                                        second_basedir=basedir_exp,
+                                        second_basedir=basedir_noise,
                                         chunk_size=5,
                                         noise=None,
                                         gpu='0',
