@@ -4,6 +4,17 @@ import tifffile as tif
 import h5py
 
 def loading_tiff_prj(folder):
+    """For a given folder return all the .tiff images in a numpy array
+    
+    Parameters
+    ----------
+    folder : str
+        the path to the folder which contains the .tiff images
+        
+    Returns
+    -------
+    A numpy array with the loaded .tiff images
+    """
     data = []
     
     files = os.listdir(folder)
@@ -68,14 +79,16 @@ def skip_lowdose(basedir):
     
 def h5create_file(loc, name):
     """Creates hdf5 file
+    
     Parameters
-    ==========
+    ---------
     loc: (str)
         the location of the hdf5 file
     name: (str)
         the name of the hdf5 file WITHOUT .h5 at the end
+        
     Returns
-    =======
+    -------
     Nothing
     """
 
@@ -85,14 +98,16 @@ def h5create_file(loc, name):
     
 def h5grab_data(file, data_loc):
     """Returns the data stored in the user defined group
+    
     Parameters
-    ==========
+    ----------
     file (str):
         the user defined hdf5 file
     data_loc (str):
         the group the user would like to pull data from
+        
     Returns
-    =======
+    -------
     the data stored int the user defined location
     """
     with h5py.File(file, 'r') as hdf:
@@ -104,16 +119,18 @@ def h5grab_data(file, data_loc):
 
 def h5create_dataset(file, ds_path, ds_data):
     """Creates a dataset in the user defined group with data equal to the user defined data
+    
     Parameters
-    ==========
+    ----------
     file: (str)
         the user defined hdf5 file
     ds_path: (str)
         the group path to the dataset inside the hdf5 file
     ds_data: (nd.array)
         a numpy array the user would like to store
+        
     Returns
-    =======
+    -------
     Nothing
     """
     with h5py.File(file, 'a') as hdf:
@@ -122,14 +139,16 @@ def h5create_dataset(file, ds_path, ds_data):
         
 def h5group_list(file, group_name='base'):
     """Displays all group members for a user defined group
+    
     Parameters
-    ==========
+    ----------
     file (str)
         the path to the hdf5 file
     group_name (str)
         the path to the group the user wants the Keys for. Set to 'base' if you want the top most group
+        
     Returns
-    =======
+    -------
     a list of all the subgroups inside the user defined group
     """
     # Parenthesis are needed - keep them
@@ -139,3 +158,4 @@ def h5group_list(file, group_name='base'):
         else:
             g1=hdf.get(group_name)
             return (list(g1.items()))
+        
