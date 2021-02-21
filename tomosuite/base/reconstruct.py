@@ -21,13 +21,14 @@ def colorbar(mappable, font_size=12):
 
 
 def tomo_recon(prj, theta, rot_center, user_extra=None):
+    
+    # Allow User to select what type of recon they want
     types='gridrec'
     
     #prj = tomopy.remove_stripe_ti(prj, 2)
-    
     if types == 'gridrec':
         #recon = tomopy.recon(prj, theta, center=rot_center, algorithm='gridrec', ncore=16, filter_name='parzen')
-        recon = tomopy.recon(prj, theta, center=rot_center, algorithm='gridrec', ncore=16)
+        recon = tomopy.recon(prj, theta, center=rot_center, algorithm='gridrec', ncore=2)
         recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
         
     elif types == 'sirt':
@@ -41,31 +42,38 @@ def tomo_recon(prj, theta, rot_center, user_extra=None):
     return recon, user_extra
 
 
-def reconstruct_single_slice(prj_data, theta, rows=(604, 606), rot_center=True, med_filter=False, all_data_med_filter=False, kernel=(1, 3, 3), reconstruct_func=tomo_recon, recon_type='standard', power2pad=False, edge_transition=None):
+def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
+                             rot_center=True, med_filter=False,
+                             all_data_med_filter=False, kernel=(1, 3, 3),
+                             reconstruct_func=tomo_recon, recon_type='standard',
+                             power2pad=False, edge_transition=None):
     
+    # Apply a median filter on all data
     if med_filter and all_data_med_filter:
         print('Med Filter Applied Before')
         prj_data = median_filter(prj_data, size = kernel)
 
-    
+    # Setup projections based on the standard implementation
     if recon_type == 'standard':
         prj = prj_data[:, rows]
         
+    # Setup projections based on deepfillv2 neural network predictions
     elif recon_type == 'deepfillv2':
         prj = prj_data
     
-    
+    # Apply median filter on only the rows
     if med_filter and not all_data_med_filter:
         print('Med Filter Applied After')
         prj = median_filter(prj, size = kernel)
         
+    # Remove the harsh edge transition
     if edge_transition is not None:
         prj = prj[:, :, edge_transition:-edge_transition]
-
+    
+    # Pad projections based on the power of 2 shape
     if power2pad:
         shape_finder = prj.shape[2]
         power_of_2 = int(np.ceil(math.log(shape_finder, 2)))
-        power_of_2 += 1
         pad_value = 2 ** power_of_2
         
         pad = (pad_value - prj.shape[-1]) // 2
@@ -78,11 +86,11 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606), rot_center=True, 
         
         rot_center = rot_center + pad
         
-
+    # Feed into reconstruction function
     recon, user_extra = reconstruct_func(prj, theta, rot_center=rot_center)
     
+    # Crop to the original data if User pads
     if power2pad:
-        
         recon = recon[:, pad:-pad1, pad:-pad1]
     
     return recon, user_extra
@@ -253,6 +261,70 @@ def reconstruct_data(basedir,
                      double_sparse=None,
                      power2pad=False,
                      edge_transition=None):
+    
+    """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
+    
+    Parameters
+    ----------
+    basedir : str
+        Path to the current project where the User would like to load the projection data from.
+    
+    start_row : int or None
+        If int the reconstruction will start at the designated row. Autosets to first row if None.
+    
+    end_row : int or None
+        If int the reconstruction will end at the designated row. Autosets to last row if None.
+        
+    med_filter : bool
+        If True it will apply a median filter to the data.
+        
+    all_data_med_filter : bool
+        If True this will apple filter to entire dataset. If False then it will be applied to the the data selected from the start_row:end_row
+        
+    med_filter_kernel : array
+        The median filter kernel
+        
+    reconstruct_func : function
+        the implemetation of tomopy.recon the User would like a apply to the dataset.
+        Inputs must be prj, theta, rot_center, user_extra=None while outputs must be recon, user_extra.
+        
+    network : None or str
+        Allows the program to determine which data the User is importing. And puts the data into the
+        right shape for the reconstruct_func. str examples are 'tomogan', 'deepfillv2', 'dain'.
+        
+    wedge_removal : int
+        Zeroes out this many projections from the beginning and end of the projection list.
+        
+    sparse_angle_removal : int
+        Take every sparse_angle_removal projection for the reconstruction.
+        
+    types : str
+        Used to determine which datasets to load in for the tomogan network. 'denoise_fake',
+        'denoise_exp', 'noise_exp', 
+        
+    second_basedir : str
+        A second directory used to load a different files theta data. Passed through to TomoGAN.
+        
+    checkpoint_num : str
+        Used for 'deepfillv2' network. Allows the User to load in a certain network's checkpoint
+        predictions for the reconstruction. 
+        
+    double_sparse : int
+        If the User would like to take more data out from a previously sparsed dataset.
+        
+    power2pad : bool
+        Pads the sinograms to a power of 2 size. Faster/better reconstruction.
+        
+    edge_transition : int
+        power2pad may create a Ring Glitch in the reconstruction. This is due to a hash transition from
+        the dataset to the padded area. This will remove sinogram edge columns to limit how harsh this
+        boundary is.
+        
+    
+    Returns
+    -------
+    The reconstructed data and a user_extra data that is output from the reconstruct_func()
+    """
 
     if network == None:
         recon_type = 'standard'
@@ -310,6 +382,9 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys
         
     clim : list
         clim lower and upper limits to be passed into plt.clim()
+        
+    cmap : str
+        the cmap passed to plt.imshow()
         
     Returns
     -------
