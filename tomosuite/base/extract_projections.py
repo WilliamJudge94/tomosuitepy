@@ -6,8 +6,118 @@ import numpy as np
 from tqdm import tqdm
 import tifffile as tif
 
-def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, binning=1, outlier_diff=None, air=10, outlier_size=None, starting=0, bkg_norm=False, chunk_size4bkg=10, custom_dataprep=False, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True, error_value=0.0):
-    """Extract projection files from file experimental file formats. Then apply normalization, minus_log, negative, nan, and infinity corrections.
+
+def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
+                custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose):
+    """Preprocesses the projections data to be saves as .tif images
+    
+    Parameters
+    ----------
+    All variables defined in the extract() function
+    
+    Returns
+    -------
+    Pre-processed projection data
+    """
+    
+
+    # Lets the User roll the flat field image
+    if flat_roll != None:
+        flat = np.roll(flat, flat_roll, axis=2)
+        
+    # Allows the User to remove outliers
+    if outlier_diff != None and outlier_size != None:
+        if verbose:
+            print('\n** Remove Outliers')
+
+        prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
+        flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
+        
+    # Normalized the projections
+    if verbose:
+        print('\n** Flat field correction')  
+    prj = tomopy.normalize(prj, flat, dark)
+    
+    # Trying to figure out how to incorporate this
+    if not custom_dataprep:
+        # Work in Progress
+        if False:
+            z = 33
+            eng = 60
+            pxl = 0.65e-4
+            rat = 1.25e-03
+            zinger_level = 200
+            
+            prj_chunks = []
+            
+            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Retrieve Phase'):
+                prj_tmp = tomopy.prep.phase.retrieve_phase(prj_chunk, pixel_size=pxl, dist=z, energy=eng, alpha=rat, pad=True, ncore=1)
+                prj_chunks.append(prj_tmp.copy())
+                del prj_tmp
+
+            prj = np.concatenate(prj_chunks)
+        
+        # Apply a background normalization to the projections
+        if bkg_norm:
+
+            prj_chunks = []
+            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Bkg Normalize'):
+                prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
+                prj_chunks.append(prj_tmp.copy())
+                del prj_tmp
+
+            prj = np.concatenate(prj_chunks)
+            
+        if verbose:
+            print('\n** Applying minus log')
+
+        prj = tomopy.minus_log(prj)
+
+        if verbose:
+            print('\n** Removing np.nan')
+            
+        # Set nan values to the lowest value
+        prj = tomopy.misc.corr.remove_nan(prj, val=np.nanmin(prj[prj != -np.inf]))
+
+        if verbose:
+            print('\n** Removing +inf')
+
+        # Set infinity values to the lowest value
+        prj[np.where(prj == np.inf)] = np.nanmin(prj[prj != -np.inf])
+        
+        if verbose:
+            print('\n** Removing -inf')
+        prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
+        
+        if verbose:
+            print('\n** Making positive numbers')
+            
+        # Force the projections to be >= 0
+        if np.min(prj) < 0:
+            prj += np.abs(np.min(prj))   
+        
+    else:
+        if verbose:
+            print('\n** Not applying data manipulation after tomopy.normalize')
+
+    # Bin the data
+    if binning>0:
+        if verbose:
+            print('\n** Down sampling data\n')
+        prj = tomopy.downsample(prj, level=binning)
+        prj = tomopy.downsample(prj, level=binning, axis=1)
+        
+        
+    return prj
+    
+
+def extract(datadir, fname, basedir,
+            extraction_func=dxchange.read_aps_32id, binning=1,
+            outlier_diff=None, air=10, outlier_size=None,
+            starting=0, bkg_norm=False, chunk_size4bkg=10,
+            custom_dataprep=False, dtype='float32', flat_roll=None,
+            overwrite=True, verbose=True, save=True, error_value=0.0):
+    """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
     ----------
@@ -48,110 +158,33 @@ def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, bin
         if True this will output print statements for each section of the extraction process.
     
     save : bool
-        if False this will return the extracted projections to the user.
+        if False this will return the extracted projections to the user in the form of a numpy array.
         
     
     Returns
     -------
-    Nothing. Only saves the corrected projection files to the designated folder.
+    Nothing. Only saves the corrected projection files to the designated folder. Unless save=False.
+    Then it will return a numpy array with the projections.
     """
 
+    # Determine the location of the hdf5 file
     fname = os.path.join(datadir, fname)
     basename, ext = os.path.splitext(fname)
 
     start_time = time.time()
 
+    # extract the data from the file
     if verbose:
         print('\n** Reading data')
     prj, flat, dark, theta = extraction_func(fname)
     
+    # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
 
-    if flat_roll != None:
-        flat = np.roll(flat, flat_roll, axis=2)
-        
-    if outlier_diff != None and outlier_size != None:
-        if verbose:
-            print('\n** Remove Outliers')
-
-        prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
-        flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
-        
-    if verbose:
-        print('\n** Flat field correction')  
-    prj = tomopy.normalize(prj, flat, dark)
-    
-    
-    if not custom_dataprep:
-        
-        # Work in Progress
-        if False:
-            
-            z = 33
-            eng = 60
-            pxl = 0.65e-4
-            rat = 1.25e-03
-            zinger_level = 200
-            
-            prj_chunks = []
-            
-            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Retrieve Phase'):
-                prj_tmp = tomopy.prep.phase.retrieve_phase(prj_chunk, pixel_size=pxl, dist=z, energy=eng, alpha=rat, pad=True, ncore=1)
-                prj_chunks.append(prj_tmp.copy())
-                del prj_tmp
-
-            prj = np.concatenate(prj_chunks)
-        
-        
-        if bkg_norm:
-
-            prj_chunks = []
-            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Bkg Normalize'):
-                prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
-                prj_chunks.append(prj_tmp.copy())
-                del prj_tmp
-
-            prj = np.concatenate(prj_chunks)
-            
-        if verbose:
-            print('\n** Applying minus log')
-
-        prj = tomopy.minus_log(prj)
-
-        if verbose:
-            print('\n** Removing np.nan')
-            
-
-        prj = tomopy.misc.corr.remove_nan(prj, val=np.nanmin(prj[prj != -np.inf]))
-
-        if verbose:
-            print('\n** Removing +inf')
-
-        prj[np.where(prj == np.inf)] = np.nanmin(prj[prj != -np.inf])
-        
-        if verbose:
-            print('\n** Removing -inf')
-        prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
-        
-        if verbose:
-            print('\n** Making positive numbers')
-        
-        if np.min(prj) < 0:
-            prj += np.abs(np.min(prj))
-            
-        else:
-            pass
-
-        
-    else:
-        if verbose:
-            print('\n** Not applying data manipulation after tomopy.normalize')
-
-    if binning>0:
-        if verbose:
-            print('\n** Down sampling data\n')
-        prj = tomopy.downsample(prj, level=binning)
-        prj = tomopy.downsample(prj, level=binning, axis=1)
+    prj = pre_process_prj(prj=prj, flat=flat, dark=dark, flat_roll=flat_roll,
+                      outlier_diff=outlier_diff, outlier_size=outlier_size,
+                      air=air, custom_dataprep=custom_dataprep, binning=binning,
+                      bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose)
         
     if save:
 
@@ -167,6 +200,7 @@ def extract(datadir, fname, basedir, extraction_func=dxchange.read_aps_32id, bin
             print('   done in %0.3f min' % ((time.time() - start_time)/60))
             
     else:
+        print('   done in %0.3f min' % ((time.time() - start_time)/60))
         return np.asarray(prj), np.asarray(theta)
 
     
@@ -278,7 +312,6 @@ def obtain_phantoms(files):
         
         
     
-
 def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
     start_time = time.time()
     
