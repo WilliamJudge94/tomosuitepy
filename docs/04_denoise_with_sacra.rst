@@ -142,10 +142,10 @@ This function allows the User to apply the trained TomoGAN network on unseen pro
                                     verbose=False,
                                     types='noise', )
 
-    save_predict_tomogan(basedir_noise,
+    save_predict_tomogan(basedir=None,
                             good_data=clean_data,
                             bad_data=dirty_data,
-                            second_basedir=None,
+                            second_basedir=basedir_noise, # This tells tomosuite to save the data as denoise_exp instead of denoise_fake
                             types='noise')
 
 View Denoised Data
