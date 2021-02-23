@@ -105,7 +105,7 @@ Allows the User to train TomoGAN on these newly created noisy and clean image pa
                     itg=1,
                     itd=2,
                     mb_size=2, # Batch size
-                    img_size=896, # Size of images to randomly crop to
+                    img_size=512, # Size of images to randomly crop to
                     types='noise')
     
     

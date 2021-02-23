@@ -86,8 +86,11 @@ In order to determine which data can be used for training (due to sample deforma
     
 .. code:: python
 
-    from tomosuite.low_dose.data_prep import setup_tomogan_exp_noise
-    setup_tomogan_exp_noise(basedir_clean, split_amount_exp, ssim_threshold=None, split_amount_ml=2):
+    from tomosuite.methods.denoise_type2.denoise_t2_dataprep import setup_experimental_noise_train
+    setup_experimental_noise_train(basedir_clean, 
+                            split_amount_exp,
+                            ssim_threshold=None,
+                            interval=2)
     
     
 Training TomoGAN
@@ -96,14 +99,15 @@ This function allows the User to train the TomoGAN denoising network. Training p
 
 .. code:: python
 
-    from tomosuite.low_dose.tomogan import train_tomogan, tensorboard_command_tomogan
+
+    from tomosuite.easy_networks.tomogan.train import train_tomogan, tensorboard_command_tomogan
     
     tensorboard_command_tomogan(basedir_clean)
     train_tomogan(basedir=basedir_clean, epochs=120001, gpus='0',
                     lmse=0.5, lperc=2.0, 
                     ladv=20, lunet=3, depth=1,
                     itg=1, itd=2, mb_size=2,
-                    img_size=896)
+                    img_size=512)
 
     
 Predicting TomoGAN
@@ -116,19 +120,33 @@ This function allows the User to apply the trained TomoGAN network on unseen pro
     
 .. code:: python
 
-    denoised_epoch = '22000'
 
-    from tomosuite.low_dose.tomogan import predict_tomogan
-    output = predict_tomogan(basedir=basedir_clean, 
-                                        weights_iter=denoise_epoch,
-                                        second_basedir=basedir_noise,
-                                        chunk_size=5,
-                                        noise=None,
-                                        gpu='0',
-                                        lunet=3,
-                                        in_depth=1,
-                                        data_type=np.float32,
-                                        verbose=False)
+    from tomosuite.easy_networks.tomogan.predict import predict_tomogan, save_predict_tomogan
+    from tomosuite.base.common import load_extracted_prj
+
+    basedir_noise = '/local/data/project_01/' 
+    basedir_clean = '/local/data/project_02/'
+
+    # Loading in the Projection Data
+    data = load_extracted_prj(basedir_noise)
+
+
+    clean_data, dirty_data = predict_tomogan(basedir_clean,
+                                    data,
+                                    weights_iter='18200', # The epoch number to load weights of
+                                    chunk_size=5, # Chunk the data so it doesnt overload GPU VRAM
+                                    gpu='1', # Select which gpu to use
+                                    lunet=3,
+                                    in_depth=1,
+                                    data_type=np.float32,
+                                    verbose=False,
+                                    types='noise', )
+
+    save_predict_tomogan(basedir_noise,
+                            good_data=clean_data,
+                            bad_data=dirty_data,
+                            second_basedir=None,
+                            types='noise')
 
 View Denoised Data
 ==================
