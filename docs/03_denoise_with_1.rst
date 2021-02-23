@@ -116,13 +116,14 @@ Once an appropriate epoch has been chosen through Tensorboard one can use this e
 .. code:: python
 
     from tomosuite.easy_networks.tomogan.predict import predict_tomogan, save_predict_tomogan
+    from tomosuite.base.common import load_extracted_prj
 
     # Loading in the Projection Data
-    data = denoise_t1_dataprep.setup_fake_noise_predict(basedir)
+    data = load_extracted_prj(basedir)
 
     clean_data, dirty_data = predict_tomogan(basedir,
                                     data,
-                                    weights_iter='01000' # The epoch number to load weights of
+                                    weights_iter='01000', # The epoch number to load weights of
                                     chunk_size=5, # Chunk the data so it doesnt overload GPU VRAM
                                     gpu='0', # Select which gpu to use
                                     lunet=3,
