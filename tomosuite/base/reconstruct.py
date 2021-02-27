@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
 from ..base.common import loading_tiff_prj
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable 
 
 
 def colorbar(mappable, font_size=12):
