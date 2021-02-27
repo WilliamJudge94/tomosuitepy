@@ -150,7 +150,7 @@ In this seciton the User will learn how to define their own reconstruction funct
         return recon, user_extra
         
         
-    from tomosuite.base.reconstruct import reconstruct_data_deepfillv2, plot_reconstruction
+    from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
     
     
     slcs, user_extra = reconstruct_data(basedir,
