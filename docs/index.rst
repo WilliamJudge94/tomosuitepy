@@ -22,6 +22,7 @@ Python library for applying Machine Learning to **Tomography** data.
    02_starting_project
    03_denoise_with_1
    04_denoise_with_sacra
+   20_TomoGAN-general
    00_reconstructions
 
 
