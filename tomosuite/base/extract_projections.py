@@ -346,15 +346,30 @@ def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, 
     if verbose:
         print('\n** Applying minus log')
     prj = tomopy.minus_log(prj)
+    
+    if verbose:
+        print('\n** Removing np.nan')
+
+    # Set nan values to the lowest value
+    prj = tomopy.misc.corr.remove_nan(prj, val=np.nanmin(prj[prj != -np.inf]))
 
     if verbose:
-        print('\n** Removing negative and np.nan')
-    prj = tomopy.misc.corr.remove_neg(prj, val=0.001)
-    prj = tomopy.misc.corr.remove_nan(prj, val=0.001)
+        print('\n** Removing +inf')
+
+    # Set infinity values to the lowest value
+    prj[np.where(prj == np.inf)] = np.nanmin(prj[prj != -np.inf])
 
     if verbose:
-        print('\n** Removing inf')
-    prj[np.where(prj == np.inf)] = 0.001
+        print('\n** Removing -inf')
+    prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
+
+    if verbose:
+        print('\n** Making positive numbers')
+
+    # Force the projections to be >= 0
+    if np.min(prj) < 0:
+        prj += np.abs(np.min(prj))
+
 
     if binning>0:
         if verbose:

@@ -69,6 +69,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     # Remove the harsh edge transition
     if edge_transition is not None:
         prj = prj[:, :, edge_transition:-edge_transition]
+        rot_center = rot_center - edge_transition
+        print(f"Applying Sinogram Edge Crop. New Rotation Center is - {rot_center}")
     
     # Pad projections based on the power of 2 shape
     if power2pad:
