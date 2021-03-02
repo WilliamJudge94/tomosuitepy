@@ -266,4 +266,7 @@ def determine_deepfillv2_mask_height(downscaled_base_training_images, base_train
     downscaled_base_shape = downscaled_base_training_images.shape[1]
     base_shape = base_training_images.shape[1]
     fraction = (2*number2zero)/base_shape
-    return int(np.ceil(downscaled_base_shape * fraction))
+    output = int(np.ceil(downscaled_base_shape * fraction))
+    if output % 2 == 1:
+        output += 1
+    return output

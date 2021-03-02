@@ -30,6 +30,22 @@ def multigpu_graph_def(model, FLAGS, data, gpu_id=0, loss_type='g'):
         return losses['d_loss']
     else:
         raise ValueError('loss type is not supported.')
+        
+        
+def tensorboard_command_deepfillv2(basedir):
+    """Return the command line command used to launch a tensorboard instance for tracking Noise2Noise's progress
+    
+    Parameters
+    ----------
+    basedir : str
+        the path to the project
+        
+    Returns
+    -------
+    The command used to launch tensorboard instance for TomoGAN
+    """
+    command = f"tensorboard --logdir='{basedir}deepfillv2/logs/' --samples_per_plugin=images=300"
+    print(command)
 
 
 def train_deepfillv2(basedir, gpu='0'):
