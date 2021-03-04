@@ -141,9 +141,3 @@ def create_mask(img_shapes, height):
     new_out2 = np.dstack((new_out, new_out, new_out))
     
     return new_out2
-
-def convert2gray(images):
-    greyscale = []
-    for im in tqdm(images, desc='Converting to Grayscale'):
-        greyscale.append(rgb2gray(im))
-    return np.asarray(greyscale, dtype=np.float32)

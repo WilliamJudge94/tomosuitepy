@@ -223,7 +223,7 @@ def prepare_dain(basedir, start_row, end_row):
     
     prj_data = []
     
-    for file in tqdm(new_files):
+    for file in tqdm(new_files, desc='Loading Data'):
         original = cv2.imread(file)
         grayscale = rgb2gray(original)
         prj_data.append(grayscale)

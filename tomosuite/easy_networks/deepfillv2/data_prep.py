@@ -1,6 +1,9 @@
+import os
+import shutil
 import numpy as np
 from tqdm import tqdm
 import tifffile as tif
+from skimage.color import rgb2gray
 from skimage.transform import resize
 from ...base.common import load_extracted_prj, load_extracted_theta
 
@@ -356,3 +359,51 @@ def format_and_save_data4deepfillv2(basedir, number2zero, types='base', downscal
         raise Warning(f"edge_or_central value must equal 'central' or 'edge'")
         
     return downscaled_base_training_images, base_training_images, number2zero, max_intensity_values
+
+
+def convert2gray(images):
+    greyscale = []
+    for im in tqdm(images, desc='Converting to Grayscale'):
+        greyscale.append(rgb2gray(im))
+    return np.asarray(greyscale, dtype=np.float32)
+
+
+def convert2gray_rescale_save(predicted_images, basedir, number2zero, checkpoint_num,
+                              downscale_shape=(512, 512), edge_or_central='central',
+                              shrink_sinogram_width=False, val_ud_flip=True):
+    
+    
+    types = 'base'
+    prj_data, theta = obtain_prj_data_deepfillv2(basedir, types)
+
+    if shrink_sinogram_width is not False:
+        prj_data = decrease_sinogram_width(prj_data, shrink_sinogram_width)
+
+    prj_data_wedge = zero_prj4missing_wedge(prj_data, number2zero)
+    prj_sinograms = obtain_prj_sinograms(prj_data_wedge)
+    max_intensity_values = obtain_max_intensity_values4sino(prj_sinograms)
+    prj_sinograms = normalize_sinograms(prj_sinograms)
+
+    number_of_training_images = determine_how_many_sinogram_training_images(prj_sinograms, number2zero)
+    base_images = obtain_base_images(prj_sinograms, number2zero)
+
+    base_training_images = obtain_base_training_images(prj_sinograms, number2zero, number_of_training_images)
+    
+    upscaler_shape = (base_training_images.shape[1], base_training_images.shape[2])
+    
+    gray_convert_predict = convert2gray(predicted_images)
+    gray_upscaled_images = upscale_images(gray_convert_predict, upscaler_shape)
+    
+    inverted_images = invert_central_prediction_images(base_images, gray_upscaled_images*255.0, number2zero)
+    
+    
+    save_dir = f'{basedir}deepfillv2/predictions/{checkpoint_num}/'
+    save_location = f'{save_dir}ml_inpaint_data.npy'
+    
+    if os.path.isdir(save_dir): 
+        shutil.rmtree(save_dir)
+    os.mkdir(save_dir)
+    
+    np.save(save_location, inverted_images)
+    
+    print(f"Predictions Saved To: {save_location}")

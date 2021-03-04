@@ -29,86 +29,131 @@ Importing TomoSuite
     sys.path.append('/path/to/tomosuite/github/clone/tomosuite/')
     import tomosuite
     
+    basedir = '/local/data/project_wedge01/'
+    
+    # Start project and extract files
+    
 
 Setting up Data
 ---------------
+This allows a User to determine how their deepfillv2 machine learning will occur. If the User picks edge_or_central='edge',
+then missing wedge rows in the sinogram will be kept at the beginning and end of the sinogram. If the User picks
+edge_or_central='central', then half the sinogram is flipped and invertes to make a continuous image. 'central'
+creates better predictions.
 
 .. code:: python
 
-    from tomosuite.inpainting.data_prep import fake_missing_wedge, add_prj4missing_wedge
-
-    # Number of projections missing from EACH SIDE OF THE TOMOGRAM
-    num_of_proj_missing = 167
-
-    # The data provided from the low_dose module - either 'noise' or 'denoise'
-    data2use = 'noise_exp'
-
-    # Reshape the images - works best on anything 768 or smaller
-    new_shape_single = (768, 768)
-    new_shape_triple = [768, 768, 3]
-
-    # Apply fake missing wedge to see if the ML code works - Compare to Ground Truth
-    number2zero_val = fake_missing_wedge(basedir,
-                                            num_of_proj_missing,
-                                            data2use)
+    from tomosuite.easy_networks.deepfillv2.train import train_deepfillv2, tensorboard_command_deepfillv2
+    from tomosuite.easy_networks.deepfillv2.data_prep import format_and_save_data4deepfillv2, 
+    from tomosuite.easy_networks.deepfillv2.deepfillv2_prep import setup_inpainting, make_file_list4deepfillv2, determine_deepfillv2_mask_height
     
-    # Add in missing (blank) projections to experimental missing-wedge data
-    number2zero =  add_prj4missing_wedge(basedir, types=data2use)
     
-Creating the Training and Test Datasets
----------------------------------------
-.. code:: python
+    # how many projections in the beginning and end of the scan are blank
+    number2zero=44
+    
+    # This will take out X number of columns from the sinogram to keep image proportions square
+    shrink_sinogram_width=False
 
-    from tomosuite.inpainting.data_prep import create_testing_data, create_training_data
+    output = format_and_save_data4deepfillv2(basedir,
+                                            number2zero=number2zero,
+                                            types='base',
+                                            downscale_shape=(512, 512),
+                                            edge_or_central='central', # Where do you want to place the missing wedges
+                                            shrink_sinogram_width=shrink_sinogram_width,
+                                            lr_flip=True, # Flip training images left and right
+                                            ud_flip=True, # Flip training images up and down
+                                            val_ud_flip=True) # Flip validation images up and down
     
-    output_testing = create_testing_data(basedir,
-                                            data2use,
-                                            number2zero,
-                                            reshape=True,
-                                            new_shape=new_shape_single)
-                                            
-    output_training = create_training_data(basedir,
-                                            data2use,
-                                            number2zero,
-                                            reshape=True,
-                                            new_shape=new_shape_single)
+    # Giving outputs variable names
+    downscaled_base_training_images, base_training_images, number2zero, max_intensity_values = output
     
+    # Obtain images list for deepfillv2 to use
+    make_file_list4deepfillv2(basedir)
+    
+    # Determine the rescaled number of missing wedge pixles
+    height = determine_deepfillv2_mask_height(downscaled_base_training_images,
+                                        base_training_images,
+                                        number2zero=number2zero)
+                                        
 
-Prepare DeepFillV2 to Accept Your Data
---------------------------------------
+Set Up Inpainting
+-----------------
+This function allows the User to set up training parameters however they would like. To the batch size,
+to the memory per job, to the static view size viewable through tensorboard. There are more parameters to 
+tweek than what is listed blow, but these are the main ones Users should worry about. 
 
 .. code:: python
+    
+    # Project path
+    basedir = basedir
+    
+    # trippled shape of the images set bu format_and_save_data4deepfillv2()
+    img_shapes = [512, 512, 3]
+    
+    # The value given by determine_deepfillv2_mask_height()
+    height = height
+    
+    # If the User would like to randomly change the height of the missing wedge box (not advised)
+    max_delta_height = 0
+    
+    # Amount of static images in tensorboard (lower if GPU runs out of memory)
+    static_view_size = 5
+    
+    # Training batch size (lower if GPU runs out of memory)
+    batch_size = 1
+    
+    # Number of epochs
+    max_iters = 120000
+    
+    # Location of model to restore from
+    model_restore = ''
+    
+    # How many GPU's to use during training
+    num_gpus_per_job = 1
+    
+    # How many CPU's to use during training
+    num_cpus_per_job = 4
+    
+    # How much memory to use during training
+    memory_per_job = 11
+    
+    # Identifies what mask type to use. Should be same as edge_or_central
+    mask_type = 'central'
+    
+    # If mask_type='edge' this allows the User to place the mask always in the upper location ("u"),
+    #always in the down location ("d") or randomize it ("r")
+    
+    # If mask_type='central' this allows the user to randomize the central location ("r")
+    #or always keep it in the center ("u" or "d")
+    udr = 'r'
 
-    from tomosuite.inpainting.data_prep import make_file_list, determine_train_height
-    from tomosuite.inpainting.deepfillv2 import setup_inpainting
-    import numpy as np
 
-    make_file_list(basedir)
+    setup_inpainting(basedir=basedir,
+                    img_shapes=img_shapes,
+                    height=height,
+                    max_delta_height=max_delta_height, 
+                    static_view_size=static_view_size,
+                    batch_size=batch_size,
+                    max_iters=max_iters,
+                    model_restore=model_restore,
+                    num_gpus_per_job=num_gpus_per_job,
+                    num_cpus_per_job=num_cpus_per_job,
+                    num_hosts_per_job=num_hosts_per_job,
+                    memory_per_job=memory_per_job,
+                    mask_type=mask_type, udr=udr)
+                  
 
-    fraction_correction = np.load(f'{basedir}inpainting/output_scaler.npy')
-
-    corrected_missing_prj_amount = int(determine_train_height(new_shape_triple,
-                                                                fraction_correction,
-                                                                num_of_proj_missing))
-
-    setup_inpainting(basedir, img_shapes=new_shape_triple,
-                     height=corrected_missing_prj_amount,
-                     static_view_size=10, batch_size=2)
-
-Train Your Network
-------------------
+    
+Train Inpainting
+-----------------   
 
 .. code:: python
-
-    from tomosuite.inpainting.deepfillv2 import train_deepfillv2
-    train_deepfillv2(basedir)
     
-
-To View Training Process Use Tensorboard
+    tensorboard_command_deepfillv2(basedir)
     
-.. code:: bash
-
-    tensorboard --logdir=f'{basedir}inpainting/logs/'
+    train_deepfillv2(basedir, gpu='0,1,2,3,4,5,6,7')
+    
+    
     
     
 Use Network For Predictions
@@ -116,20 +161,24 @@ Use Network For Predictions
 
 .. code:: python
 
-    from tomosuite.inpainting.predictions import predict_deepfillv2
-    load_epoch = '40000'
+    from tomosuite.easy_networks.deepfillv2.predict import predict_deepfillv2
+    from tomosuite.easy_networks.deepfillv2.data_prep import  convert2gray_rescale_save
     
-    output = predict_deepfillv2(basedir,
-                                load_epoch,
-                                new_shape_single[0],
-                                new_shape_single[1],
-                                save=True)
+    pred_images = predict_deepfillv2(basedir=basedir,
+                                        checkpoint_num='120000', # epoch number of DeepfillV2 training
+                                        image_height=512, # rescaled height
+                                        image_width=512, # rescaled width
+                                        gpu='0' # gpu ID)
     
-    
-    from tomosuite.inpainting.data_prep import retrieve_inpainting
-    outs = retrieve_deepfillv2(basedir,
-                                load_epoch,
-                                corrected_missing_prj_amount)
+    convert2gray_rescale_save(predicted_images=pred_images, # output of predict_deepfillv2
+                                basedir=basedir,
+                                number2zero=number2zero, # number of images associated with the missing wedge
+                                checkpoint_num=checkpoint_num, # epoch number of DeepfillV2
+                                downscale_shape=(512, 512), # rescaled image dimensions
+                                edge_or_central='central',
+                                shrink_sinogram_width=False,
+                                val_ud_flip=True, # let the program know if you flipped the validation images)
+
 
 View Inpainted Sinogram Data
 ----------------------------
