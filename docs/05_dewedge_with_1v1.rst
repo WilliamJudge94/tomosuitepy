@@ -210,21 +210,72 @@ Importing TomoSuite
     import sys
     sys.path.append('/path/to/tomosuite/github/clone/tomosuite/')
     import tomosuite
+    import tomopy
     
     
-Setting Up The Data - From Inpainting
--------------------------------------
+Saving Multiple Recons
+----------------------
+
+.. code:: python
+
+
+    # Import TomoSuite helper functions
+    from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
+
+    # Define your own tomography reconstruction function. This is the TomoSuite's default
+    def tomo_recon(prj, theta, rot_center, user_extra=None):
+        recon = tomopy.recon(prj, theta,
+                            center=rot_center,
+                            algorithm='gridrec',
+                            ncore=30)
+        recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
+        return recon, user_extra
+
+    # Reconstruct the deepfillv2 projection data
+    basedir = '/local/data/project_01/' 
+
+    slcs, user_extra = reconstruct_data(basedir, rot_center=181, 
+                               reconstruct_func=tomo_recon, network='deepfillv2',
+                               checkpoint_num='120000', power2pad=True)
+
+
+    np.save(f'{basedir}deepfillv2/predictions/120000_recon.npy', slcs)
+    
+    
+    
+    
+    slcs, user_extra = reconstruct_data(basedir, rot_center=181, 
+                               reconstruct_func=tomo_recon, network='deepfillv2',
+                               checkpoint_num='90000', power2pad=True)
+
+
+    np.save(f'{basedir}deepfillv2/predictions/90000_recon.npy', slcs)
+    
+    
+    
+Setting Up The Data For Noise2Noise - From Inpainting
+-----------------------------------------------------
 
 Make sure you are using the inpainting conda env
 
 .. code:: python
 
-    from tomosuite.artifact.data_prep import setup_noise2noise_tomosuite_missingwedge
+    from tomosuite.easy_networks.noise2noise.data_prep import format_data_noise2noise, setup_data_noise2noise
+    import numpy as np
     
-    setup_noise2noise_tomosuite_missingwedge(basedir, 
-                                         ml_iterations=['42000', '52000'], 
-                                         rot_center=256, img_shape=[512, 512, 3], 
-                                         number2zero_shape_updated=145, add_flips=True, im_type='tif')
+    dataset1 = np.load(f'{basedir}deepfillv2/predictions/120000_recon.npy')
+    dataset2 = np.load(f'{basedir}deepfillv2/predictions/90000_recon.npy')
+    
+    # You can add more than 2 datasets/recons - format the data to be stored
+    dataset = format_data_noise2noise([dataset1, dataset2])
+    
+    # save the data in the correct location
+    setup_data_noise2noise(basedir, 
+                            val_name='120000', # name of the dataset used as validation data in tensorboard
+                            val_crop=10, # every 10th images is used for validation
+                            datasets=dataset,
+                            names=['120000', '90000'], # the names of the dataests in the same order as placed in the format_data_noise2noise() function
+                            )
                                          
                                          
 Train Noise2Noise - For Inpainting Artifact
@@ -232,58 +283,31 @@ Train Noise2Noise - For Inpainting Artifact
 
 .. code:: python
 
-    from tomosuite.artifact.noise2noise import train_n2n
-
-    basedir = '/local/data/wjudge/TomoSuite/will/inpaint036_dual/'
-    image_dir = f'{basedir}artifact/52000_recon/'
-    test_dir = f'{basedir}artifact/52000_recon/'
-    output_path = f'{basedir}artifact/output_model/'
-
-    # Use mae or l0 - make sure you are using consistent images for input and output - 
-    #chose the lowest validation PSNR - steps=150 - image_size=64
+    from tomosuite.easy_networks.noise2noise.train import train_noise2noise, tensorboard_command_noise2noise
     
-    # Make sure you are training on .png images, use a single image pair, train for a bit,
-    #take the worst PSNR value, apply this network to the rest of the images
-
-    source_noise_model = 'clean'
-    target_noise_model = 'clean'
-    val_noise_model = 'clean'
-    loss_type='l0'
-
-
-    image_size = 64
-    batch_size = 1
-    lr = 0.001
-    steps=150 #150
-
-
-    basedir = '/local/data/wjudge/TomoSuite/will/inpaint036_dual/'
-    num_of_slcs = 1024
-    main_train_dir = ['42000',]
-    corresponding_train_dir = ['52000', ]
-
-    concat_train = False
-    crop_im_val = 60
-    single_image_train = 100
-
-    im_type = 'tif'
+    tensorboard_command_noise2noise(basedir)
+    
+    train_noise2noise(basedir,
+                        main_train_dir=['120000',], # The name of the main dataset
+                        corresponding_train_dir=['90000', ], # all other corresponding recon datasets to use for image pair training
+                        concat_train=False, # if True this will concatonate main_train_dir and corresponding_train_dir
+                        crop_im_val=None, # crop the image left and right by this many pixles
+                        single_image_train=None, # only train on a single image. use index number of image (sometimes gets better results)
+                        single_image_val=None, 
+                        im_type='tif',
+                        image_size=64, # image random crop size
+                        batch_size=16,
+                        nb_epochs=60,
+                        lr=0.01,
+                        steps=100, # number of steps per epoch. Lower usually does better
+                        loss_type='mae', # either 'mae' or 'l0'
+                        weight=None,
+                        model='srresnet',
+                        save_best_only=True,
+                        gpu='0', # id for which GPU to use
+                        )
 
 
-    train_n2n(image_dir,
-              test_dir, 
-              image_size=image_size, 
-              batch_size=batch_size, 
-              lr=lr, 
-              output_path=output_path, 
-              val_noise_model=val_noise_model,
-              target_noise_model=target_noise_model, 
-              source_noise_model=source_noise_model, 
-              loss_type=loss_type, 
-              save_best_only=False, 
-              steps=steps, basedir=basedir, num_of_slcs=num_of_slcs, 
-              main_train_dir=main_train_dir, corresponding_train_dir=corresponding_train_dir,
-              concat_train=concat_train, crop_im_val=crop_im_val,
-              single_image_train=single_image_train, im_type=im_type)
               
               
 Predict Noise2Noise - For Inpainting Artifact
@@ -291,12 +315,22 @@ Predict Noise2Noise - For Inpainting Artifact
 
 .. code:: python             
               
-    from tomosuite.artifact.predictions import predict_n2n
+    from tomosuite.artifact.predictions import predict_noise2noise, save_predict_noise2noise
+    
+    
+    main_train = '120000'
+    test_dir = f'{basedir}noise2noise/{main_train}_recon/'
+    weights = f'{basedir}noise2noise/output_model/weights.001-43.829-31.71315.hdf5'
 
-    test_dir = f'{basedir}artifact/52000_recon/'
-    weights = '/local/data/wjudge/TomoSuite/will/inpaint036_dual/artifact/output_model/weights.001-43.829-31.71315.hdf5'
-
-    predict_n2n(test_dir, weights,
-                    output_dir=f'{basedir}artifact/output_validation',
-                    test_noise_model='clean',
-                    amount2skip=100, im_type='tif')
+    denoised_images, image_paths, out_images = predict_noise2noise(image_dir=test_dir, 
+                                                                weight_file=weights,
+                                                                amount2skip=100,
+                                                                im_type='tif',
+                                                                crop_im_val=None)
+                                                                
+                                                                
+    save_predict_noise2noise(basedir,
+                            denoised_images,
+                            image_paths,
+                            output_dir=None # set output path otherwise it will default to f'{basedir}noise2noise/output_validation'
+                            )

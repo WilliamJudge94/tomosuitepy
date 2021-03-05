@@ -50,6 +50,7 @@ def setup_data_noise2noise(basedir, val_name, val_crop=10, datasets=[], names=[]
     for dataset, name in tqdm(zip(datasets, names), total=len(names), desc='Saving Datasets'):
         
         output_path = f'{basedir}noise2noise/{name}_recon/'
+        
         easy_save_noise2noise(output_path, dataset, im_type)
         
         if name == val_name:

@@ -95,6 +95,40 @@ The main concept is similar to that of the basic reconstruction. The main differ
     # Plot the reconstruction
     plot_reconstruction(slcs[0:10])
 
+
+
+DeWedge - DeepFillV2 Type 1
+============================
+Once the User predicts the missing wedge data based upon sinogram inpainting, the User can then use TomoSuite to reconstruct the sinograms for them. To do this please follow the below reconstruction scripts.
+
+.. code:: python
+
+    import sys
+    sys.path.append('/path/to/tomosuite/github/clone/tomosuite/')
+    import tomosuite
+    import tomopy
+
+    # Import TomoSuite helper functions
+    from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
+
+    # Define your own tomography reconstruction function. This is the TomoSuite's default
+    def tomo_recon(prj, theta, rot_center, user_extra=None):
+        recon = tomopy.recon(prj, theta,
+                            center=rot_center,
+                            algorithm='gridrec',
+                            ncore=30)
+        recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
+        return recon, user_extra
+
+    # Reconstruct the deepfillv2 projection data
+    basedir = '/local/data/project_01/' 
+
+    slcs, user_extra = reconstruct_data(basedir, rot_center=181, 
+                               reconstruct_func=tomo_recon, network='deepfillv2',
+                               checkpoint_num='120000', power2pad=True)
+
+    # Plot the reconstruction
+    plot_reconstruction(slcs[0:10])
     
 
 

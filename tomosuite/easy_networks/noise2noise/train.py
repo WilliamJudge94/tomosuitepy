@@ -92,10 +92,11 @@ def train_noise2noise(basedir,
               loss_type="mae",
               weight=None,
               model="srresnet",
-              save_best_only=True):
+              save_best_only=True,
+              gpu='0'):
     
     
-    
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu
     image_dir = f'{basedir}noise2noise/{main_train_dir[0]}_recon/'
     test_dir = f'{basedir}noise2noise/{main_train_dir[0]}_val_recon/'
     output_path = f'{basedir}noise2noise/output_model/'
