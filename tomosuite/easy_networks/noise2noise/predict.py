@@ -22,7 +22,10 @@ def predict_noise2noise(image_dir,
                 model="srresnet",
                 amount2skip=1,
                 im_type='tif',
-                crop_im_val=None):
+                crop_im_val=None,
+                gpu='0'):
+    
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu
     
     test_noise_model = "clean"
     val_noise_model = get_noise_model(test_noise_model)

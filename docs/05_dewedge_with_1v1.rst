@@ -315,7 +315,7 @@ Predict Noise2Noise - For Inpainting Artifact
 
 .. code:: python             
               
-    from tomosuite.artifact.predictions import predict_noise2noise, save_predict_noise2noise
+    from tomosuite.easy_networks.noise2noise.predict import predict_noise2noise, save_predict_noise2noise
     
     
     main_train = '120000'
@@ -326,7 +326,8 @@ Predict Noise2Noise - For Inpainting Artifact
                                                                 weight_file=weights,
                                                                 amount2skip=100,
                                                                 im_type='tif',
-                                                                crop_im_val=None)
+                                                                crop_im_val=None, 
+                                                                gpu='0')
                                                                 
                                                                 
     save_predict_noise2noise(basedir,

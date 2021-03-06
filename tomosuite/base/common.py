@@ -21,7 +21,7 @@ def loading_tiff_prj(folder):
     files = [f'{folder}{fil}' for fil in files]
     
     for file in files:
-        if '.tiff' in file:
+        if '.tiff' in file or '.tif' in file:
             data.append(tif.imread(file))
         
     return np.asarray(data)

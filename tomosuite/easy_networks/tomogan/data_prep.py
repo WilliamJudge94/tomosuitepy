@@ -69,6 +69,11 @@ def setup_data_tomogan(basedir, xtrain, ytrain, xtest, ytest, types='noise'):
     types : str
         the type of data being passed to TomoGAN. Example 'noise' or 'artifact'
     """
+    
+    data_shape = xtrain.shape
+    
+    if data_shape[1] < 384 or data_shape[2] < 384:
+        raise ValueError(f'Image dimensions must be greater than 384 x 384. Current shape for xtrain is: {data_shape}. Please correct all train and test data'.)
 
     location = f'{basedir}tomogan/'
     ident = f'tomogan_{types}_AI'

@@ -37,7 +37,7 @@ Preparing Data
 .. code:: python
 
 
-    from tomosuite.easy_networks.tomogan.data_prep import format_data_tomogan, save_data_tomogan
+    from tomosuite.easy_networks.tomogan.data_prep import format_data_tomogan, setup_data_tomogan
     
     # Insert shuffling of data
     
@@ -57,12 +57,13 @@ Training progress can be viewed in Tensorboard by running this in the terminal
 
 .. code:: python
 
-    from tomosuite.easy_networks.tomogan.train tensorboard_command_tomogan
+    from tomosuite.easy_networks.tomogan.train import tensorboard_command_tomogan
     tensorboard_command_tomogan(basedir_train)
 
 .. code:: python
 
-    from tomosuite.easy_networks.tomogan.train import train_tomogan,
+    from tomosuite.easy_networks.tomogan.train import train_tomogan
+    
     train_tomogan(basedir=basedir_train, epochs=120001, gpus='0',
                     lmse=0.5, lperc=2.0, 
                     ladv=20, lunet=3, depth=1,
