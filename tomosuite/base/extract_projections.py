@@ -116,7 +116,7 @@ def extract(datadir, fname, basedir,
             outlier_diff=None, air=10, outlier_size=None,
             starting=0, bkg_norm=False, chunk_size4bkg=10,
             custom_dataprep=False, dtype='float32', flat_roll=None,
-            overwrite=True, verbose=True, save=True, error_value=0.0):
+            overwrite=True, verbose=True, save=True):
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
@@ -136,20 +136,32 @@ def extract(datadir, fname, basedir,
     binning : int
         an integer used to determine the downsampling rate of the data.
         
-    outlier_diff : int
-        Expected difference value between outlier value and the median value of the array.
+    outlier_diff : int or None
+        Expected difference value between outlier value and the median value of the array. If None this step is ignored.
         
-    outlier_size : int
-        Size of the median filter.
+    outlier_size : int or None
+        Size of the median filter. If None this step is ignored.
         
     air : int
-        Number of pixels at each boundary to calculate the scaling factor.
+        Number of pixels at each boundary to calculate the scaling factor. Used during the outlier removal step.
         
     starting : int
         the starting digit for the proj_ims files name.
+        
+    bkg_norm : bool
+        If True then a background normalization is applied through TomoPy.
+        
+    chunk_size4bkg : int
+        The background normalization is RAM intensive. This allows the User to chunk the normalization process.
     
     custom_dataprep : bool
-        if True this allows the User to define dataprep functions in the reconstruction script.
+        if True this allows the User to define dataprep functions in the reconstruction script. Output stops after the initial flat/dark field normalization.
+    
+    dtype : str
+        The data type to save the data as.
+        
+    flat_roll : int or None
+        Move the flat field over this many pixles before applying normalization. If None this step is skipped.
         
     overwrite : bool
         if True then the projections files will overwrite the designated folder.

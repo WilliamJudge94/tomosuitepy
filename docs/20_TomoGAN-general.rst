@@ -33,6 +33,31 @@ Preparing Data
     noisy_data = np.ones((number_of_images, x_im_dim, y_im_dim))
     
     # clean_data[100] should be the clean image for noisy_data[100]
+    
+    
+.. code:: python
+
+    # The image dimensions have to be => 384. If needed, increase your images size with the script below.
+
+    new_noisy = []
+    new_clean = []
+    
+    padding_value = 11
+
+    for cl, no in zip(clean_data, noisy_data):
+        new_noisy.append(np.pad(no, padding_value))
+        new_clean.append(np.pad(cl, padding_value))
+        
+    new_noisy = np.asarray(new_noisy)
+    new_clean = np.asarray(new_clean)
+    
+    # Make sure data is the correct shape
+    print((new_noisy.shape, new_clean.shape))
+    
+    noisy_data = np.asarray(new_noisy)
+    clean_data = np.asarray(new_clean)
+    
+    
 
 .. code:: python
 
@@ -41,11 +66,12 @@ Preparing Data
     
     # Insert shuffling of data
     
-    # Saves every 5th image for test data
+    # Saves every 5th image for training data
     xtrain, ytrain, xtest, ytest = format_data_tomogan(clean_data,
                                                         noisy_data,
                                                         interval=5,
                                                         dtype=np.float32)
+
                                                         
     setup_data_tomogan(basedir_train, xtrain, ytrain, xtest, ytest, types='noise')
     
@@ -78,6 +104,27 @@ Create a numpy array filled with grey-scale images that the User would like to a
 The shape should be (number_of_images, x_dimension, y_dimension)
 
 
+Remember that the image dimensions have to be greater than 384 x 384. If needed, please use the script below to update the shape of your images.
+
+.. code:: python
+
+    # The image dimensions have to be => 384. If needed, increase your images size with the script below.
+
+    new_pred_data = []
+    
+    padding_value = 11
+
+    for pr in pred_data:
+        new_pred_data.append(np.pad(pr, padding_value))
+        
+    new_pred_data = np.asarray(new_pred_data)
+    
+    # Make sure data is the correct shape
+    print((new_pred_data.shape))
+    
+    pred_data = np.asarray(new_pred_data)
+
+
 Predicting TomoGAN
 ==================
 Once an appropriate epoch has been chosen through Tensorboard one can use this epoch to predict the denoised projections.
@@ -89,10 +136,10 @@ Once an appropriate epoch has been chosen through Tensorboard one can use this e
 
     # Loading in the Projection Data - substitute numpy command with your own data
     number_of_images, x_dim, y_dim = 1024, 1224, 1224
-    data = np.ones((number_of_images, x_dim, y_dim))
+    pred_data = np.ones((number_of_images, x_dim, y_dim))
 
     clean_pred_data, dirty_data = predict_tomogan(basedir_train,
-                                    data,
+                                    pred_data,
                                     weights_iter='01000', # The epoch number to load weights of
                                     chunk_size=5, # Chunk the data so it doesnt overload GPU VRAM
                                     gpu='0', # Select which gpu to use
@@ -110,7 +157,8 @@ Once an appropriate epoch has been chosen through Tensorboard one can use this e
                             
 .. note::
 
-    The predictions (clean_pred_data) are saved to: f'{basedir_predict}tomogan/denoise_exp_data.npy' 
+    The predictions (clean_pred_data) are saved to: f'{basedir_predict}tomogan/denoise_exp_data.npy' or f'{basedir_predict}tomogan/deartifact_exp_data.npy'.
+    This depends on what value the user sets 'types' to. Options are types='noise' or types='artifact'
 
 
 View Denoised Data
