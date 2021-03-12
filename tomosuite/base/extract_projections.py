@@ -8,7 +8,7 @@ import tifffile as tif
 
 
 def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
-                custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose):
+                custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose, force_positive, removal_val):
     """Preprocesses the projections data to be saves as .tif images
     
     Parameters
@@ -72,33 +72,43 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             print('\n** Applying minus log')
 
         prj = tomopy.minus_log(prj)
-
+        
+        # Old version of correcting projections
+        if False:
+            # Set nan values to the lowest value
+            prj = tomopy.misc.corr.remove_nan(prj, val=np.nanmin(prj[prj != -np.inf]))
+            # Set + infinity values to the highest value
+            prj[np.where(prj == np.inf)] = np.nanmax(prj[prj != np.inf])
+            # Set - infinity values to the lowest value
+            prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
+        
+        if verbose:
+            print('\n** Removing neg')
+            
+        prj = tomopy.misc.corr.remove_neg(prj, val=removal_val)
+        
         if verbose:
             print('\n** Removing np.nan')
-            
-        # Set nan values to the lowest value
-        prj = tomopy.misc.corr.remove_nan(prj, val=np.nanmin(prj[prj != -np.inf]))
+    
+        prj = tomopy.misc.corr.remove_nan(prj, val=removal_val)
 
         if verbose:
-            print('\n** Removing +inf')
+            print('\n** Removing np.inf')
+   
+        prj[np.where(prj == np.inf)] = removal_val
 
-        # Set infinity values to the lowest value
-        prj[np.where(prj == np.inf)] = np.nanmin(prj[prj != -np.inf])
         
-        if verbose:
-            print('\n** Removing -inf')
-        prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
-        
-        if verbose:
-            print('\n** Making positive numbers')
-            
-        # Force the projections to be >= 0
-        if np.min(prj) < 0:
-            prj += np.abs(np.min(prj))   
+        if force_positive:
+            if verbose:
+                print('\n** Making positive numbers')
+
+            # Force the projections to be >= 0
+            if np.min(prj) < 0:
+                prj += np.abs(np.min(prj))   
         
     else:
         if verbose:
-            print('\n** Not applying data manipulation after tomopy.normalize')
+            print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
 
     # Bin the data
     if binning>0:
@@ -114,7 +124,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 def extract(datadir, fname, basedir,
             extraction_func=dxchange.read_aps_32id, binning=1,
             outlier_diff=None, air=10, outlier_size=None,
-            starting=0, bkg_norm=False, chunk_size4bkg=10,
+            starting=0, bkg_norm=False, chunk_size4bkg=10, force_positive=True, removal_val=0.001, 
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True):
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
@@ -196,7 +206,8 @@ def extract(datadir, fname, basedir,
     prj = pre_process_prj(prj=prj, flat=flat, dark=dark, flat_roll=flat_roll,
                       outlier_diff=outlier_diff, outlier_size=outlier_size,
                       air=air, custom_dataprep=custom_dataprep, binning=binning,
-                      bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose)
+                      bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose,
+                      force_positive=force_positive, removal_val=removal_val)
         
     if save:
 
