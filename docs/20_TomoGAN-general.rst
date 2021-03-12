@@ -136,10 +136,12 @@ Once an appropriate epoch has been chosen through Tensorboard one can use this e
 
     # Loading in the Projection Data - substitute numpy command with your own data
     number_of_images, x_dim, y_dim = 1024, 1224, 1224
-    pred_data = np.ones((number_of_images, x_dim, y_dim))
+    
+    # The dirty data the User wants to predict
+    dirty_data = np.ones((number_of_images, x_dim, y_dim))
 
-    clean_pred_data, dirty_data = predict_tomogan(basedir_train,
-                                    pred_data,
+    clean_data, dirty_data = predict_tomogan(basedir_train,
+                                    dirty_data,
                                     weights_iter='01000', # The epoch number to load weights of
                                     chunk_size=5, # Chunk the data so it doesnt overload GPU VRAM
                                     gpu='0', # Select which gpu to use
@@ -150,7 +152,7 @@ Once an appropriate epoch has been chosen through Tensorboard one can use this e
                                     types='noise')
 
     save_predict_tomogan(basedir=None,
-                            good_data=clean__pred_data,
+                            good_data=clean_data,
                             bad_data=dirty_data,
                             second_basedir=basedir_predict,
                             types='noise')
