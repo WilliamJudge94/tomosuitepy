@@ -155,7 +155,7 @@ def prepare_tomogan(basedir, types, second_basedir, wedge_removal,
 def deal_with_sparse_angle(prj_data, theta,
                            sparse_angle_removal,
                            double_sparse=None):
-    
+    "Also found in ...easy_networks.dain.data_prep"
     if sparse_angle_removal != 1:
         new_prj =[]
         new_theta = []
@@ -186,11 +186,16 @@ def deal_with_sparse_angle(prj_data, theta,
     return prj_data, theta
 
 def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_row, double_sparse=None):
+    print(f'{basedir}extracted/projections/')
     
     prj_data = loading_tiff_prj(f'{basedir}extracted/projections/')
     
+    print(prj_data.shape)
+    
     theta = np.load(f'{basedir}extracted/theta/theta.npy')
 
+    print(theta.shape)
+    
     shape = prj_data.shape[0]
 
     prj_data = prj_data[wedge_removal:shape - wedge_removal, :, :]
@@ -214,19 +219,24 @@ def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_ro
 
 
 
-def prepare_dain(basedir, start_row, end_row):
-    frames_loc = f'{basedir}output_frames/'
+def prepare_dain(basedir, start_row, end_row, dain_types):
+    frames_loc = f'{basedir}dain/{dain_types[0]}/'
     
     files = os.listdir(frames_loc)
     files = sorted(files)
-    new_files = [f'{frames_loc}{x}' for x in files]
+    new_files = [f'{frames_loc}{x}' for x in files if dain_types[1] in x]
     
     prj_data = []
     
     for file in tqdm(new_files, desc='Loading Data'):
-        original = cv2.imread(file)
-        grayscale = rgb2gray(original)
-        prj_data.append(grayscale)
+        original = cv2.imread(file, -1)
+        fixed_original = rgb2gray(original)
+        if dain_types[2] == True:
+            fixed_original = np.log(fixed_original)
+        #fixed_original *= 255.0
+
+        prj_data.append(fixed_original)
+
         
     prj_data = np.asarray(prj_data, dtype=np.float32)
         
@@ -258,6 +268,7 @@ def reconstruct_data(basedir,
                      wedge_removal=0,
                      sparse_angle_removal=1,
                      types='denoise',
+                     dain_types=['output_frames', '.png'],
                      second_basedir=None,
                      checkpoint_num=None,
                      double_sparse=None,
@@ -350,7 +361,7 @@ def reconstruct_data(basedir,
         
     elif network == 'dain':
         recon_type = 'standard'
-        start, end, prj_data, theta = prepare_dain(basedir, start_row, end_row)
+        start, end, prj_data, theta = prepare_dain(basedir, start_row, end_row, dain_types=dain_types)
         
 
 

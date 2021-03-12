@@ -362,6 +362,7 @@ def format_and_save_data4deepfillv2(basedir, number2zero, types='base', downscal
 
 
 def convert2gray(images):
+    "Also found in ...easy_networks.dain.data_prep"
     greyscale = []
     for im in tqdm(images, desc='Converting to Grayscale'):
         greyscale.append(rgb2gray(im))
