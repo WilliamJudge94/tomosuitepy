@@ -2,6 +2,7 @@ import os
 import numpy as np
 import tifffile as tif
 import h5py
+from tqdm import tqdm
 
 def loading_tiff_prj(folder):
     """For a given folder return all the .tiff images in a numpy array
@@ -20,7 +21,7 @@ def loading_tiff_prj(folder):
     files = os.listdir(folder)
     files = [f'{folder}{fil}' for fil in files]
     
-    for file in files:
+    for file in tqdm(files, desc='Importing TIFF Projections'):
         if '.tiff' in file or '.tif' in file:
             data.append(tif.imread(file))
         

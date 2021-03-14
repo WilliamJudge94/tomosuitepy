@@ -3,6 +3,7 @@ from ..deepfillv2.data_prep import obtain_prj_data_deepfillv2
 from skimage.color import rgb2gray
 
 import cv2
+import time
 import os, shutil
 import numpy as np
 from tqdm import tqdm
@@ -51,7 +52,7 @@ def deal_with_sparse_angle(prj_data, theta,
     return prj_data, theta
 
 
-def create_prj_mp4(basedir, output_file=None, types='base', sparse_angle_removal=0, fps=30, torf=False, apply_exp=True):
+def create_prj_mp4(basedir, video_type='input', types='base', sparse_angle_removal=0, fps=30, torf=False, apply_exp=True):
     """Prepare a mp4 video file of the projection files for DAIN.
     
     Parameters
@@ -59,8 +60,8 @@ def create_prj_mp4(basedir, output_file=None, types='base', sparse_angle_removal
     basedir : str
         The path to the project
         
-    output_file : str
-        The location and file name for the .mp4 file to be created. Ex - '/local/data/testing.mp4'
+    video_type : str
+        The name of the .mp4 file to be created and save in {basedir}dain/video/{video_type}.mp4
         
     types : str
         Where to retrieve the data from. types='base' pulls from the extracted files. types='noise' or types='artifact'
@@ -100,15 +101,15 @@ def create_prj_mp4(basedir, output_file=None, types='base', sparse_angle_removal
     
     print(f"Projection Min: {prj_data.min()} --- Max: {prj_data.max()}")
     
-   # prj_data = prj_data.astype(np.uint8)
-    
+    # prj_data = prj_data.astype(np.uint8)
     out_data = []
  
-    
-    if output_file == None:
-        output_file = f"{basedir}dain/video/input.mp4"
+    output_file = f"{basedir}dain/video/{video_type}.mp4"
         
     print(f"Video saved to: {output_file}")
+    
+    # Wait 1 second before displaying the tqdm loading bar
+    time.sleep(1)    
     
     shapes = prj_data.shape
     size = shapes[1], shapes[2]
@@ -129,27 +130,68 @@ def create_prj_mp4(basedir, output_file=None, types='base', sparse_angle_removal
     return prj_data, np.asarray(out_data)
     
     
-def rife_predict(basedir, exp=2, scale=1.0):
+def rife_predict(basedir, exp=2, scale=1.0, video_input_type='input', video_output_type='predicted'):
+    """Use the neural network called RIFE to upscale the amount of projections.
+    
+    Parameters
+    ----------
+    basedir : str
+        Path to the project.
+        
+    exp : int
+        2 to the power of exp that the frames will be upscaled by
+        
+    scale : float
+        If your frames are too large and using too much VRAM, you can scale the images down by a scaling factor. Fraction=smaller image
+        
+    video_input_type : str
+        The name of the mp4 file to use for the upscaling found at {basedir}dain/video/{video_input_type}.mp4
+        
+    video_output_type : str
+        The name of the mp4 file to be created at {basedir}dain/video/{video_output_type}.mp4
+    """
     
     first = 'python3 inference_video.py'
     second = f'--exp={exp}'
-    third = f'--video={basedir}dain/video/input.mp4'
+    third = f'--video={basedir}dain/video/{video_input_type}.mp4'
     fourth = f'--scale={scale}'
-    fifth = f"--output={basedir}dain/video/predicted.mp4"
+    fifth = f"--output={basedir}dain/video/{video_output_type}.mp4"
     
     print(f"{first} {second} {third} {fourth} {fifth}")
     
     
-def obtain_frames(basedir, video_type='predicted'):
+def obtain_frames(basedir, video_type='predicted', return_frames=False, output_folder='frames'):
+    """Based on the designated .mp4 file found in {basedir}dain/video/ store the frames into {basedir}dain/{output_folder}
+    
+    Parameters
+    ----------
+    basedir : str
+        The project directory
+        
+    video_type: str
+        The name of the video found in {basedir}dain/video/{video_type}.mp4. It is either 'input' or 'predicted'
+        
+    return_frames : bool
+        Allows the User to output the calculated frames while applying a RGB2Greyscale converter. 
+        
+    output_folder : str
+        The name of the folder inside {basedir}dain/{output_folder} to store the projections to
+        
+    Returns
+    -------
+    Nothing unless User specifies to return the Greyscale projections.    
+    """
 
     vidcap = cv2.VideoCapture(f'{basedir}dain/video/{video_type}.mp4')
     fps = int(vidcap.get(cv2.CAP_PROP_FPS))
     frame_number = vidcap.get(cv2.CAP_PROP_FRAME_COUNT)
     
-    save_dir = f"{basedir}dain/frames/"
+    save_dir = f"{basedir}dain/{output_folder}/"
     if os.path.isdir(save_dir): 
         shutil.rmtree(save_dir)
     os.mkdir(save_dir)
+    
+    print(f"Saving frames to: {save_dir}")
     
     projections = []
 
@@ -159,7 +201,7 @@ def obtain_frames(basedir, video_type='predicted'):
         if hasFrames:
             #image = convert2gray(image)
             projections.append(image)
-            tif.imsave(f"{basedir}dain/frames/prj_{str(count).zfill(len(str(int(frame_number))))}.tif", image.astype(np.float32))
+            tif.imsave(f"{basedir}dain/{output_folder}/prj_{str(count).zfill(len(str(int(frame_number))))}.tif", image.astype(np.float32))
             #cv2.imwrite("'/local/data/wjudge/image"+str(count)+".jpg", image)     # save frame as JPG file
         return hasFrames
 
@@ -167,13 +209,14 @@ def obtain_frames(basedir, video_type='predicted'):
     frameRate = 1/fps #//it will capture image in each 0.5 second
     count=1
     success = getFrame(sec)
-    while success:
+    for i in tqdm(range(int(frame_number)), desc=f'Saving Video Frames To TIF - Frame Number Is: {frame_number}'):
         count = count + 1
         sec = sec + frameRate
         #sec = round(sec, 8)
         success = getFrame(sec)
         
-    return convert2gray(projections)
+    if return_frames:
+        return convert2gray(projections)
 
 
 

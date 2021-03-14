@@ -104,7 +104,12 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 
             # Force the projections to be >= 0
             if np.min(prj) < 0:
-                prj += np.abs(np.min(prj))   
+                prj += np.abs(np.min(prj))
+                
+        elif not force_positive:
+            minimum_prj = np.min(prj)
+            if minimum_prj < 0:
+                print(f"Your lowest projection value is negative ({minimum_prj}). This may result in undesireable machine learning outputs. To change this set force_positive=True.")
         
     else:
         if verbose:

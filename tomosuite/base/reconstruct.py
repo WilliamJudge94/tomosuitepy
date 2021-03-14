@@ -98,10 +98,17 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     return recon, user_extra
 
 
-def prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row):
+def prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row, verbose):
     
-    prj_data = np.load(f'{basedir}deepfillv2/predictions/{checkpoint_num}/ml_inpaint_data.npy')
+    import_file = f'{basedir}deepfillv2/predictions/{checkpoint_num}/ml_inpaint_data.npy'
+    if verbose:
+        print(f"Loading data from: {import_file}")
+        
+    prj_data = np.load(import_file)
     prj_data_shape = prj_data.shape
+    
+    if verbose:
+            print(f"The shape of this data is: {prj_data_shape}")
     
     prj_data = np.moveaxis(prj_data, 0, 1)
     theta = tomopy.angles(prj_data_shape[1], 0, 180)
@@ -122,9 +129,14 @@ def prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row):
 
 
 def prepare_tomogan(basedir, types, second_basedir, wedge_removal,
-                    sparse_angle_removal, start_row, end_row):
+                    sparse_angle_removal, start_row, end_row, verbose):
     
-    prj_data = np.load(f'{basedir}tomogan/{types}_data.npy')
+    import_file = f'{basedir}tomogan/{types}_data.npy'
+    
+    if verbose:
+        print(f"Loading data from: {import_file}")
+        
+    prj_data = np.load(import_file)
     
     if second_basedir is None:
         theta = np.load(f'{basedir}extracted/theta/theta.npy')
@@ -138,6 +150,9 @@ def prepare_tomogan(basedir, types, second_basedir, wedge_removal,
 
     prj_data = prj_data[::sparse_angle_removal]
     theta = theta[::sparse_angle_removal]
+    
+    if verbose:
+            print(f"The shape of this data is: {prj_data.shape}")
     
     if start_row == None:
         start = 0
@@ -185,16 +200,16 @@ def deal_with_sparse_angle(prj_data, theta,
         
     return prj_data, theta
 
-def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_row, double_sparse=None):
-    print(f'{basedir}extracted/projections/')
+def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_row, double_sparse=None, verbose=False):
     
-    prj_data = loading_tiff_prj(f'{basedir}extracted/projections/')
+    import_file = f'{basedir}extracted/projections/'
+
+    if verbose:
+        print(f"Loading data from: {import_file}")
     
-    print(prj_data.shape)
+    prj_data = loading_tiff_prj(import_file)
     
     theta = np.load(f'{basedir}extracted/theta/theta.npy')
-
-    print(theta.shape)
     
     shape = prj_data.shape[0]
 
@@ -204,6 +219,8 @@ def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_ro
     prj_data, theta = deal_with_sparse_angle(prj_data, theta,
                                              sparse_angle_removal,
                                              double_sparse)
+    if verbose:
+        print(f"The shape of this data is: {prj_data.shape}")
     
     if start_row == None:
         start = 0
@@ -219,8 +236,13 @@ def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_ro
 
 
 
-def prepare_dain(basedir, start_row, end_row, dain_types):
+def prepare_dain(basedir, start_row, end_row, dain_types, verbose):
+
+
     frames_loc = f'{basedir}dain/{dain_types[0]}/'
+    
+    if verbose:
+        print(f"Loading data from: {frames_loc}")
     
     files = os.listdir(frames_loc)
     files = sorted(files)
@@ -241,6 +263,9 @@ def prepare_dain(basedir, start_row, end_row, dain_types):
     prj_data = np.asarray(prj_data, dtype=np.float32)
         
     theta = tomopy.angles(prj_data.shape[0], 0, 180)
+    
+    if verbose:
+        print(f"The shape of this data is: {prj_data.shape}")
     
     if start_row == None:
         start = 0
@@ -268,12 +293,12 @@ def reconstruct_data(basedir,
                      wedge_removal=0,
                      sparse_angle_removal=1,
                      types='denoise',
-                     dain_types=['output_frames', '.png'],
+                     dain_types=['output_frames', '.png', False],
                      second_basedir=None,
                      checkpoint_num=None,
                      double_sparse=None,
                      power2pad=False,
-                     edge_transition=None):
+                     edge_transition=None, verbose=False):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -315,6 +340,18 @@ def reconstruct_data(basedir,
         Used to determine which datasets to load in for the tomogan network. 'denoise_fake',
         'denoise_exp', 'noise_exp', 
         
+    dain_types : array
+        An array with layout to dain_types=['folder', 'filetype', apply_log]
+        
+        folder : str
+            the location inside basedir/dain/ to obtain the frames from. Standard is 'frames'
+        
+        filetype : str
+            the string of the image file type. .png, .tif, or .tiff
+            
+        apply_log : bool
+            if True this will apply np.log() to each of the frames.
+            
     second_basedir : str
         A second directory used to load a different files theta data. Passed through to TomoGAN.
         
@@ -343,7 +380,7 @@ def reconstruct_data(basedir,
         recon_type = 'standard'
         start, end, prj_data, theta = prepare_base(basedir, wedge_removal,
                                                    sparse_angle_removal,
-                                                   start_row, end_row, double_sparse)
+                                                   start_row, end_row, double_sparse, verbose=verbose)
         
     elif network == 'tomogan':
         recon_type = 'standard'
@@ -351,17 +388,17 @@ def reconstruct_data(basedir,
                                                       second_basedir,
                                                       wedge_removal,
                                                       sparse_angle_removal,
-                                                      start_row, end_row)
+                                                      start_row, end_row, verbose=verbose)
         
     elif network == 'deepfillv2':
         recon_type = 'deepfillv2'
         assert checkpoint_num != None
-        start, end, prj_data, theta = prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row)
+        start, end, prj_data, theta = prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row, verbose=verbose)
         
         
     elif network == 'dain':
         recon_type = 'standard'
-        start, end, prj_data, theta = prepare_dain(basedir, start_row, end_row, dain_types=dain_types)
+        start, end, prj_data, theta = prepare_dain(basedir, start_row, end_row, dain_types=dain_types, verbose=verbose)
         
 
 
