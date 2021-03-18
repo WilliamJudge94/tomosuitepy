@@ -93,10 +93,12 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     
     prj_shape = np.shape(prj)
     
-    # Prefill Array
+    # Prefill Array For Better Speed + RAM Usage
     recon_store = np.zeros((prj_shape[1], prj_shape[2], prj_shape[2]))
     recon_store = recon_store.astype(dtypes)
     
+    
+    # Error out when chunker is not the right shape
     if prj_shape[1] % chunk_recon_size != 0:
         raise ValueError(f'Projection dimension {prj_shape[1]} cannot be divided evenly by chunk_recon_size={chunk_recon_size}. Remainder={prj_shape[1] % chunk_recon_size}')
     
@@ -104,7 +106,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     prj_chunked_main = np.array_split(prj, chunk_recon_size, axis=1)
     prj_chunked_main_shape = np.shape(prj_chunked_main)
     
-
+    # Iterate through the recon chunks
     for idx, prj_chunked in enumerate(tqdm(prj_chunked_main, desc='Tomo Recon Progress', total=len(prj_chunked_main))):
         # Feed into reconstruction function
         recon, user_extra = reconstruct_func(prj_chunked, theta, rot_center=rot_center)
@@ -114,8 +116,11 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         #chunk_recon_store.append(recon)
         user_extra_store.append(user_extra)
 
-    recon = recon_store #np.concatenate(chunk_recon_store)
-    user_extra = np.concatenate(user_extra_store)
+    # Renaming data
+    #np.concatenate(chunk_recon_store)
+    recon = recon_store
+    if user_extra != None:
+        user_extra = np.concatenate(user_extra_store)
     
     # Crop to the original data if User pads
     if power2pad:
