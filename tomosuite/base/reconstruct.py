@@ -46,7 +46,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              rot_center=True, med_filter=False,
                              all_data_med_filter=False, kernel=(1, 3, 3),
                              reconstruct_func=tomo_recon, recon_type='standard',
-                             power2pad=False, edge_transition=None):
+                             power2pad=False, edge_transition=None, chunk_recon_size=1):
     
     # Apply a median filter on all data
     if med_filter and all_data_med_filter:
@@ -88,8 +88,29 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         
         rot_center = rot_center + pad
         
-    # Feed into reconstruction function
-    recon, user_extra = reconstruct_func(prj, theta, rot_center=rot_center)
+        
+    chunk_recon_store = []
+    user_extra_store = []
+    
+    #print(prj.shape)
+    prj_chunked_main = np.array_split(prj, chunk_recon_size, axis=1)
+    #print(np.shape(prj_chunked_main))
+    #print(np.shape(theta))
+    #theta_chunked_main = np.array_split(theta, chunk_recon_size)
+    #print(np.shape(theta))
+    
+    for prj_chunked in tqdm(prj_chunked_main, desc='Tomo Recon Progress', total=len(prj_chunked_main)):
+        # Feed into reconstruction function
+        #print(np.shape(theta_chunked))
+        recon, user_extra = reconstruct_func(prj_chunked.copy(), theta.copy(), rot_center=rot_center)
+        chunk_recon_store.append(recon)
+        user_extra_store.append(user_extra)
+        
+    #print(np.shape(chunk_recon_store))
+    recon = np.concatenate(chunk_recon_store)
+    user_extra = np.concatenate(user_extra_store)
+    
+    #print(np.shape(recon))
     
     # Crop to the original data if User pads
     if power2pad:
@@ -298,7 +319,9 @@ def reconstruct_data(basedir,
                      checkpoint_num=None,
                      double_sparse=None,
                      power2pad=False,
-                     edge_transition=None, verbose=False):
+                     edge_transition=None,
+                     verbose=False,
+                     chunk_recon_size=1):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -412,7 +435,8 @@ def reconstruct_data(basedir,
                                            reconstruct_func=reconstruct_func,
                                            recon_type=recon_type,
                                            power2pad=power2pad,
-                                           edge_transition=edge_transition)
+                                           edge_transition=edge_transition,
+                                           chunk_recon_size=chunk_recon_size)
     
     
     return slc_proj, user_extra
