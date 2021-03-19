@@ -65,6 +65,7 @@ def decrease_sinogram_width(prj_data, decrease_number):
 
 
 def obtain_prj_sinograms(prj_data):
+    """Also found in tomosuite.base.rotation_center"""
     rows = np.arange(0, np.shape(prj_data)[1])
     sino = prj_data[:, rows]
     
