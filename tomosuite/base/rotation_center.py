@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 from tomosuite.base.common import load_extracted_prj
 from ipywidgets import interact, interactive, fixed, widgets
 
@@ -18,21 +19,32 @@ def obtain_prj_sinograms(prj_data):
     return np.asarray(data)
 
 
+def plot_sino(sino_data, idx, og_center, min_idx_val, ranger, store, center_of_image, finder):
+    
+    
+    fig = plt.figure(figsize=(18, 12)) 
+    gs = gridspec.GridSpec(3, 3, figure=fig)
+    ax1 = fig.add_subplot(gs[0, :-1])
+    ax2 = fig.add_subplot(gs[0:, -1])
 
-def plot_sino(sino_data, idx, og_center, min_idx_val):
     idx = idx + min_idx_val
-    plt.figure(figsize=(15, 15))
-    plt.imshow(sino_data[idx][0])
     lens = len(sino_data)
     
     range_vals = np.arange(lens)
     range_vals -= int((lens-1)/2)
+
+    ax1.plot(ranger, store)
+    ax1.set_xlabel(f'Pixels away from the absolute center of {center_of_image} - This script assumes you have input a 0-180 degree scan')
+    ax1.set_ylabel('Sum of FFT for a given pixel shift')
+    ax1.axvline(range_vals[idx], color='k')
+    ax1.set_title(f"Algo Rot Center Is: {center_of_image + ranger[finder[0]] } --- User's Selected Rot Center is: {og_center + range_vals[idx]}")
+
+    ax2.imshow(sino_data[idx][0])
     
-    plt.title(f"Shifts for ---- {og_center} + {range_vals[idx]} = {og_center + range_vals[idx]}")
-    
+    ax2.set_title(f"Shifts for ---- {og_center} + {range_vals[idx]} = {og_center + range_vals[idx]}")
 
 
-def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplier=40, plot=False, figsize=(15, 5), number2zero=None, crop_sinogram=0, return_vals=False):
+def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplier=40, number2zero=None, crop_sinogram=0):
     """Plots a figure to help Users determine the proper rotation center. Applied a Fourier Transform to the sinogram, shifts the sinogram left and right,
     and plots the summed values of the results. The lowest value is the rotation center.
     
@@ -50,27 +62,16 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
     log_multiplier : float
         A number to be multipled by the log of the np.abs() of the FFT
         
-    plot : bool
-        If True, plot the results to the User.
-        
-    figsize : list
-        To be passed into plt.figure()
-        
     number2zero : int
         If number2zero != None then zero out this many projections from the start and end of the data files.
         
     Returns:
-    A figure or raw_center_of_image, y_values4plot, minimum_idx_finder, x_values4plot
+    A figure
     """
     
     data = load_extracted_prj(basedir)
     
     data_shape = np.shape(data)
-    
-    #if number2zero != None:
-    
-        #data[:number2zero] = np.zeros((number2zero, data_shape[1], data_shape[2]))
-        #data[-number2zero:] = np.zeros((number2zero, data_shape[1], data_shape[2]))
     
     center_of_image = data.shape[2]/2
     
@@ -82,8 +83,6 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
     ranger = np.arange(-pixel_shift_range, pixel_shift_range+1, 1)
     
     for i in tqdm(ranger, desc='Checking Sinogram Offset'):
-        
-
 
         og_sino = sino[sino_idx].copy()
         flip_sino1 = np.fliplr(og_sino.copy())
@@ -114,23 +113,11 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
         
     store = np.asarray(store)
     finder = np.where(store == np.nanmin(store))
-        
-    if plot:
-        plt.figure(figsize=figsize)
-        plt.plot(ranger, store)
-        plt.xlabel(f'Pixels away from the absolute center of {center_of_image} - This script assumes you have input a 0-180 degree scan')
-        plt.ylabel('Sum of FFT for a given pixel shift')
-        plt.axvline(ranger[finder[0]], color='k')
-        plt.title(f'New Rotation Center Is: {center_of_image + ranger[finder[0]] }')
-        plt.show()
 
-        sliders = widgets.IntSlider(value=ranger[finder[0]], min=-pixel_shift_range, max=pixel_shift_range)
-        interact(plot_sino, sino_data=fixed(store_sino), idx=sliders, og_center=fixed(center_of_image), min_idx_val=fixed(pixel_shift_range))
-        
-        #plt.figure(figsize=(15, 15))
-        #plt.title('Sinogram Related To The Best Alignment')
-        #plt.imshow(store_sino[finder[0][0]][0])
-        #plt.show()
-        
-    if return_vals:
-        return (center_of_image, ranger[finder[0]]), store, finder, ranger, store_sino
+    sliders = widgets.IntSlider(value=ranger[finder[0]], min=-pixel_shift_range, max=pixel_shift_range)
+
+    interact(plot_sino, sino_data=fixed(store_sino),
+             idx=sliders, og_center=fixed(center_of_image),
+             min_idx_val=fixed(pixel_shift_range),  ranger=fixed(ranger),
+             store=fixed(store), center_of_image=fixed(center_of_image),
+             finder=fixed(finder))
