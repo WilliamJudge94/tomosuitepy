@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from scipy.ndimage import median_filter
 from tomosuite.base.common import load_extracted_prj
 from ipywidgets import interact, interactive, fixed, widgets
 
@@ -32,19 +33,28 @@ def plot_sino(sino_data, idx, og_center, min_idx_val, ranger, store, center_of_i
     
     range_vals = np.arange(lens)
     range_vals -= int((lens-1)/2)
+    
+    # Math for quad fit
+    
+    model = np.poly1d(np.polyfit(ranger, store, 2))
+    polyline = np.linspace(ranger[0], ranger[-1], len(ranger))
+    finds2 = np.where(model(polyline) == np.min(model(polyline)))
 
     ax1.plot(ranger, store)
+    ax1.plot(polyline, model(polyline))
     ax1.set_xlabel(f'Pixels away from the absolute center of {center_of_image} - This script assumes you have input a 0-180 degree scan')
     ax1.set_ylabel('Sum of FFT for a given pixel shift')
     ax1.axvline(range_vals[idx], color='k')
-    ax1.set_title(f"Algo Rot Center Is: {center_of_image + ranger[finder[0]] } --- User's Selected Rot Center is: {og_center + range_vals[idx]}")
+    ax1.axvline(ranger[finder[0]], color='C0')
+    ax1.axvline(ranger[finds2[0]], color='C1')
+    ax1.set_title(f"Algo Min Rot Center Is: {center_of_image + ranger[finder[0]] } --- PolyFit Min Rot Center Is: {center_of_image + ranger[finds2[0]] } --- User's Selected Rot Center is: {og_center + range_vals[idx]}")
 
     ax2.imshow(sino_data[idx][0])
     
     ax2.set_title(f"Shifts for ---- {og_center} + {range_vals[idx]} = {og_center + range_vals[idx]}")
 
 
-def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplier=40, number2zero=None, crop_sinogram=0):
+def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplier=40, number2zero=None, crop_sinogram=0, med_filter=False, min_val=0):
     """Plots a figure to help Users determine the proper rotation center. Applied a Fourier Transform to the sinogram, shifts the sinogram left and right,
     and plots the summed values of the results. The lowest value is the rotation center.
     
@@ -85,6 +95,12 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
     for i in tqdm(ranger, desc='Checking Sinogram Offset'):
 
         og_sino = sino[sino_idx].copy()
+        og_sino /= np.max(og_sino)
+        og_sino[og_sino < min_val] = 0
+        
+        if med_filter:
+            og_sino = median_filter(og_sino, size=(3, 3))
+            
         flip_sino1 = np.fliplr(og_sino.copy())
         flip_sino1 = np.roll(flip_sino1, i)
         full_360 = np.vstack((og_sino, flip_sino1))
@@ -92,6 +108,7 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
         full_360 = full_360[:, (pixel_shift_range+1+crop_sinogram):-(pixel_shift_range+1+crop_sinogram)]
 
         full_360_shape = np.shape(full_360)
+        
 
         if number2zero != None:
             zeros = np.zeros((number2zero*2, full_360_shape[1]))
@@ -121,3 +138,5 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
              min_idx_val=fixed(pixel_shift_range),  ranger=fixed(ranger),
              store=fixed(store), center_of_image=fixed(center_of_image),
              finder=fixed(finder))
+    
+    return store_sino, sino, data, full_360

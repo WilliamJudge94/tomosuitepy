@@ -24,7 +24,6 @@ def loading_tiff_prj(folder):
     for file in tqdm(files, desc='Importing TIFF Projections'):
         if '.tiff' in file or '.tif' in file:
             data.append(tif.imread(file))
-        
     return np.asarray(data)
 
 

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
 from ..base.common import loading_tiff_prj
+from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable 
 
 
@@ -42,11 +43,45 @@ def tomo_recon(prj, theta, rot_center, user_extra=None):
     return recon, user_extra
 
 
+def obtain_rot_center_sinos(prj, shift_range=20):
+    shifted_prj = []
+    
+    og_shape = prj.shape
+    
+    og_center = prj.shape[-1]/2
+    
+    range_array = np.arange(-shift_range, shift_range+1)
+    
+    for shift in range_array:
+        shifted = np.roll(prj.copy(), shift, axis=2)
+        shifted_prj.append(shifted)
+
+    shifted_prj = np.asarray(shifted_prj)
+    
+    return_shifted = shifted_prj[:, :, :, shift_range:-shift_range]
+    return_shifted_shape = return_shifted.shape
+    
+    print(f"Applying Rotation Finder Protocol - After Adjusting For Shift Changes Rotation Center Set To True Center Of {return_shifted_shape[-1]/2}")
+    print(f"absolute_middle_rotation={(return_shifted_shape[-1]/2) + shift_range} - with a search range of {return_shifted_shape[-1]/2} - {(return_shifted_shape[-1]/2) + 2*shift_range}")
+    
+    old_shape = return_shifted.shape
+    new_shape = (old_shape[1], 1, old_shape[-1])
+
+    for idx, array in enumerate(return_shifted):
+        if idx<1:
+            storing = np.reshape(array[:, 0, :], new_shape)
+        else:
+            storing = np.append(storing, np.reshape(array[:, 0, :], new_shape), axis=1)
+    
+    return storing, return_shifted_shape[-1]/2, og_center, range_array
+
 def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              rot_center=True, med_filter=False,
                              all_data_med_filter=False, kernel=(1, 3, 3),
                              reconstruct_func=tomo_recon, recon_type='standard',
-                             power2pad=False, edge_transition=None, chunk_recon_size=1, dtypes=np.float32):
+                             power2pad=False, edge_transition=None,
+                             chunk_recon_size=1, dtypes=np.float32,
+                             rot_center_shift_check=None):
     
     # Apply a median filter on all data
     if med_filter and all_data_med_filter:
@@ -56,6 +91,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     # Setup projections based on the standard implementation
     if recon_type == 'standard':
         prj = prj_data[:, rows]
+        if rot_center_shift_check is not None:
+            prj, rot_center, og_center, range_array = obtain_rot_center_sinos(prj, rot_center_shift_check)
         
     # Setup projections based on deepfillv2 neural network predictions
     elif recon_type == 'deepfillv2':
@@ -126,8 +163,13 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     if power2pad:
         recon = recon[:, pad:-pad1, pad:-pad1]
     
-    return recon, user_extra
+    if rot_center_shift_check is None:
+        return recon, user_extra
+    else:
+        corrected_center = range_array + og_center
+        recon = np.flip(recon, axis=0)
 
+        return recon, corrected_center
 
 def prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row, verbose):
     
@@ -231,7 +273,7 @@ def deal_with_sparse_angle(prj_data, theta,
         
     return prj_data, theta
 
-def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_row, double_sparse=None, verbose=False):
+def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_row, double_sparse=None, verbose=False, ):
     
     import_file = f'{basedir}extracted/projections/'
 
@@ -332,7 +374,8 @@ def reconstruct_data(basedir,
                      edge_transition=None,
                      verbose=False,
                      chunk_recon_size=1,
-                     dtypes=np.float32):
+                     dtypes=np.float32,
+                     rot_center_shift_check=None):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -448,9 +491,10 @@ def reconstruct_data(basedir,
                                            power2pad=power2pad,
                                            edge_transition=edge_transition,
                                            chunk_recon_size=chunk_recon_size,
-                                           dtypes=dtypes)
-    
-    
+                                           dtypes=dtypes,
+                                           rot_center_shift_check=rot_center_shift_check)
+        
+        
     return slc_proj, user_extra
 
 
@@ -487,3 +531,56 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys
         plt.show()
         
     return fig
+
+def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r', absolute_middle_rotation=None):
+    """Allow the User to plot the data that was output from the reconstruction
+    
+    Parameters
+    ----------
+    slc_proj : nd.array
+        the output from the tomosuite.base.reconstruc.reconstruct_data() function
+    
+    figsize : list
+        the figsize to be passed to plt.figure()
+        
+    clim : list
+        clim lower and upper limits to be passed into plt.clim()
+        
+    cmap : str
+        the cmap passed to plt.imshow()
+        
+    Returns
+    -------
+    Shows the plots for the given input data
+    """
+    
+    starting_rotation_center = absolute_middle_rotation
+    
+    if starting_rotation_center is not None:
+        total = (len(slc_proj)+1)/2
+        starting = starting_rotation_center - total + 1
+        
+        center_range_values = np.arange(starting, starting_rotation_center + total)
+        
+        sliders = widgets.IntSlider(value=starting, min=starting, max=starting_rotation_center + total - 1)
+
+        interact(plotter, slcs_proj=fixed(slc_proj), center_range_values=fixed(center_range_values), idx=sliders, starting_rotation_center=fixed(starting_rotation_center), figsize=fixed(figsize), cmap=fixed(cmap), clim=fixed(clim))
+    
+
+def plotter(slcs_proj, center_range_values, idx, starting_rotation_center, figsize, cmap, clim):
+    row = idx
+    prj = slcs_proj[np.where(center_range_values == idx)[0]]
+    starting = center_range_values[np.where(center_range_values == idx)[0]]
+    
+    fig = plt.figure(figsize=figsize)
+    if starting_rotation_center is None:
+        plt.title(f'Row Num: {row}, Mean: {np.mean(prj)}')
+    else:
+        plt.title(f'Row Num: {row}, Mean: {np.mean(prj)}, Rotation Center: {starting}')
+        starting += 1
+    image = plt.imshow(prj[0], cmap=cmap)
+    ax1 = plt.gca()
+    ax1.tick_params(labelsize=15)
+    colorbar(image)
+    plt.clim(clim[0], clim[1])
+    plt.show()
