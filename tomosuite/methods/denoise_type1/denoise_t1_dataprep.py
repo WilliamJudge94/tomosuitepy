@@ -69,7 +69,7 @@ def add_train_noise(idx, VARIABILITY, array, pbar, nothing=False):
 
     return np.asarray([img, idx], dtype=object)
 
-def fake_noise_test(basedir, noise=125, image_step=20, plot=True, idx=0, figsize=(10, 10)):
+def fake_noise_test(basedir, noise=125, image_step=20, plot=True, idx=0, figsize=(10, 10), clim=None):
     """A way to quickly see what the noise value does to the data.
     
     Parameters
@@ -105,13 +105,25 @@ def fake_noise_test(basedir, noise=125, image_step=20, plot=True, idx=0, figsize
         plt.figure(figsize=figsize)
         im = plt.imshow(data[idx])
         plt.title('Extracted PRJ')
+        if clim is not None:
+            plt.clim(clim)
         plt.colorbar(im)
         plt.show()
         
         plt.figure(figsize=figsize)
         plt.imshow(noise_data[idx])
+        if clim is not None:
+            plt.clim(clim)
         plt.title('Noisy PRJ')
         plt.colorbar(im)
+        plt.show()
+        
+        plt.figure(figsize=figsize)
+        plt.title('Difference')
+        image = np.subtract(data[idx], noise_data[idx])
+        plt.imshow(image)
+        plt.colorbar()
+        plt.title((image.min(), image.max()))
         plt.show()
         
     if not plot:
