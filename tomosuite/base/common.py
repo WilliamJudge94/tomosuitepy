@@ -3,6 +3,8 @@ import numpy as np
 import tifffile as tif
 import h5py
 from tqdm import tqdm
+import itk
+from itkwidgets import view
 
 def loading_tiff_prj(folder):
     """For a given folder return all the .tiff images in a numpy array
@@ -159,3 +161,9 @@ def h5group_list(file, group_name='base'):
             g1=hdf.get(group_name)
             return (list(g1.items()))
         
+        
+        
+def interactive_data_viewer():
+    print("import itk")
+    print("from itkwidgets import view")
+    print("view(slcs)")

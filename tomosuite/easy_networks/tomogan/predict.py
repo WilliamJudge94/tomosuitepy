@@ -3,15 +3,15 @@ import sys
 import warnings
 import numpy as np
 from tqdm import tqdm
-from util import save2img, save2img_tb
-from models import unet as make_generator_model
 import sys, os, time, argparse, shutil, scipy, h5py, glob
-from models import tomogan_disc as make_discriminator_model
-from data_processor import bkgdGen, gen_train_batch_bg, get1batch4test
 
 with warnings.catch_warnings():  
     warnings.filterwarnings("ignore",category=FutureWarning)
     import tensorflow as tf 
+    from util import save2img, save2img_tb
+    from models import unet as make_generator_model
+    from models import tomogan_disc as make_discriminator_model
+    from data_processor import bkgdGen, gen_train_batch_bg, get1batch4test
     tf.enable_eager_execution()
 
 sys.path.append(os.path.dirname(__file__))

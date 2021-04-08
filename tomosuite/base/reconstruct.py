@@ -1,6 +1,7 @@
 import os
 import cv2
 import math
+import time
 import tomopy
 import numpy as np
 from tqdm import tqdm
@@ -176,6 +177,7 @@ def prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row, verbose):
     import_file = f'{basedir}deepfillv2/predictions/{checkpoint_num}/ml_inpaint_data.npy'
     if verbose:
         print(f"Loading data from: {import_file}")
+        time.sleep(0.5)
         
     prj_data = np.load(import_file)
     prj_data_shape = prj_data.shape
@@ -208,6 +210,7 @@ def prepare_tomogan(basedir, types, second_basedir, wedge_removal,
     
     if verbose:
         print(f"Loading data from: {import_file}")
+        time.sleep(0.5)
         
     prj_data = np.load(import_file)
     
@@ -279,6 +282,7 @@ def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_ro
 
     if verbose:
         print(f"Loading data from: {import_file}")
+        time.sleep(0.5)
     
     prj_data = loading_tiff_prj(import_file)
     
@@ -316,6 +320,7 @@ def prepare_dain(basedir, start_row, end_row, dain_types, verbose):
     
     if verbose:
         print(f"Loading data from: {frames_loc}")
+        time.sleep(0.5)
     
     files = os.listdir(frames_loc)
     files = sorted(files)
@@ -499,7 +504,7 @@ def reconstruct_data(basedir,
 
 
 
-def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r'):
+def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r', interactive=True):
     """Allow the User to plot the data that was output from the reconstruction
     
     Parameters
@@ -520,17 +525,23 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys
     -------
     Shows the plots for the given input data
     """
-    for row, prj in enumerate(slc_proj):
-        fig = plt.figure(figsize=figsize)
-        plt.title(f'Row Num: {row}, Mean: {np.mean(prj)}')
-        image = plt.imshow(prj, cmap=cmap)
-        ax1 = plt.gca()
-        ax1.tick_params(labelsize=15)
-        colorbar(image)
-        plt.clim(clim[0], clim[1])
-        plt.show()
+    if interactive:
+        sliders = widgets.IntSlider(value=0, min=0, max=len(slc_proj)-1)
+        interact(plotting_recons,
+                 slcs_proj=fixed(slc_proj), idx=sliders, figsize=fixed(figsize), cmap=fixed(cmap), clim=fixed(clim))
         
-    return fig
+    else:
+        for row, prj in enumerate(slc_proj):
+            fig = plt.figure(figsize=figsize)
+            plt.title(f'Row Num: {row}, Mean: {np.mean(prj)}')
+            image = plt.imshow(prj, cmap=cmap)
+            ax1 = plt.gca()
+            ax1.tick_params(labelsize=15)
+            colorbar(image)
+            plt.clim(clim[0], clim[1])
+            plt.show()
+
+        return fig
 
 def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r', absolute_middle_rotation=None):
     """Allow the User to plot the data that was output from the reconstruction
@@ -556,7 +567,10 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(0, 0.003), cma
     
     starting_rotation_center = absolute_middle_rotation
     
-    if starting_rotation_center is not None:
+    if starting_rotation_center is None:
+        print('Please set starting_ration_center value')
+    
+    else:
         total = (len(slc_proj)+1)/2
         starting = starting_rotation_center - total + 1
         
@@ -564,10 +578,10 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(0, 0.003), cma
         
         sliders = widgets.IntSlider(value=starting, min=starting, max=starting_rotation_center + total - 1)
 
-        interact(plotter, slcs_proj=fixed(slc_proj), center_range_values=fixed(center_range_values), idx=sliders, starting_rotation_center=fixed(starting_rotation_center), figsize=fixed(figsize), cmap=fixed(cmap), clim=fixed(clim))
+        interact(plotting_center, slcs_proj=fixed(slc_proj), center_range_values=fixed(center_range_values), idx=sliders, starting_rotation_center=fixed(starting_rotation_center), figsize=fixed(figsize), cmap=fixed(cmap), clim=fixed(clim))
     
 
-def plotter(slcs_proj, center_range_values, idx, starting_rotation_center, figsize, cmap, clim):
+def plotting_center(slcs_proj, center_range_values, idx, starting_rotation_center, figsize, cmap, clim):
     row = idx
     prj = slcs_proj[np.where(center_range_values == idx)[0]]
     starting = center_range_values[np.where(center_range_values == idx)[0]]
@@ -579,6 +593,18 @@ def plotter(slcs_proj, center_range_values, idx, starting_rotation_center, figsi
         plt.title(f'Row Num: {row}, Mean: {np.mean(prj)}, Rotation Center: {starting}')
         starting += 1
     image = plt.imshow(prj[0], cmap=cmap)
+    ax1 = plt.gca()
+    ax1.tick_params(labelsize=15)
+    colorbar(image)
+    plt.clim(clim[0], clim[1])
+    plt.show()
+    
+    
+def plotting_recons(slcs_proj, idx, figsize, cmap, clim):
+    fig = plt.figure(figsize=figsize)
+    prj = slcs_proj[idx]
+    plt.title(f'Row Num: {idx}, Mean: {np.mean(prj)}')
+    image = plt.imshow(prj, cmap=cmap)
     ax1 = plt.gca()
     ax1.tick_params(labelsize=15)
     colorbar(image)
