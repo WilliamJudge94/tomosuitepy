@@ -8,7 +8,8 @@ import tifffile as tif
 
 
 def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
-                custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose, force_positive, removal_val):
+                custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose,
+                force_positive, removal_val, minus_log, remove_neg_vals, remove_nan_vals, remove_inf_vals):
     """Preprocesses the projections data to be saves as .tif images
     
     Parameters
@@ -71,7 +72,8 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         if verbose:
             print('\n** Applying minus log')
 
-        prj = tomopy.minus_log(prj)
+        if minus_log:
+            prj = tomopy.minus_log(prj)
         
         # Old version of correcting projections
         if False:
@@ -81,21 +83,22 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             prj[np.where(prj == np.inf)] = np.nanmax(prj[prj != np.inf])
             # Set - infinity values to the lowest value
             prj[np.where(prj == -np.inf)] = np.nanmin(prj[prj != -np.inf])
-        
-        if verbose:
-            print('\n** Removing neg')
             
-        prj = tomopy.misc.corr.remove_neg(prj, val=removal_val)
-        
-        if verbose:
-            print('\n** Removing np.nan')
+        if remove_neg_vals:
+            if verbose:
+                print('\n** Removing neg')
+            prj = tomopy.misc.corr.remove_neg(prj, val=removal_val)
     
-        prj = tomopy.misc.corr.remove_nan(prj, val=removal_val)
+        if remove_nan_vals:
+            if verbose:
+                print('\n** Removing np.nan')
+            prj = tomopy.misc.corr.remove_nan(prj, val=removal_val)
 
-        if verbose:
-            print('\n** Removing np.inf')
+        if remove_inf_vals:
+            if verbose:
+                print('\n** Removing np.inf')
    
-        prj[np.where(prj == np.inf)] = removal_val
+            prj[np.where(prj == np.inf)] = removal_val
 
         
         if force_positive:
@@ -131,7 +134,7 @@ def extract(datadir, fname, basedir,
             outlier_diff=None, air=10, outlier_size=None,
             starting=0, bkg_norm=False, chunk_size4bkg=10, force_positive=True, removal_val=0.001, 
             custom_dataprep=False, dtype='float32', flat_roll=None,
-            overwrite=True, verbose=True, save=True):
+            overwrite=True, verbose=True, save=True, minus_log=True, remove_neg_vals=True, remove_nan_vals=True, remove_inf_vals=True):
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
@@ -186,6 +189,18 @@ def extract(datadir, fname, basedir,
     
     save : bool
         if False this will return the extracted projections to the user in the form of a numpy array.
+
+    minus_log : bool
+        if False the program will not apply the minus log
+
+    remove_neg_vals : bool
+        if False the program will not remove the negative values with the removal_val
+
+    remove_nan_vals : bool
+       if False the program will not remove the nan values with the removal_val
+
+    remove_inf_vals : bool
+          if False the program will not remove the inf values with the removal_val 
         
     
     Returns
@@ -212,7 +227,8 @@ def extract(datadir, fname, basedir,
                       outlier_diff=outlier_diff, outlier_size=outlier_size,
                       air=air, custom_dataprep=custom_dataprep, binning=binning,
                       bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose,
-                      force_positive=force_positive, removal_val=removal_val)
+                      force_positive=force_positive, removal_val=removal_val, minus_log=minus_log,
+                      remove_neg_vals=remove_neg_vals remove_nan_vals=remove_nan_vals, remove_inf_vals=remove_inf_vals)
         
     if save:
 
