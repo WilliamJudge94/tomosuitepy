@@ -147,7 +147,8 @@ def extract(datadir, fname, basedir,
             starting=0, bkg_norm=False, chunk_size4bkg=10, force_positive=True, removal_val=0.001, 
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
-            remove_neg_vals=True, remove_nan_vals=True, remove_inf_vals=True, correct_norma_extremes=True):
+            remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
+            correct_norma_extremes=True):
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
