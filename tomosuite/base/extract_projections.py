@@ -228,7 +228,7 @@ def extract(datadir, fname, basedir,
                       air=air, custom_dataprep=custom_dataprep, binning=binning,
                       bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose,
                       force_positive=force_positive, removal_val=removal_val, minus_log=minus_log,
-                      remove_neg_vals=remove_neg_vals remove_nan_vals=remove_nan_vals, remove_inf_vals=remove_inf_vals)
+                      remove_neg_vals=remove_neg_vals, remove_nan_vals=remove_nan_vals, remove_inf_vals=remove_inf_vals)
         
     if save:
 
