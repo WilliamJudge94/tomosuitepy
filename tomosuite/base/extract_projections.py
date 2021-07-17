@@ -9,7 +9,8 @@ import tifffile as tif
 
 def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose,
-                force_positive, removal_val, minus_log, remove_neg_vals, remove_nan_vals, remove_inf_vals):
+                force_positive, removal_val, minus_log,
+                remove_neg_vals, remove_nan_vals, remove_inf_vals, correct_norma_extremes):
     """Preprocesses the projections data to be saves as .tif images
     
     Parameters
@@ -36,8 +37,19 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         
     # Normalized the projections
     if verbose:
-        print('\n** Flat field correction')  
+        print('\n** Flat field correction')
+
+    dark = np.mean(dark, axis=0)
+    flat = np.mean(flat, axis=0)
+
     prj = tomopy.normalize(prj, flat, dark)
+
+    if correct_norma_extremes:
+        if verbose:
+            print('\n** Normalization pre-log correction')
+
+        prj += np.abs(prj.min())
+        prj += prj.max() * 0.0001
     
     # Trying to figure out how to incorporate this
     if not custom_dataprep:
@@ -134,7 +146,8 @@ def extract(datadir, fname, basedir,
             outlier_diff=None, air=10, outlier_size=None,
             starting=0, bkg_norm=False, chunk_size4bkg=10, force_positive=True, removal_val=0.001, 
             custom_dataprep=False, dtype='float32', flat_roll=None,
-            overwrite=True, verbose=True, save=True, minus_log=True, remove_neg_vals=True, remove_nan_vals=True, remove_inf_vals=True):
+            overwrite=True, verbose=True, save=True, minus_log=True,
+            remove_neg_vals=True, remove_nan_vals=True, remove_inf_vals=True, correct_norma_extremes=True):
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
@@ -200,7 +213,10 @@ def extract(datadir, fname, basedir,
        if False the program will not remove the nan values with the removal_val
 
     remove_inf_vals : bool
-          if False the program will not remove the inf values with the removal_val 
+        if False the program will not remove the inf values with the removal_val 
+
+    correct_norma_extremes : bool
+        Fix normalization values so the -log can be applied safeley
         
     
     Returns
@@ -228,7 +244,9 @@ def extract(datadir, fname, basedir,
                       air=air, custom_dataprep=custom_dataprep, binning=binning,
                       bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose,
                       force_positive=force_positive, removal_val=removal_val, minus_log=minus_log,
-                      remove_neg_vals=remove_neg_vals, remove_nan_vals=remove_nan_vals, remove_inf_vals=remove_inf_vals)
+                      remove_neg_vals=remove_neg_vals,
+                      remove_nan_vals=remove_nan_vals, remove_inf_vals=remove_inf_vals,
+                      correct_norma_extremes=correct_norma_extremes)
         
     if save:
 
