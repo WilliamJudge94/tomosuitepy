@@ -38,7 +38,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
     # Bin the data
     if binning>0:
         if verbose:
-            print('\n** Down sampling data\n')
+            print('\n** Down sampling data')
         prj = tomopy.downsample(prj, level=binning)
         prj = tomopy.downsample(prj, level=binning, axis=1)
 
