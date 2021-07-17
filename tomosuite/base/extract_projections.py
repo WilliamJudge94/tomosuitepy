@@ -35,6 +35,19 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
         flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
         
+    # Bin the data
+    if binning>0:
+        if verbose:
+            print('\n** Down sampling data\n')
+        prj = tomopy.downsample(prj, level=binning)
+        prj = tomopy.downsample(prj, level=binning, axis=1)
+
+        dark = tomopy.downsample(dark, level=binning)
+        dark = tomopy.downsample(dark, level=binning, axis=1)
+
+        flat = tomopy.downsample(flat, level=binning)
+        flat = tomopy.downsample(flat, level=binning, axis=1)
+
     # Normalized the projections
     if verbose:
         print('\n** Flat field correction')
@@ -129,13 +142,6 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
     else:
         if verbose:
             print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
-
-    # Bin the data
-    if binning>0:
-        if verbose:
-            print('\n** Down sampling data\n')
-        prj = tomopy.downsample(prj, level=binning)
-        prj = tomopy.downsample(prj, level=binning, axis=1)
         
         
     return prj
