@@ -95,8 +95,11 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
     for i in tqdm(ranger, desc='Checking Sinogram Offset'):
 
         og_sino = sino[sino_idx].copy()
+        og_sino = og_sino[:, ~np.isnan(og_sino).any(axis=0)]
+        og_sino = og_sino[:, ~np.isinf(og_sino).any(axis=0)]
         og_sino /= np.max(og_sino)
         og_sino[og_sino < min_val] = 0
+    
         
         if med_filter:
             og_sino = median_filter(og_sino, size=(3, 3))
