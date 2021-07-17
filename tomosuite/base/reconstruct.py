@@ -339,11 +339,13 @@ def prepare_dain(basedir, start_row, end_row, dain_types, verbose):
 
         
     prj_data = np.asarray(prj_data, dtype=np.float32)
-        
+    shape = prj_data.shape[0]
     theta = tomopy.angles(prj_data.shape[0], 0, 180)
     
     if verbose:
         print(f"The shape of this data is: {prj_data.shape}")
+        if prj_data.shape == (0, ):
+            raise ValueError(f'No data found in {frames_loc}') 
     
     if start_row == None:
         start = 0

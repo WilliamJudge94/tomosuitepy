@@ -20,7 +20,7 @@ def loading_tiff_prj(folder):
     """
     data = []
     
-    files = os.listdir(folder)
+    files = sorted(os.listdir(folder))
     files = [f'{folder}{fil}' for fil in files]
     
     for file in tqdm(files, desc='Importing TIFF Projections'):
