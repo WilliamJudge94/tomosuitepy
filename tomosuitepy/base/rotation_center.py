@@ -3,7 +3,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from scipy.ndimage import median_filter
-from tomosuite.base.common import load_extracted_prj
+from tomosuitepy.base.common import load_extracted_prj
 from ipywidgets import interact, interactive, fixed, widgets
 
 def obtain_prj_sinograms(prj_data):
