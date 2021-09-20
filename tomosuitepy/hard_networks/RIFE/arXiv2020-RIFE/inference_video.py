@@ -75,6 +75,9 @@ parser.add_argument('--png', dest='png', action='store_true', help='whether to v
 parser.add_argument('--ext', dest='ext', type=str, default='mp4', help='vid_out video extension')
 parser.add_argument('--exp', dest='exp', type=int, default=1)
 args = parser.parse_args()
+
+print("Starting Program")
+
 assert (not args.video is None or not args.img is None)
 if args.UHD and args.scale==1.0:
     args.scale = 0.5
@@ -82,6 +85,8 @@ assert args.scale in [0.25, 0.5, 1.0, 2.0, 4.0]
 if not args.img is None:
     args.png = True
     
+print("Starting Torch")
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False)
 if torch.cuda.is_available():
@@ -102,6 +107,8 @@ except:
     print("Loaded v1.x HD model")
 model.eval()
 model.device()
+
+print("Importing Model - Done")
 
 if not args.video is None:
     videoCapture = cv2.VideoCapture(args.video)
@@ -131,6 +138,9 @@ else:
     videogen.sort(key= lambda x:int(x[:-4]))
     lastframe = cv2.imread(os.path.join(args.img, videogen[0]))[:, :, ::-1].copy()
     videogen = videogen[1:]
+
+print("Loaded Video")
+
 h, w, _ = lastframe.shape
 vid_out_name = None
 vid_out = None
