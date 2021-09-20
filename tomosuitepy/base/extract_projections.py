@@ -73,17 +73,17 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             prj_ds_chunks = []
             iteration = 0
             
-                for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
-                    prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
-                    prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
-                    save_prj_ds_chunk(data, iteration)
-                    iteration += 1
-                    del prj_ds_chunk
-                    time.sleep(1)
+            for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
+                prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
+                prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
+                save_prj_ds_chunk(data, iteration)
+                iteration += 1
+                del prj_ds_chunk
+                time.sleep(1)
 
 
-                prj = load_prj_ds_chunk(iteration)
-                remove_saved_prj_ds_chunk(iteration)
+            prj = load_prj_ds_chunk(iteration)
+            remove_saved_prj_ds_chunk(iteration)
 
         else:
             prj = tomopy.downsample(prj, level=binning)
