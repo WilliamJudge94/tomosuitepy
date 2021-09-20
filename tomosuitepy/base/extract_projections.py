@@ -1,19 +1,41 @@
+
 import os
+import sys
 import time
 import tomopy
 import dxchange
 import numpy as np
 from tqdm import tqdm
 import tifffile as tif
+import functools
+from pympler import muppy, summary
+import pandas as pd
+
+import sys
+def sizeof_fmt(num, suffix='B'):
+    ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f %s%s" % (num, 'Yi', suffix)
+
+
+def cache_clearing_downsample(data, binning):
+    data = tomopy.downsample(data, level=binning)
+    data = tomopy.downsample(data, level=binning, axis=1)
+    return data
 
 def save_prj_ds_chunk(data, iteration):
-    np.save(f'/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
+    path = os.getcwd()
+    np.save(f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
 
 def load_prj_ds_chunk(iterations):
+    path = os.getcwd()
     data = []
 
     for it in range(0, iterations):
-        data.append(np.load(f'/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
+        data.append(np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
         
     data = np.asarray(data)
     data = np.concatenate(data)
@@ -21,8 +43,9 @@ def load_prj_ds_chunk(iterations):
 
 
 def remove_saved_prj_ds_chunk(iterations):
+    path = os.getcwd()
     for it in range(0, iterations):
-        os.remove(f'/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
+        os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
 
 
 
@@ -42,7 +65,6 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
     Pre-processed projection data
     """
     
-
     # Lets the User roll the flat field image
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
@@ -70,16 +92,19 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 
         if chunk_size4downsample > 1:
 
-            prj_ds_chunks = []
             iteration = 0
             
             for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
-                prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
-                prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
-                save_prj_ds_chunk(prj_ds_chunk, iteration)
+                #prj_ds_chunk2 = tomopy.downsample(prj_ds_chunk, level=binning)
+                #prj_ds_chunk2 = tomopy.downsample(prj_ds_chunk2, level=binning, axis=1)
+                prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
+                save_prj_ds_chunk(prj_ds_chunk2, iteration)
                 iteration += 1
-                del prj_ds_chunk
-                time.sleep(1)
+
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                #summary.print_(sum1, limit=1)
+                time.sleep(10)
 
 
             prj = load_prj_ds_chunk(iteration)
