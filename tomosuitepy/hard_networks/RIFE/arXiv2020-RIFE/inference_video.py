@@ -15,7 +15,7 @@ from model.pytorch_msssim import ssim_matlab
 sys.path.append(os.path.dirname(__file__))
 path1 = os.path.dirname(__file__)
 path2 = '/'.join(path1.split('/')[:-2])
-rife_path = f'{path2}/hard_networks/RIFE/arXiv2020-RIFE/'
+rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
 
 warnings.filterwarnings("ignore")
 
