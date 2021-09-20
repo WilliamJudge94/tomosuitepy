@@ -82,9 +82,10 @@ Install the required packages to be used for RIFE networks.
     pip install itk
     pip install itkwidgets
 
-    cd /location/of/tomosuitepy_github/repo/hard_networks/RIFE/arXiv2020-RIFE/
-    pip3 install -r requirements.txt
-    pip install torchvision==0.9.0
+    # DO NOT INSTALL THESE - FOR TROUBLESHOOTING ONLY
+    #cd /location/of/tomosuitepy_github/repo/hard_networks/RIFE/arXiv2020-RIFE/
+    #pip3 install -r requirements.txt
+    #pip install torchvision==0.9.0
 
-    conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
+    #conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
 

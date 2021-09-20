@@ -87,6 +87,8 @@ if not args.img is None:
     
 print("Starting Torch")
 
+print(f"Torch Availability - {torch.cuda.is_available()}")
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False)
 if torch.cuda.is_available():
