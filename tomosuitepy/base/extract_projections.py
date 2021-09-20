@@ -6,6 +6,26 @@ import numpy as np
 from tqdm import tqdm
 import tifffile as tif
 
+def save_prj_ds_chunk(data, iteration):
+    np.save(f'/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
+
+def load_prj_ds_chunk(iterations):
+    data = []
+
+    for it in range(0, iterations):
+        data.append(np.load(f'/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
+        
+    data = np.asarray(data)
+    data = np.concatenate(data)
+    return data
+
+
+def remove_saved_prj_ds_chunk(iterations):
+    for it in range(0, iterations):
+        os.remove(f'/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
+
+
+
 
 def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose,
@@ -48,16 +68,26 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         flat = tomopy.downsample(flat, level=binning, axis=1)
 
 
-        prj_ds_chunks = []
-        
-        for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
-            prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
-            prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
-            prj_ds_chunks.append(prj_ds_chunk.copy())
-            del prj_ds_chunk
-            time.sleep(1)
+        if chunk_size4downsample > 1:
 
-        prj = np.concatenate(prj_ds_chunks)
+            prj_ds_chunks = []
+            iteration = 0
+            
+                for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
+                    prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
+                    prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
+                    save_prj_ds_chunk(data, iteration)
+                    iteration += 1
+                    del prj_ds_chunk
+                    time.sleep(1)
+
+
+                prj = load_prj_ds_chunk(iteration)
+                remove_saved_prj_ds_chunk(iteration)
+
+        else:
+            prj = tomopy.downsample(prj, level=binning)
+            prj = tomopy.downsample(prj, level=binning, axis=1)
 
 
     # Normalized the projections
