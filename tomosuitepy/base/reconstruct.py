@@ -6,6 +6,7 @@ import tomopy
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from pympler import muppy, summary
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
 from ..base.common import loading_tiff_prj
@@ -149,7 +150,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         # Feed into reconstruction function
         recon, user_extra = reconstruct_func(prj_chunked, theta, rot_center=rot_center)
         recon_store[idx * prj_chunked_main_shape[2]: (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
-        
+        all_objects = muppy.get_objects()
+        sum1 = summary.summarize(all_objects)
         del recon
         #chunk_recon_store.append(recon)
         user_extra_store.append(user_extra)

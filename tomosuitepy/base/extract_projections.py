@@ -104,7 +104,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
                 #summary.print_(sum1, limit=1)
-                time.sleep(10)
+                time.sleep(1)
 
 
             prj = load_prj_ds_chunk(iteration)
