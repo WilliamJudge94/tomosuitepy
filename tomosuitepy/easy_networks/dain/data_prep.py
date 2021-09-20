@@ -8,6 +8,12 @@ import os, shutil
 import numpy as np
 from tqdm import tqdm
 import tifffile as tif
+import sys
+
+sys.path.append(os.path.dirname(__file__))
+path1 = os.path.dirname(__file__)
+path2 = '/'.join(path1.split('/')[:-2])
+rife_path = f'{path2}/hard_networks/RIFE/arXiv2020-RIFE/'
 
 def convert2gray(images):
     "Also found in ...easy_networks.deepfillv2.data_prep"
@@ -130,7 +136,7 @@ def create_prj_mp4(basedir, video_type='input', types='base', sparse_angle_remov
     return prj_data, np.asarray(out_data)
     
     
-def rife_predict(basedir, location_of_rife, exp=2, scale=1.0, video_input_type='input', video_output_type='predicted'):
+def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, video_input_type='input', video_output_type='predicted'):
     """Use the neural network called RIFE to upscale the amount of projections.
     
     Parameters
