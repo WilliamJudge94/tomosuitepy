@@ -88,13 +88,10 @@ if not args.img is None:
     
 print("Starting Torch")
 
-<<<<<<< HEAD
-print(f"Torch Availability - {torch.cuda.is_available()}")
-=======
 print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
 
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
->>>>>>> 039054162c7d261ff2b6dfee08bda4399b87c99c
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False)
