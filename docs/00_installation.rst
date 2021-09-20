@@ -75,8 +75,7 @@ Install the required packages to be used for RIFE networks.
     pip install pandas
     pip install pympler
 
-    git clone https://github.com/hzwer/arXiv2020-RIFE.git
-    cd arXiv2020-RIFE
+    cd /location/of/tomosuitepy_github/repo/hard_networks/RIFE/arXiv2020-RIFE/
     pip3 install -r requirements.txt
-    
+    pip install torchvision  
 
