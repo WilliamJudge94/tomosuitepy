@@ -7,7 +7,7 @@ from tqdm import tqdm
 import tifffile as tif
 
 def save_prj_ds_chunk(data, iteration):
-    np.save(f'/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
+    np.save(f'/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
 
 def load_prj_ds_chunk(iterations):
     data = []
