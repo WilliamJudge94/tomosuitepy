@@ -160,13 +160,14 @@ def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, video_in
         The name of the mp4 file to be created at {basedir}dain/video/{video_output_type}.mp4
     """
     
-    first = f'python3 {location_of_rife}inference_video.py'
+    pre = f'cd {location_of_rife} &&'
+    first = f'python3 inference_video.py'
     second = f'--exp={exp}'
     third = f'--video={basedir}dain/video/{video_input_type}.mp4'
     fourth = f'--scale={scale}'
     fifth = f"--output={basedir}dain/video/{video_output_type}.mp4"
     
-    print(f"{first} {second} {third} {fourth} {fifth}")
+    print(f"{pre} {first} {second} {third} {fourth} {fifth}")
     
     
 def obtain_frames(basedir, video_type='predicted', return_frames=False, output_folder='frames'):

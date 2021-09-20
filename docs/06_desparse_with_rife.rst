@@ -5,8 +5,23 @@ DeSparse Angle With Rife Neural Network
 If any User would like to improve sparse angle tomographic scans, please use the following protocols. 
 
 
-Placing Projections Into .MP4
-==============================
+Loading In TomoSuitePY
+======================
+
+.. code:: python
+
+    import sys
+    sys.path.append('/location/of/tomosuitepy/github_repo/')
+
+
+Setting Up Data
+===============
+
+Please see the Start Project documentation
+
+
+Placing Projections Into .MP4 - Jupyter
+=======================================
 
 
 .. code:: python
@@ -14,28 +29,39 @@ Placing Projections Into .MP4
     from tomosuite.easy_networks.dain.data_prep import create_prj_mp4, rife_predict, obtain_frames
 
 
-    output = create_prj_mp4(basedir, sparse_angle_removal=1, fps=10, apply_exp=False)
+    output = create_prj_mp4(basedir, # Project file - definition in Start Project docs
+                            sparse_angle_removal=1, # Use ever x frame
+                            fps=10, # fps of output movie - 10fps is standard
+                            apply_exp=False # If the User would like to apply a log to the frames
+                            )
     
 
-Obtain Network Prediction Command
-=================================
+Obtain Network Prediction Command - Jupyter + Command Line
+==========================================================
     
 .. code:: python   
 
+    # Take the output of this command and run it through your terminal with the rife conda environment activated
     rife_predict(basedir, exp=2)
     
  
-Read The Network Prediction And Save New Projections
-====================================================
+Read The Network Prediction And Save New Projections - Jupyter
+==============================================================
 
 .. code:: python   
 
     frames = obtain_frames(basedir, video_type='predicted', output_folder='frames')
     
+
+
+Obtain Rotation Center
+======================
+
+Please see Find Rotation Center documentation.
     
  
-Use TomoSuite To Reconstruct New Frames
-=======================================
+Use TomoSuite To Reconstruct New Frames - Jupyter
+=================================================
 
 .. code:: python   
      
@@ -59,8 +85,8 @@ Use TomoSuite To Reconstruct New Frames
                                             rot_center=598, 
                                             reconstruct_func=tomo_recon,
                                             network='dain',
-                                            start_row=0,
-                                            end_row=1,
+                                            start_row=None,
+                                            end_row=None,
                                             power2pad=True,
                                             dain_types=[frames_folder, output_image_type, apply_log])
 
