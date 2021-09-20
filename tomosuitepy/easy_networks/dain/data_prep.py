@@ -130,13 +130,16 @@ def create_prj_mp4(basedir, video_type='input', types='base', sparse_angle_remov
     return prj_data, np.asarray(out_data)
     
     
-def rife_predict(basedir, exp=2, scale=1.0, video_input_type='input', video_output_type='predicted'):
+def rife_predict(basedir, location_of_rife, exp=2, scale=1.0, video_input_type='input', video_output_type='predicted'):
     """Use the neural network called RIFE to upscale the amount of projections.
     
     Parameters
     ----------
     basedir : str
         Path to the project.
+
+    location_of_rife : str
+        Path to the github repo of RIFE with / at the end.
         
     exp : int
         2 to the power of exp that the frames will be upscaled by
@@ -151,7 +154,7 @@ def rife_predict(basedir, exp=2, scale=1.0, video_input_type='input', video_outp
         The name of the mp4 file to be created at {basedir}dain/video/{video_output_type}.mp4
     """
     
-    first = 'python3 inference_video.py'
+    first = f'python3 {location_of_rife}inference_video.py'
     second = f'--exp={exp}'
     third = f'--video={basedir}dain/video/{video_input_type}.mp4'
     fourth = f'--scale={scale}'
