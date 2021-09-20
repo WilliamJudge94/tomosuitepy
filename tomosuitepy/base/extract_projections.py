@@ -55,8 +55,9 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
             prj_ds_chunks.append(prj_ds_chunk.copy())
             del prj_ds_chunk
+            time.sleep(1)
 
-        prj = np.concatenate(prj_chunks)
+        prj = np.concatenate(prj_ds_chunks)
 
 
     # Normalized the projections
