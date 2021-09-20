@@ -16,6 +16,7 @@ sys.path.append(os.path.dirname(__file__))
 path1 = os.path.dirname(__file__)
 path2 = '/'.join(path1.split('/')[:-2])
 rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
+sys.path.append(rife_path)
 
 warnings.filterwarnings("ignore")
 
@@ -64,7 +65,7 @@ parser.add_argument('--video', dest='video', type=str, default=None)
 parser.add_argument('--output', dest='output', type=str, default=None)
 parser.add_argument('--img', dest='img', type=str, default=None)
 parser.add_argument('--montage', dest='montage', action='store_true', help='montage origin video')
-parser.add_argument('--model', dest='modelDir', type=str, default=f'{rife_path}train_log', help='directory with trained model files')
+parser.add_argument('--model', dest='modelDir', type=str, default='train_log', help='directory with trained model files')
 parser.add_argument('--fp16', dest='fp16', action='store_true', help='fp16 mode for faster and more lightweight inference on cards with Tensor Cores')
 parser.add_argument('--UHD', dest='UHD', action='store_true', help='support 4k video')
 parser.add_argument('--scale', dest='scale', type=float, default=1.0, help='Try scale=0.5 for 4k video')
