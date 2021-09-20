@@ -74,6 +74,7 @@ parser.add_argument('--fps', dest='fps', type=int, default=None)
 parser.add_argument('--png', dest='png', action='store_true', help='whether to vid_out png format vid_outs')
 parser.add_argument('--ext', dest='ext', type=str, default='mp4', help='vid_out video extension')
 parser.add_argument('--exp', dest='exp', type=int, default=1)
+parser.add_argument('--gpu', type=str, default='1', help='index of GPU to use')
 args = parser.parse_args()
 
 print("Starting Program")
@@ -87,7 +88,13 @@ if not args.img is None:
     
 print("Starting Torch")
 
+<<<<<<< HEAD
 print(f"Torch Availability - {torch.cuda.is_available()}")
+=======
+print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
+
+os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
+>>>>>>> 039054162c7d261ff2b6dfee08bda4399b87c99c
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False)
@@ -98,13 +105,17 @@ if torch.cuda.is_available():
         torch.set_default_tensor_type(torch.cuda.HalfTensor)
 
 try:
+    print("Trying to Load HDv2: ~3gb of RAM")
     from model.RIFE_HDv2 import Model
     model = Model()
+    print("Loaded HDv2")
     model.load_model(args.modelDir, -1)
     print("Loaded v2.x HD model.")
 except:
+    print("Trying to Load HD")
     from model.RIFE_HD import Model
     model = Model()
+    print("Loaded HD")
     model.load_model(args.modelDir, -1)
     print("Loaded v1.x HD model")
 model.eval()
