@@ -76,7 +76,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
                 prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
                 prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
-                save_prj_ds_chunk(data, iteration)
+                save_prj_ds_chunk(prj_ds_chunk, iteration)
                 iteration += 1
                 del prj_ds_chunk
                 time.sleep(1)
