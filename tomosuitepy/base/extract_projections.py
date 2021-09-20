@@ -10,7 +10,7 @@ import tifffile as tif
 def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 custom_dataprep, binning, bkg_norm, chunk_size4bkg, verbose,
                 force_positive, removal_val, minus_log,
-                remove_neg_vals, remove_nan_vals, remove_inf_vals, correct_norma_extremes):
+                remove_neg_vals, remove_nan_vals, remove_inf_vals, correct_norma_extremes, chunk_size4downsample):
     """Preprocesses the projections data to be saves as .tif images
     
     Parameters
@@ -39,14 +39,25 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
     if binning>0:
         if verbose:
             print('\n** Down sampling data')
-        prj = tomopy.downsample(prj, level=binning)
-        prj = tomopy.downsample(prj, level=binning, axis=1)
+
 
         dark = tomopy.downsample(dark, level=binning)
         dark = tomopy.downsample(dark, level=binning, axis=1)
 
         flat = tomopy.downsample(flat, level=binning)
         flat = tomopy.downsample(flat, level=binning, axis=1)
+
+
+        prj_ds_chunks = []
+        
+        for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
+            prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning)
+            prj_ds_chunk = tomopy.downsample(prj_ds_chunk, level=binning, axis=1)
+            prj_ds_chunks.append(prj_ds_chunk.copy())
+            del prj_ds_chunk
+
+        prj = np.concatenate(prj_chunks)
+
 
     # Normalized the projections
     if verbose:
@@ -154,7 +165,7 @@ def extract(datadir, fname, basedir,
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=True):
+            correct_norma_extremes=True, chunk_size4downsample=1):
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
@@ -253,7 +264,7 @@ def extract(datadir, fname, basedir,
                       force_positive=force_positive, removal_val=removal_val, minus_log=minus_log,
                       remove_neg_vals=remove_neg_vals,
                       remove_nan_vals=remove_nan_vals, remove_inf_vals=remove_inf_vals,
-                      correct_norma_extremes=correct_norma_extremes)
+                      correct_norma_extremes=correct_norma_extremes, chunk_size4downsample=chunk_size4downsample)
         
     if save:
 
