@@ -32,8 +32,14 @@ Basics of tomosuite (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networks
     # Installing basic packages
     conda create -n test_basic python=3.6
     conda env update -n test_basic --file /location/to/tomosuitpy/github/clone/envs/basic.yml
+    
+    source activate test_basic
+    
     pip install pandas
     pip install pympler
+    
+    pip install ipykernel
+    ipython kernel install --user --name=test_basic
 
 
 TomoGAN and Noise2Noise Conda Environment
@@ -44,7 +50,16 @@ Install the required packages to be used for TomoGAN, Noise2Noise, and RIFE netw
 .. code:: python
 
     # Installing TomoGAN and Noise2Noise packages
-    conda create -n tomogan_tomosuite --file /location/to/tomosuitpy/github/clone/envs/tomogan.yml
+    conda create -n test_tomogan python=3.6
+    conda env update -n test_tomogan --file /location/to/tomosuitpy/github/clone/envs/tomogan_n2n.yml
+    
+    source activate test_tomogan
+    
+    pip install pandas
+    pip install pympler
+    pip install ipykernel
+    
+    ipython kernel install --user --name=test_tomogan
 
 
 DeepFillV2 Conda Environment
@@ -55,7 +70,10 @@ Install the required packages to be used for DeepfillV2 networks.
 .. code:: python
 
     # Installing TomoGAN and Noise2Noise packages
-    conda create -n deepfill_tomosuite --file /location/to/tomosuitpy/github/clone/envs/deepfillv2.yml
+    conda create -n test_deepfill --file /location/to/tomosuitpy/github/clone/envs/deepfillv2.yml
+    
+    source activate test_deepfill
+    
     pip install git+https://github.com/WilliamJudge94/neuralgym
     pip install pandas
     pip install pympler
