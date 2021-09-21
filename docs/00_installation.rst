@@ -89,10 +89,16 @@ Install the required packages to be used for RIFE networks.
 
     # Installing RIFE packages
     conda create -n rife_tomosuite --file /location/to/tomosuitpy/github/clone/envs/rife.yml
+    
+    source activate rife_tomosuite
+    
     pip install pandas
     pip install pympler
     pip install itk
     pip install itkwidgets
+    pip install ipykernel
+    
+    ipython kernel install --user --name=rife_tomosuite
 
 
 DO NOT USE
