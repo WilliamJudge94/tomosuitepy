@@ -43,11 +43,7 @@ Install the required packages to be used for TomoGAN, Noise2Noise, and RIFE netw
 .. code:: python
 
     # Installing TomoGAN and Noise2Noise packages
-    conda env create --file tomogan_n2n.yml -n test_tomogan
-    pip install pandas
-    pip install pympler
-    pip install itk
-    pip install itkwidgets
+    conda create -n tomogan_tomosuite --file /location/to/tomosuitpy/github/clone/envs/tomogan.yml
 
 
 DeepFillV2 Conda Environment
