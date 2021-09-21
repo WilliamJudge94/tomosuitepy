@@ -153,14 +153,11 @@ For this section please make sure that the base conda environment is activated
 
 .. code:: python
 
-
-    from tomosuitepy.base.reconstruct import reconstruct_data, plot_reconstruction_centers
-    basedir = '/local/data/path/'
-
-
-
     import tomopy
-    from tomosuitepy.base.reconstruct import reconstruct_data, plot_reconstruction
+    from tomosuitepy.base.reconstruct import reconstruct_data, plot_reconstruction, plot_reconstruction_centers
+    
+    basedir = '/local/data/path/'
+    
     
     def tomo_recon(prj, theta, rot_center, user_extra=None):
 
