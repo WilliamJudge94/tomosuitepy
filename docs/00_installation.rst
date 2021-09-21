@@ -30,7 +30,8 @@ Basics of tomosuite (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networks
 .. code:: python
 
     # Installing basic packages
-    conda create -n basic_tomosuite --file /location/to/tomosuitpy/github/clone/envs/basic.yml
+    conda enve create -n test_basic python=3.6
+    conda env update -n test_basic --file /location/to/tomosuitpy/github/clone/envs/basic.yml
     pip install pandas
     pip install pympler
 
