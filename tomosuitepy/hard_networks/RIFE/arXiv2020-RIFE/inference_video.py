@@ -13,7 +13,7 @@ from queue import Queue, Empty
 from benchmark.pytorch_msssim import ssim_matlab
 
 sys.path.append(os.path.dirname(__file__))
-path1 = os.path.dirname(__file__)
+path1 = os.path.dirname(os.path.abspath(__file__))
 path2 = '/'.join(path1.split('/')[:-2])
 rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
 sys.path.append(rife_path)
@@ -78,7 +78,7 @@ parser.add_argument('--gpu', type=str, default='1', help='index of GPU to use')
 args = parser.parse_args()
 
 print("Starting Program")
-
+print(f"{path1}, {path2}")
 assert (not args.video is None or not args.img is None)
 if args.UHD and args.scale==1.0:
     args.scale = 0.5
