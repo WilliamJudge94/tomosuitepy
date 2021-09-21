@@ -63,6 +63,8 @@ Please see Find Rotation Center documentation.
 Use TomoSuite To Reconstruct New Frames - Jupyter
 =================================================
 
+Use the "base" conda environment for this step. Tomopy/Astra do not play well with the RIFE network requirements. View installation documentation for this step.
+
 .. code:: python   
      
     import tomopy
