@@ -291,6 +291,9 @@ def extract(datadir, fname, basedir,
 
     correct_norma_extremes : bool
         Fix normalization values so the -log can be applied safeley
+
+    chunk_size4downsample : int
+        Allows the User to chunk their data for downsampling. Helps with RAM usage.
         
     
     Returns

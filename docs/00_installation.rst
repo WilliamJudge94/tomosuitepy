@@ -6,8 +6,8 @@ Installation of TomoSuitePY
 
 
 
-Creating Virtual Environment
-============================
+Installing Conda Environment To Jupyter
+=======================================
 
 For each environment below please use the following to add each environment to jupyter. Replace env_ with the appropriate name
 

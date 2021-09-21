@@ -74,7 +74,7 @@ parser.add_argument('--fps', dest='fps', type=int, default=None)
 parser.add_argument('--png', dest='png', action='store_true', help='whether to vid_out png format vid_outs')
 parser.add_argument('--ext', dest='ext', type=str, default='mp4', help='vid_out video extension')
 parser.add_argument('--exp', dest='exp', type=int, default=1)
-parser.add_argument('--gpu', type=str, default='1', help='index of GPU to use')
+parser.add_argument('--gpu', type=str, default='0', help='index of GPU to use')
 args = parser.parse_args()
 
 print("Starting Program")
