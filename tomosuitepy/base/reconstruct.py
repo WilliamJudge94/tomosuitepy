@@ -248,7 +248,7 @@ def prepare_tomogan(basedir, types, second_basedir, wedge_removal,
 def deal_with_sparse_angle(prj_data, theta,
                            sparse_angle_removal,
                            double_sparse=None):
-    "Also found in ...easy_networks.dain.data_prep"
+    "Also found in ...easy_networks.rife.data_prep"
     if sparse_angle_removal != 1:
         new_prj =[]
         new_theta = []
@@ -315,10 +315,10 @@ def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_ro
 
 
 
-def prepare_dain(basedir, start_row, end_row, dain_types, verbose):
+def prepare_rife(basedir, start_row, end_row, rife_types, verbose):
 
 
-    frames_loc = f'{basedir}dain/{dain_types[0]}/'
+    frames_loc = f'{basedir}rife/{rife_types[0]}/'
     
     if verbose:
         print(f"Loading data from: {frames_loc}")
@@ -326,14 +326,14 @@ def prepare_dain(basedir, start_row, end_row, dain_types, verbose):
     
     files = os.listdir(frames_loc)
     files = sorted(files)
-    new_files = [f'{frames_loc}{x}' for x in files if dain_types[1] in x]
+    new_files = [f'{frames_loc}{x}' for x in files if rife_types[1] in x]
     
     prj_data = []
     
     for file in tqdm(new_files, desc='Loading Data'):
         original = cv2.imread(file, -1)
         fixed_original = rgb2gray(original)
-        if dain_types[2] == True:
+        if rife_types[2] == True:
             fixed_original = np.log(fixed_original)
         #fixed_original *= 255.0
 
@@ -375,7 +375,7 @@ def reconstruct_data(basedir,
                      wedge_removal=0,
                      sparse_angle_removal=1,
                      types='denoise',
-                     dain_types=['output_frames', '.png', False],
+                     rife_types=['output_frames', '.png', False],
                      second_basedir=None,
                      checkpoint_num=None,
                      double_sparse=None,
@@ -414,7 +414,7 @@ def reconstruct_data(basedir,
         
     network : None or str
         Allows the program to determine which data the User is importing. And puts the data into the
-        right shape for the reconstruct_func. str examples are 'tomogan', 'deepfillv2', 'dain'.
+        right shape for the reconstruct_func. str examples are 'tomogan', 'deepfillv2', 'rife'.
         
     wedge_removal : int
         Zeroes out this many projections from the beginning and end of the projection list.
@@ -426,11 +426,11 @@ def reconstruct_data(basedir,
         Used to determine which datasets to load in for the tomogan network. 'denoise_fake',
         'denoise_exp', 'noise_exp', 
         
-    dain_types : array
-        An array with layout to dain_types=['folder', 'filetype', apply_log]
+    rife_types : array
+        An array with layout to rife_types=['folder', 'filetype', apply_log]
         
         folder : str
-            the location inside basedir/dain/ to obtain the frames from. Standard is 'frames'
+            the location inside basedir/rife/ to obtain the frames from. Standard is 'frames'
         
         filetype : str
             the string of the image file type. .png, .tif, or .tiff
@@ -482,9 +482,9 @@ def reconstruct_data(basedir,
         start, end, prj_data, theta = prepare_deepfillv2(basedir, checkpoint_num, start_row, end_row, verbose=verbose)
         
         
-    elif network == 'dain':
+    elif network == 'rife':
         recon_type = 'standard'
-        start, end, prj_data, theta = prepare_dain(basedir, start_row, end_row, dain_types=dain_types, verbose=verbose)
+        start, end, prj_data, theta = prepare_rife(basedir, start_row, end_row, rife_types=rife_types, verbose=verbose)
         
 
 

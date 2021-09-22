@@ -28,7 +28,7 @@ TomoSuite is a culmination of machine learning networks and data preparation met
 
 - DeSparse Angle by :ref:`desparse_type11` Training (Noise2Noise)
 
-- DeSparse Angle by :ref:`desparse_type12` Training (DAIN)
+- DeSparse Angle by :ref:`desparse_type12` Training (RIFE)
 
 - DeSparse Angle by :ref:`desparse_type2` Training (TomoGAn)
 

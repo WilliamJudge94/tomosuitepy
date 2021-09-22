@@ -26,7 +26,7 @@ Placing Projections Into .MP4 - Jupyter
 
 .. code:: python
 
-    from tomosuite.easy_networks.dain.data_prep import create_prj_mp4, rife_predict, obtain_frames
+    from tomosuite.easy_networks.rife.data_prep import create_prj_mp4, rife_predict, obtain_frames
 
 
     output = create_prj_mp4(basedir, # Project file - definition in Start Project docs
@@ -86,11 +86,11 @@ Use the "base" conda environment for this step. Tomopy/Astra do not play well wi
     slcs_v1, user_extra = reconstruct_data(basedir,
                                             rot_center=598, 
                                             reconstruct_func=tomo_recon,
-                                            network='dain',
+                                            network='rife',
                                             start_row=None,
                                             end_row=None,
                                             power2pad=True,
-                                            dain_types=[frames_folder, output_image_type, apply_log])
+                                            rife_types=[frames_folder, output_image_type, apply_log])
 
 
     fig = plot_reconstruction(slcs_v1[0:1], clim=(0, 0.28), cmap='rainbow')

@@ -31,10 +31,10 @@ def start_project(basedir):
                     'noise2noise/logs',
                     'noise2noise/output_model',
                      
-                     'dain',
-                     'dain/audio',
-                     'dain/video',
-                     'dain/frames']
+                     'rife',
+                     'rife/audio',
+                     'rife/video',
+                     'rife/frames']
     
     create_folders = [f'{basedir}{fx}' for fx in create_folders]
     
