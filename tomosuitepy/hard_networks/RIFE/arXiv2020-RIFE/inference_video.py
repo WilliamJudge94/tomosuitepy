@@ -1,7 +1,6 @@
 import os
 import cv2
 import sys
-import torch
 import argparse
 import numpy as np
 from tqdm import tqdm
@@ -19,6 +18,42 @@ rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
 sys.path.append(rife_path)
 
 warnings.filterwarnings("ignore")
+
+parser = argparse.ArgumentParser(description='Interpolation for a pair of images')
+parser.add_argument('--video', dest='video', type=str, default=None)
+parser.add_argument('--output', dest='output', type=str, default=None)
+parser.add_argument('--img', dest='img', type=str, default=None)
+parser.add_argument('--montage', dest='montage', action='store_true', help='montage origin video')
+parser.add_argument('--model', dest='modelDir', type=str, default=f'{rife_path}train_log', help='directory with trained model files')
+parser.add_argument('--fp16', dest='fp16', action='store_true', help='fp16 mode for faster and more lightweight inference on cards with Tensor Cores')
+parser.add_argument('--UHD', dest='UHD', action='store_true', help='support 4k video')
+parser.add_argument('--scale', dest='scale', type=float, default=1.0, help='Try scale=0.5 for 4k video')
+parser.add_argument('--skip', dest='skip', action='store_true', help='whether to remove static frames before processing')
+parser.add_argument('--fps', dest='fps', type=int, default=None)
+parser.add_argument('--png', dest='png', action='store_true', help='whether to vid_out png format vid_outs')
+parser.add_argument('--ext', dest='ext', type=str, default='mp4', help='vid_out video extension')
+parser.add_argument('--exp', dest='exp', type=int, default=1)
+parser.add_argument('--gpu', type=str, default='0', help='index of GPU to use')
+args = parser.parse_args()
+
+print("Starting Program")
+print(f"{path1}, {path2}")
+assert (not args.video is None or not args.img is None)
+if args.UHD and args.scale==1.0:
+    args.scale = 0.5
+assert args.scale in [0.25, 0.5, 1.0, 2.0, 4.0]
+if not args.img is None:
+    args.png = True
+    
+print("Starting Torch")
+
+print(f"GPU to Add - {args.gpu}")
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
+import torch
+
+print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
+
 
 def transferAudio(sourceVideo, targetVideo):
     import shutil
@@ -60,38 +95,6 @@ def transferAudio(sourceVideo, targetVideo):
     # remove temp directory
     shutil.rmtree("temp")
 
-parser = argparse.ArgumentParser(description='Interpolation for a pair of images')
-parser.add_argument('--video', dest='video', type=str, default=None)
-parser.add_argument('--output', dest='output', type=str, default=None)
-parser.add_argument('--img', dest='img', type=str, default=None)
-parser.add_argument('--montage', dest='montage', action='store_true', help='montage origin video')
-parser.add_argument('--model', dest='modelDir', type=str, default=f'{rife_path}train_log', help='directory with trained model files')
-parser.add_argument('--fp16', dest='fp16', action='store_true', help='fp16 mode for faster and more lightweight inference on cards with Tensor Cores')
-parser.add_argument('--UHD', dest='UHD', action='store_true', help='support 4k video')
-parser.add_argument('--scale', dest='scale', type=float, default=1.0, help='Try scale=0.5 for 4k video')
-parser.add_argument('--skip', dest='skip', action='store_true', help='whether to remove static frames before processing')
-parser.add_argument('--fps', dest='fps', type=int, default=None)
-parser.add_argument('--png', dest='png', action='store_true', help='whether to vid_out png format vid_outs')
-parser.add_argument('--ext', dest='ext', type=str, default='mp4', help='vid_out video extension')
-parser.add_argument('--exp', dest='exp', type=int, default=1)
-parser.add_argument('--gpu', type=str, default='0', help='index of GPU to use')
-args = parser.parse_args()
-
-print("Starting Program")
-print(f"{path1}, {path2}")
-assert (not args.video is None or not args.img is None)
-if args.UHD and args.scale==1.0:
-    args.scale = 0.5
-assert args.scale in [0.25, 0.5, 1.0, 2.0, 4.0]
-if not args.img is None:
-    args.png = True
-    
-print("Starting Torch")
-
-print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
-
-print(f"GPU to Add - {args.gpu}")
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
