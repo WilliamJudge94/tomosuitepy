@@ -93,6 +93,7 @@ print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
 #os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 
 try:
+    print(f"Obtaining GPU - {args.gpu}")
     torch.cuda.device(args.gpu)
     gpu_name = torch.cuda.get_device_name(torch.cuda.current_device())
     print(f"GPU in use: {gpu_name}")
