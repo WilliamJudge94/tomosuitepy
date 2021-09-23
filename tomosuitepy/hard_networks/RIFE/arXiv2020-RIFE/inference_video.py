@@ -74,7 +74,7 @@ parser.add_argument('--fps', dest='fps', type=int, default=None)
 parser.add_argument('--png', dest='png', action='store_true', help='whether to vid_out png format vid_outs')
 parser.add_argument('--ext', dest='ext', type=str, default='mp4', help='vid_out video extension')
 parser.add_argument('--exp', dest='exp', type=int, default=1)
-parser.add_argument('--gpu', type=int, default=0, help='index of GPU to use')
+parser.add_argument('--gpu', type=str, default='0', help='index of GPU to use')
 args = parser.parse_args()
 
 print("Starting Program")
@@ -90,11 +90,16 @@ print("Starting Torch")
 
 print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
 
-#os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
+print(f"GPU to Add - {args.gpu}")
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
+
+available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
+print(f"Available GPUs - {available_gpus}")
 
 try:
     print(f"Obtaining GPU - {args.gpu}")
-    torch.cuda.device(args.gpu)
+    #torch.cuda.device(args.gpu)
     gpu_name = torch.cuda.get_device_name(torch.cuda.current_device())
     print(f"GPU in use: {gpu_name}")
           
