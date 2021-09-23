@@ -95,10 +95,10 @@ print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
 try:
     torch.cuda.device(args.gpu)
     gpu_name = torch.cuda.get_device_name(torch.cuda.current_device())
-    print(f"GPU in use: {gpu_name}"
+    print(f"GPU in use: {gpu_name}")
           
 except Exception as ex:
-    print(f"Failed to import torch cuda - maybe no GPU's")
+    print(f"Failed to import torch cuda - maybe no GPU's - {ex}")
     
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
