@@ -1,24 +1,5 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-import cv2
-import sys
 import argparse
-import numpy as np
-from tqdm import tqdm
-from torch.nn import functional as F
-import warnings
-import _thread
-import skvideo.io
-from queue import Queue, Empty
-from benchmark.pytorch_msssim import ssim_matlab
-
-sys.path.append(os.path.dirname(__file__))
-path1 = os.path.dirname(os.path.abspath(__file__))
-path2 = '/'.join(path1.split('/')[:-2])
-rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
-sys.path.append(rife_path)
-
-warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(description='Interpolation for a pair of images')
 parser.add_argument('--video', dest='video', type=str, default=None)
@@ -37,6 +18,31 @@ parser.add_argument('--exp', dest='exp', type=int, default=1)
 parser.add_argument('--gpu', type=str, default='0', help='index of GPU to use')
 args = parser.parse_args()
 
+# Dealing with GPU Selection
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
+
+import cv2
+import sys
+import numpy as np
+from tqdm import tqdm
+import torch
+from torch.nn import functional as F
+import warnings
+import _thread
+import skvideo.io
+from queue import Queue, Empty
+from benchmark.pytorch_msssim import ssim_matlab
+
+sys.path.append(os.path.dirname(__file__))
+path1 = os.path.dirname(os.path.abspath(__file__))
+path2 = '/'.join(path1.split('/')[:-2])
+rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
+sys.path.append(rife_path)
+
+warnings.filterwarnings("ignore")
+
+
 print("Starting Program")
 print(f"{path1}, {path2}")
 assert (not args.video is None or not args.img is None)
@@ -49,9 +55,6 @@ if not args.img is None:
 print("Starting Torch")
 
 print(f"GPU to Add - {args.gpu}")
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-
-import torch
 
 print(f"Torch CUDA Availability - {torch.cuda.is_available()}")
 
