@@ -89,6 +89,13 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         flat = tomopy.downsample(flat, level=binning)
         flat = tomopy.downsample(flat, level=binning, axis=1)
 
+        try:
+            all_objects = muppy.get_objects()
+            sum1 = summary.summarize(all_objects)
+
+        except Exception as ex:
+            raise ValueError(f"Failed to initiate muppy RAM collection - Error: {ex}")
+
 
         if chunk_size4downsample > 1:
 

@@ -490,7 +490,14 @@ def reconstruct_data(basedir,
 
     if chunk_recon_size > 1:
         print(f'Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
-        
+
+    try:
+        all_objects = muppy.get_objects()
+        sum1 = summary.summarize(all_objects)
+
+    except Exception as ex:
+        raise ValueError(f"Failed to initiate muppy RAM collection - Error: {ex}")
+
     slc_proj, user_extra = reconstruct_single_slice(prj_data.copy(), 
                                            theta,
                                            rot_center = rot_center, 
