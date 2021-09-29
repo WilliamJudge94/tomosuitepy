@@ -94,12 +94,12 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             sum1 = summary.summarize(all_objects)
 
         except Exception as ex:
-            raise ValueError(f"Failed to initiate muppy RAM collection - Error: {ex}")
+            raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
 
 
         if chunk_size4downsample > 1:
 
-            print(f'** Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
+            print(f'\n** Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
 
             iteration = 0
             
