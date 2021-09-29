@@ -96,10 +96,10 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         except Exception as ex:
             raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
 
+        if verbose:
+            print(f'\n** Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
 
         if chunk_size4downsample > 1:
-
-            print(f'\n** Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
 
             iteration = 0
             
@@ -107,20 +107,26 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 #prj_ds_chunk2 = tomopy.downsample(prj_ds_chunk, level=binning)
                 #prj_ds_chunk2 = tomopy.downsample(prj_ds_chunk2, level=binning, axis=1)
 
-                print('Before Cache Clearing')
+                if verbose:
+                    print('Before Cache Clearing')
                 prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
-                print('After Cache Clearing')
-                print('Before Chunk Saving')
+                if verbose:
+                    print('After Cache Clearing')
+                    print('Before Chunk Saving')
                 save_prj_ds_chunk(prj_ds_chunk2, iteration)
-                print('After Chunk Saving')
+                if verbose:
+                    print('After Chunk Saving')
                 iteration += 1
 
-                print('Before Muppy Clear 1')
+                if verbose:
+                    print('Before Muppy Clear 1')
                 all_objects = muppy.get_objects()
-                print('AfterMuppy Clear 1')
-                print('Before Muppy Clear 2')
+                if verbose:
+                    print('AfterMuppy Clear 1')
+                    print('Before Muppy Clear 2')
                 sum1 = summary.summarize(all_objects)
-                print('After Muppy Clear 2')
+                if verbose:
+                    print('After Muppy Clear 2')
                 #summary.print_(sum1, limit=1)
                 time.sleep(1)
 
