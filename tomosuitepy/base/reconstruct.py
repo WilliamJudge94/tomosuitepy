@@ -488,6 +488,9 @@ def reconstruct_data(basedir,
         
 
 
+    if chunk_recon_size > 1:
+        print(f'Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
+        
     slc_proj, user_extra = reconstruct_single_slice(prj_data.copy(), 
                                            theta,
                                            rot_center = rot_center, 

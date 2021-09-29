@@ -92,6 +92,8 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 
         if chunk_size4downsample > 1:
 
+            print(f'Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
+
             iteration = 0
             
             for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
