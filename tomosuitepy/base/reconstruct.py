@@ -605,7 +605,7 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
         
         else:
 
-            for idx, item in enumerate(slcs_proj):
+            for idx, item in enumerate(slc_proj):
                 plt.figure(figsize=(figsize))
                 plt.imshow(item, cmap=cmap)
                 plt.clim(clim[0], clim[1])
