@@ -3,6 +3,7 @@ import cv2
 import math
 import time
 import tomopy
+import pathlib
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -489,7 +490,8 @@ def reconstruct_data(basedir,
 
 
     if chunk_recon_size > 1:
-        print(f'Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
+        p_cwd = pathlib.Path('.').absolute()
+        print(f'Temporary files to be saved to {p_cwd} - Directory Real - {os.path.isdir(p_cwd)}')
 
     try:
         all_objects = muppy.get_objects()

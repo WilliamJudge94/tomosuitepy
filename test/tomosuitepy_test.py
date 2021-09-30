@@ -50,9 +50,10 @@ class TestEnv(unittest.TestCase):
     def test_muppy(self):
 
         try:
-            all_objects = muppy.get_objects()
+            all_objects = muppy.get_objects()[:100000]
             sum1 = summary.summarize(all_objects)
             self.assertTrue(True)
+
         except Exception as ex:
             self.fail(f"Muppy raised ExceptionType unexpectedly! - {ex}")
 

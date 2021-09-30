@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import tomopy
+import pathlib
 import dxchange
 import numpy as np
 from tqdm import tqdm
@@ -97,11 +98,12 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
             raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
 
         if verbose:
-            print(f'\n** Temporary files to be saved to {os.getcwd()} - Directory Real - {os.path.isdir(os.getcwd())}')
+            p_cwd = pathlib.Path('.').absolute()
+            print(f'\n** Temporary files to be saved to {p_cwd} - Directory Real - {p_cwd}')
 
         if chunk_size4downsample > 1:
 
-            path_chunker = os.getcwd()
+            path_chunker = pathlib.Path('.').absolute()
             iteration = 0
             
             for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
