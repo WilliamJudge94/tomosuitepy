@@ -6,7 +6,7 @@ from pympler import muppy, summary
 cwd = os.getcwd()[:-4]
 sys.path.append(f'{cwd}')
 
-from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk
+from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, pre_process_prj
 
 
 class TestEnv(unittest.TestCase):
@@ -53,6 +53,55 @@ class TestEnv(unittest.TestCase):
             self.assertTrue(True)
         except Exception as ex:
             self.fail(f"Muppy raised ExceptionType unexpectedly! - {ex}")
+
+
+    def test_pre_process_prjs(self):
+
+
+        np.random.seed(1)
+        prj = np.random.randint(100, size=(50, 100, 100))  
+        flat = np.zeros(shape=(3, 100, 100))  
+        dark = np.zeros(shape=(3, 100, 100)) 
+
+        data1 = pre_process_prj(prj, flat, dark,
+                        flat_roll=None,
+                        outlier_diff=None,
+                        outlier_size=None,
+                        air=10,
+                        custom_dataprep=False,
+                        binning=1,
+                        bkg_norm=False,
+                        chunk_size4bkg=10,
+                        verbose=False,
+                        force_positive=True,
+                        removal_val=0.001,
+                        minus_log=True,
+                        remove_neg_vals=False,
+                        remove_nan_vals=False,
+                        remove_inf_vals=False,
+                        correct_norma_extremes=True,
+                        chunk_size4downsample=1)
+
+        data2 = pre_process_prj(prj, flat, dark,
+                        flat_roll=None,
+                        outlier_diff=None,
+                        outlier_size=None,
+                        air=10,
+                        custom_dataprep=False,
+                        binning=1,
+                        bkg_norm=False,
+                        chunk_size4bkg=10,
+                        verbose=False,
+                        force_positive=True,
+                        removal_val=0.001,
+                        minus_log=True,
+                        remove_neg_vals=False,
+                        remove_nan_vals=False,
+                        remove_inf_vals=False,
+                        correct_norma_extremes=True,
+                        chunk_size4downsample=10)
+
+        self.assertTrue(np.array_equal(data1, data2))
 
 
 if __name__ == '__main__':
