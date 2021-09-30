@@ -14,6 +14,7 @@ class TestEnv(unittest.TestCase):
 
         data = np.arange(0, 10)
         iteration = 0
+        iterations = 1
 
         path_chunker = os.getcwd()
 
@@ -24,7 +25,7 @@ class TestEnv(unittest.TestCase):
         self.assertTrue(os.path.exists(data_path))
         self.assertTrue(np.array_equal(np.load(data_path), np.arange(0, 10)))
 
-        remove_saved_prj_ds_chunk(iteration, path_chunker)
+        remove_saved_prj_ds_chunk(iterations, path_chunker)
 
     def test_remove_saved_prj_ds_chunk(self):
 
@@ -42,8 +43,6 @@ class TestEnv(unittest.TestCase):
 
         self.assertFalse(os.path.exists(data_path))
         
-
-
 
 if __name__ == '__main__':
     unittest.main()
