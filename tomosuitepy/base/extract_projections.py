@@ -28,14 +28,14 @@ def cache_clearing_downsample(data, binning):
 
 def save_prj_ds_chunk(data, iteration, path):
     np.save(f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
-    print(f'saving - {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
+    #print(f'saving - {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
 
 def load_prj_ds_chunk(iterations, path):
     data = []
 
     for it in range(0, iterations):
         data.append(np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
-        print(f'loading - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+        #print(f'loading - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         
     data = np.asarray(data)
     data = np.concatenate(data)
@@ -44,7 +44,7 @@ def load_prj_ds_chunk(iterations, path):
 
 def remove_saved_prj_ds_chunk(iterations, path):
     for it in range(0, iterations):
-        print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+        #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
 
 
