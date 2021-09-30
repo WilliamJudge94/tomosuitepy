@@ -109,7 +109,7 @@ class TestEnv(unittest.TestCase):
         prj = np.random.randint(100, size=(50, 1000, 1000))  
         theta = np.linspace(0, 180, 50)
         rot_center = 500
-        rows = (500, 600)
+        rows = slice(500, 600)
         power2pad = True
 
         data1 = reconstruct_single_slice(prj, theta,
