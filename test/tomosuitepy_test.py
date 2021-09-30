@@ -30,6 +30,7 @@ class TestEnv(unittest.TestCase):
 
         data = np.arange(0, 10)
         iteration = 0
+        iterations = 1
 
         path_chunker = os.getcwd()
 
@@ -37,7 +38,7 @@ class TestEnv(unittest.TestCase):
 
         data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
 
-        remove_saved_prj_ds_chunk(iteration, path_chunker)
+        remove_saved_prj_ds_chunk(iterations, path_chunker)
 
         self.assertFalse(os.path.exists(data_path))
         
