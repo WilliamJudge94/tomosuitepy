@@ -1,6 +1,7 @@
 import unittest
 import os, sys
 import numpy as np
+from pympler import muppy, summary
 
 cwd = os.getcwd()[:-4]
 sys.path.append(f'{cwd}')
@@ -42,7 +43,17 @@ class TestEnv(unittest.TestCase):
         remove_saved_prj_ds_chunk(iterations, path_chunker)
 
         self.assertFalse(os.path.exists(data_path))
-        
+
+
+    def test_muppy(self):
+
+        try:
+            all_objects = muppy.get_objects()
+            sum1 = summary.summarize(all_objects)
+            self.assertTrue(True)
+        except Exception as ex:
+            self.fail("Muppy raised ExceptionType unexpectedly! - {ex}")
+
 
 if __name__ == '__main__':
     unittest.main()
