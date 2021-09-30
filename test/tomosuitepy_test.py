@@ -6,7 +6,7 @@ sys.path.append(f'{cwd}')
 
 print(cwd)
 
-from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk
+#from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk
 
 
 class TestEnv(unittest.TestCase):
@@ -22,3 +22,8 @@ class TestEnv(unittest.TestCase):
 
         self.assertTrue(os.path.exists(data_path))
         self.assertTrue(np.array_equal(np.load(data_path), np.arange(0, 1)))
+
+
+
+if __name__ == '__main__':
+    unittest.main()
