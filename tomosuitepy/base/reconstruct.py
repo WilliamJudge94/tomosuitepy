@@ -148,7 +148,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     # Iterate through the recon chunks
     for idx, prj_chunked in enumerate(tqdm(prj_chunked_main, desc='Tomo Recon Progress', total=len(prj_chunked_main))):
         # Feed into reconstruction function
-        recon, user_extra = reconstruct_func(prj_chunked, theta, rot_center=rot_center)
+        recon, user_extra = reconstruct_func(prj_chunked.copy(), theta, rot_center=rot_center)
         recon_store[idx * prj_chunked_main_shape[2]: (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
         all_objects = muppy.get_objects()
         sum1 = summary.summarize(all_objects)
