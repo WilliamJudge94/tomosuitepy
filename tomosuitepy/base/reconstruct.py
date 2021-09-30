@@ -594,7 +594,7 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
         starting = starting_rotation_center - total + 1
         center_range_values = np.arange(starting, starting_rotation_center + total)
     
-        if interact:
+        if interactive:
         
             sliders = widgets.IntSlider(value=starting, min=starting, max=starting_rotation_center + total - 1)
 
