@@ -21,6 +21,10 @@ For each environment below please use the following to add each environment to j
     ipython kernel install --user --name=env_tomosuite
 
 
+    # install where you are running your jupyter lab
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+
 
 Basic Conda Environment
 =======================
