@@ -122,7 +122,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                     print('Before Muppy Clear 1')
                 all_objects = muppy.get_objects()
                 if verbose:
-                    print('AfterMuppy Clear 1')
+                    print('After Muppy Clear 1')
                     print('Before Muppy Clear 2')
                 sum1 = summary.summarize(all_objects)
                 if verbose:
