@@ -561,7 +561,7 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Gre
 
         return fig
 
-def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', absolute_middle_rotation=None):
+def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', absolute_middle_rotation=None, interactive=True):
     """Allow the User to plot the data that was output from the reconstruction
     
     Parameters
@@ -582,22 +582,36 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
     -------
     Shows the plots for the given input data
     """
-    
+
     starting_rotation_center = absolute_middle_rotation
-    
+
     if starting_rotation_center is None:
         print('Please set starting_ration_center value')
-    
+
     else:
+
         total = (len(slc_proj)+1)/2
         starting = starting_rotation_center - total + 1
-        
         center_range_values = np.arange(starting, starting_rotation_center + total)
-        
-        sliders = widgets.IntSlider(value=starting, min=starting, max=starting_rotation_center + total - 1)
-
-        interact(plotting_center, slcs_proj=fixed(slc_proj), center_range_values=fixed(center_range_values), idx=sliders, starting_rotation_center=fixed(starting_rotation_center), figsize=fixed(figsize), cmap=fixed(cmap), clim=fixed(clim))
     
+        if interact:
+        
+            sliders = widgets.IntSlider(value=starting, min=starting, max=starting_rotation_center + total - 1)
+
+            interact(plotting_center, slcs_proj=fixed(slc_proj),
+            center_range_values=fixed(center_range_values),
+            idx=sliders, starting_rotation_center=fixed(starting_rotation_center),
+            figsize=fixed(figsize), cmap=fixed(cmap), clim=fixed(clim))
+        
+        else:
+
+            for idx, item in enumerate(slcs_proj):
+                plt.figure(figsize=(figsize))
+                plt.imshow(item, cmap=cmap)
+                plt.clim(clim[0], clim[1])
+                plt.title(f"Rotation Center of - {center_range_values[idx]}")
+                plt.show()
+
 
 def plotting_center(slcs_proj, center_range_values, idx, starting_rotation_center, figsize, cmap, clim):
     row = idx
