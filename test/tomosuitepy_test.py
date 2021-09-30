@@ -20,7 +20,7 @@ class TestEnv(unittest.TestCase):
         data_path = f'{os.getcwd()}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
 
         self.assertTrue(os.path.exists(data_path))
-        self.assertTrue(np.array_equal(np.load(data_path), np.arange(0, 1)))
+        self.assertTrue(np.array_equal(np.load(data_path), np.arange(0, 10)))
 
 
 
