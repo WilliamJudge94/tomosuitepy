@@ -51,6 +51,7 @@ class TestEnv(unittest.TestCase):
 
         try:
             all_objects = muppy.get_objects()[:100000]
+            self.assertTrue(100000 == len(all_objects))
             sum1 = summary.summarize(all_objects)
             self.assertTrue(True)
 
