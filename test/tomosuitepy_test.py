@@ -124,7 +124,7 @@ class TestEnv(unittest.TestCase):
         m2 = data2[0]
         subs = np.subtract(m1, m2)
 
-        self.assertEqual(np.sum(subs), -0.0095070265)
+        self.assertEqual(np.sum(subs), 0.0042518256)
 
 
 
