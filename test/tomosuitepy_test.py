@@ -7,6 +7,7 @@ cwd = os.getcwd()[:-4]
 sys.path.append(f'{cwd}')
 
 from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, pre_process_prj
+from tomosuitepy.base.reconstruct import tomo_recon, reconstruct_single_slice
 
 
 class TestEnv(unittest.TestCase):
@@ -57,7 +58,6 @@ class TestEnv(unittest.TestCase):
 
     def test_pre_process_prjs(self):
 
-
         np.random.seed(1)
         prj = np.random.randint(100, size=(50, 100, 100))  
         flat = np.zeros(shape=(3, 100, 100))  
@@ -102,6 +102,27 @@ class TestEnv(unittest.TestCase):
                         chunk_size4downsample=10)
 
         self.assertTrue(np.array_equal(data1, data2))
+
+
+    def test_recon(self):
+        np.random.seed(1)
+        prj = np.random.randint(100, size=(50, 1000, 1000))  
+        theta = np.linspace(0, 180, 50)
+        rot_center = 500
+        rows = (500, 600)
+        power2pad = True
+
+        data1 = reconstruct_single_slice(prj, theta,
+                                        rows=rows, rot_center=rot_center,
+                                        power2pad=power2pad, chunk_recon_size=10)
+
+        data2 = reconstruct_single_slice(prj, theta,
+                                        rows=rows, rot_center=rot_center,
+                                        power2pad=power2pad, chunk_recon_size=1)
+
+        self.assertTrue(np.array_equal(data1, data2))
+
+
 
 
 if __name__ == '__main__':
