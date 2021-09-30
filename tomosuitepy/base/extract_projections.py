@@ -101,7 +101,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 
         if verbose:
             p_cwd = pathlib.Path('.').absolute()
-            print(f'\n** Temporary files to be saved to {p_cwd} - Directory Real - {p_cwd}')
+            print(f'\n** Temporary files to be saved to {p_cwd} - Directory Real - {os.path.isdir(p_cwd)}')
 
         if chunk_size4downsample > 1:
 

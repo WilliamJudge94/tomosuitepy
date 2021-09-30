@@ -522,7 +522,7 @@ def reconstruct_data(basedir,
 
 
 
-def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r', interactive=True):
+def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', interactive=True):
     """Allow the User to plot the data that was output from the reconstruction
     
     Parameters
@@ -561,7 +561,7 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys
 
         return fig
 
-def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(0, 0.003), cmap='Greys_r', absolute_middle_rotation=None):
+def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', absolute_middle_rotation=None):
     """Allow the User to plot the data that was output from the reconstruction
     
     Parameters
