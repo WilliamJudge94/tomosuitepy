@@ -11,8 +11,10 @@ import tifffile as tif
 import functools
 from pympler import muppy, summary
 import pandas as pd
-
 import sys
+
+muppy_amount = 100000
+
 def sizeof_fmt(num, suffix='B'):
     ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
@@ -91,7 +93,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
         flat = tomopy.downsample(flat, level=binning, axis=1)
 
         try:
-            all_objects = muppy.get_objects()
+            all_objects = muppy.get_objects()[:muppy_amount]
             sum1 = summary.summarize(all_objects)
 
         except Exception as ex:
@@ -123,7 +125,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 
                 if verbose:
                     print('Before Muppy Clear 1')
-                all_objects = muppy.get_objects()
+                all_objects = muppy.get_objects()[:muppy_amount]
                 if verbose:
                     print('After Muppy Clear 1')
                     print('Before Muppy Clear 2')

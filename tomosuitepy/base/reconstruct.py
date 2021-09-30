@@ -15,6 +15,8 @@ from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable 
 
 
+muppy_amount = 100000
+
 def colorbar(mappable, font_size=12):
     ax = mappable.axes
     fig = ax.figure
@@ -151,7 +153,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         # Feed into reconstruction function
         recon, user_extra = reconstruct_func(prj_chunked.copy(), theta, rot_center=rot_center)
         recon_store[idx * prj_chunked_main_shape[2]: (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
-        all_objects = muppy.get_objects()
+        all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
         del recon
         #chunk_recon_store.append(recon)
@@ -494,7 +496,7 @@ def reconstruct_data(basedir,
         print(f'Temporary files to be saved to {p_cwd} - Directory Real - {os.path.isdir(p_cwd)}')
 
     try:
-        all_objects = muppy.get_objects()
+        all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
 
     except Exception as ex:
