@@ -112,26 +112,12 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 #prj_ds_chunk2 = tomopy.downsample(prj_ds_chunk, level=binning)
                 #prj_ds_chunk2 = tomopy.downsample(prj_ds_chunk2, level=binning, axis=1)
 
-                if verbose:
-                    print('Before Cache Clearing')
                 prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
-                if verbose:
-                    print('After Cache Clearing')
-                    print('Before Chunk Saving')
                 save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
-                if verbose:
-                    print('After Chunk Saving')
                 iteration += 1
 
-                if verbose:
-                    print('Before Muppy Clear 1')
                 all_objects = muppy.get_objects()[:muppy_amount]
-                if verbose:
-                    print('After Muppy Clear 1')
-                    print('Before Muppy Clear 2')
                 sum1 = summary.summarize(all_objects)
-                if verbose:
-                    print('After Muppy Clear 2')
                 #summary.print_(sum1, limit=1)
                 time.sleep(1)
 
