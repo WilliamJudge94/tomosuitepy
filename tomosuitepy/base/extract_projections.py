@@ -26,12 +26,10 @@ def cache_clearing_downsample(data, binning):
     data = tomopy.downsample(data, level=binning, axis=1)
     return data
 
-def save_prj_ds_chunk(data, iteration):
-    path = os.getcwd()
+def save_prj_ds_chunk(data, iteration, path):
     np.save(f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
 
-def load_prj_ds_chunk(iterations):
-    path = os.getcwd()
+def load_prj_ds_chunk(iterations, path):
     data = []
 
     for it in range(0, iterations):
@@ -42,8 +40,7 @@ def load_prj_ds_chunk(iterations):
     return data
 
 
-def remove_saved_prj_ds_chunk(iterations):
-    path = os.getcwd()
+def remove_saved_prj_ds_chunk(iterations, path):
     for it in range(0, iterations):
         os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
 
@@ -101,6 +98,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
 
         if chunk_size4downsample > 1:
 
+            path_chunker = os.getcwd()
             iteration = 0
             
             for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
@@ -113,7 +111,7 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 if verbose:
                     print('After Cache Clearing')
                     print('Before Chunk Saving')
-                save_prj_ds_chunk(prj_ds_chunk2, iteration)
+                save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
                 if verbose:
                     print('After Chunk Saving')
                 iteration += 1
@@ -131,8 +129,8 @@ def pre_process_prj(prj, flat, dark, flat_roll, outlier_diff, outlier_size, air,
                 time.sleep(1)
 
 
-            prj = load_prj_ds_chunk(iteration)
-            remove_saved_prj_ds_chunk(iteration)
+            prj = load_prj_ds_chunk(iteration, path_chunker)
+            remove_saved_prj_ds_chunk(iteration, path_chunker)
 
         else:
             prj = tomopy.downsample(prj, level=binning)
