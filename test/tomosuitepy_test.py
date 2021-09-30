@@ -123,8 +123,9 @@ class TestEnv(unittest.TestCase):
         m1 = data1[0]
         m2 = data2[0]
         subs = np.subtract(m1, m2)
-
-        self.assertEqual(np.sum(subs), 0.0042518256)
+        value = np.sum(subs)
+        tf = np.array_equal(value, 0.004251825623214245)
+        self.assertTrue(tf)
 
 
 
