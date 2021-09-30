@@ -101,12 +101,7 @@ class TestEnv(unittest.TestCase):
                         correct_norma_extremes=True,
                         chunk_size4downsample=10)
 
-
-        m1 = data1[0]
-        m2 = data2[0]
-        subs = np.subtract(m1, m2)
-
-        self.assertEqual(np.sum(subs), -0.0095070265)
+        self.assertTrue(np.array_equal(data1, data2))
 
 
     def test_recon(self):
@@ -125,7 +120,11 @@ class TestEnv(unittest.TestCase):
                                         rows=rows, rot_center=rot_center,
                                         power2pad=power2pad, chunk_recon_size=1)
 
-        self.assertTrue(np.array_equal(data1, data2))
+        m1 = data1[0]
+        m2 = data2[0]
+        subs = np.subtract(m1, m2)
+
+        self.assertEqual(np.sum(subs), -0.0095070265)
 
 
 
