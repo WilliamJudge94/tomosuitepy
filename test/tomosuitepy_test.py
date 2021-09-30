@@ -2,8 +2,9 @@ import unittest
 import os, sys
 import numpy as np
 from pympler import muppy, summary
+import pathlib
 
-cwd = os.getcwd()[:-4]
+cwd = pathlib.Path('.').absolute().parents[0]
 sys.path.append(f'{cwd}')
 
 from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, pre_process_prj
@@ -18,7 +19,7 @@ class TestEnv(unittest.TestCase):
         iteration = 0
         iterations = 1
 
-        path_chunker = os.getcwd()
+        path_chunker = pathlib.Path('.').absolute()
 
         save_prj_ds_chunk(data, iteration, path_chunker)
 
@@ -35,7 +36,7 @@ class TestEnv(unittest.TestCase):
         iteration = 0
         iterations = 1
 
-        path_chunker = os.getcwd()
+        path_chunker = pathlib.Path('.').absolute()
 
         save_prj_ds_chunk(data, iteration, path_chunker)
 
