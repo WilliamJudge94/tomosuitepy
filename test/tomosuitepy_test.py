@@ -15,25 +15,29 @@ class TestEnv(unittest.TestCase):
         data = np.arange(0, 10)
         iteration = 0
 
-        save_prj_ds_chunk(data, iteration)
+        path_chunker = os.getcwd()
 
-        data_path = f'{os.getcwd()}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+        save_prj_ds_chunk(data, iteration, path_chunker)
+
+        data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
 
         self.assertTrue(os.path.exists(data_path))
         self.assertTrue(np.array_equal(np.load(data_path), np.arange(0, 10)))
 
-        remove_saved_prj_ds_chunk(iteration)
+        remove_saved_prj_ds_chunk(iteration, path_chunker)
 
     def test_remove_saved_prj_ds_chunk(self):
 
         data = np.arange(0, 10)
         iteration = 0
 
-        save_prj_ds_chunk(data, iteration)
+        path_chunker = os.getcwd()
 
-        data_path = f'{os.getcwd()}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+        save_prj_ds_chunk(data, iteration, path_chunker)
 
-        remove_saved_prj_ds_chunk(iteration)
+        data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+
+        remove_saved_prj_ds_chunk(iteration, path_chunker)
 
         self.assertFalse(os.path.exists(data_path))
         
