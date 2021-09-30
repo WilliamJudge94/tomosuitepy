@@ -52,7 +52,7 @@ class TestEnv(unittest.TestCase):
             sum1 = summary.summarize(all_objects)
             self.assertTrue(True)
         except Exception as ex:
-            self.fail("Muppy raised ExceptionType unexpectedly! - {ex}")
+            self.fail(f"Muppy raised ExceptionType unexpectedly! - {ex}")
 
 
 if __name__ == '__main__':
