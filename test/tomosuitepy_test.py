@@ -1,12 +1,11 @@
 import unittest
 import os, sys
+import numpy as np
 
 cwd = os.getcwd()[:-4]
 sys.path.append(f'{cwd}')
 
-print(cwd)
-
-#from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk
+from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk
 
 
 class TestEnv(unittest.TestCase):
