@@ -23,11 +23,32 @@ def save_prj_ds_chunk(data, iteration, path):
     np.save(f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
     #print(f'saving - {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
 
+    
+    
+def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
+    
+    chunk_amount = img_shape[0]
+    
+    prj_store = np.zeros((chunk_amount * iterations, img_shape[1], img_shape[2]))
+    prj_store = prj_store.astype(dtypes)
+
+    for idx in tqdm(range(0, iterations), desc='Reading Chunked Data'):
+        first = idx * chunk_amount
+        second = (idx + 1) * chunk_amount
+        var = np.load(f'{path}/tomsuitepy_downsample_save_it_{str(idx).zfill(4)}.npy') 
+        
+        prj_store[first: second] = var.copy()
+        del var
+        
+    return prj_store
+
+
 
 def load_prj_ds_chunk(iterations, path):
+    
     data = []
 
-    for it in range(0, iterations):
+    for it in tqdm(range(0, iterations), desc='Reading Chunked Data'):
         data.append(np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
         #print(f'loading - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         
@@ -40,41 +61,14 @@ def remove_saved_prj_ds_chunk(iterations, path):
     for it in range(0, iterations):
         #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
-
-def pre_process_prj(prj,
-                    flat,
-                    dark,
-                    flat_roll,
-                    outlier_diff,
-                    outlier_size,
-                    air,
-                    custom_dataprep,
-                    binning,
-                    bkg_norm,
-                    chunk_size4bkg,
-                    verbose,
-                    minus_log,
-                    force_positive,
-                    removal_val,
-                    remove_neg_vals,
-                    remove_nan_vals,
-                    remove_inf_vals, 
-                    correct_norma_extremes,
-                    chunk_size4downsample):
-
-    """Preprocesses the projections data to be saves as .tif images
+        
+        
+        
+        
+def pre_pre_process_prj(prj, flat, dark, flat_roll, outlier_diff,
+                         outlier_size, verbose, chunking_size, normalize_ncore, dtype):
     
-    Parameters
-    ----------
-    All variables defined in the extract() function
-    
-    Returns
-    -------
-    Pre-processed projection data
-    """
-    
-
-    # Lets the User roll the flat field image
+        # Lets the User roll the flat field image
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
         
@@ -86,11 +80,71 @@ def pre_process_prj(prj,
         prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
         flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
         
-    # Normalized the projections
+    # Normalized the projections - Hella Memory
     if verbose:
         print('\n** Flat field correction')  
-    prj = tomopy.normalize(prj, flat, dark)
+        
+    if chunking_size > 1:
+
+        path_chunker = pathlib.Path('.').absolute()
+        iteration = 0
+
+        for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Flat Field Correction - Chunked'):
+            
+            prj_ds_chunk2 = tomopy.normalize(prj_ds_chunk, flat, dark, ncore=normalize_ncore)
+            prj_chunk_shape = np.shape(prj_ds_chunk2)
+            save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
+            iteration += 1
+            del prj_ds_chunk2
+            all_objects = muppy.get_objects()[:muppy_amount]
+            sum1 = summary.summarize(all_objects)
+            time.sleep(1)
+            
+        del prj
+
+        prj = load_prjs_norm_chunk(iteration, path_chunker, prj_chunk_shape, dtype)
+        remove_saved_prj_ds_chunk(iteration, path_chunker)
+        
+        all_objects = muppy.get_objects()[:muppy_amount]
+        sum1 = summary.summarize(all_objects)
+
+    else:
+        prj = tomopy.normalize(prj, flat, dark, ncore=normalize_ncore)
+        
+    return prj
+
+def pre_process_prj(prj,
+                    flat,
+                    dark,
+                    flat_roll,
+                    outlier_diff,
+                    outlier_size,
+                    air,
+                    custom_dataprep,
+                    binning,
+                    bkg_norm,
+                    chunking_size,
+                    verbose,
+                    minus_log,
+                    force_positive,
+                    removal_val,
+                    remove_neg_vals,
+                    remove_nan_vals,
+                    remove_inf_vals, 
+                    correct_norma_extremes,
+                    normalize_ncore, dtype):
+
+    """Preprocesses the projections data to be saves as .tif images
     
+    Parameters
+    ----------
+    All variables defined in the extract() function
+    
+    Returns
+    -------
+    Pre-processed projection data
+    """
+            
     # Trying to figure out how to incorporate this
     if not custom_dataprep:
         
@@ -98,7 +152,7 @@ def pre_process_prj(prj,
         if bkg_norm:
 
             prj_chunks = []
-            for prj_chunk in tqdm(np.array_split(prj, chunk_size4bkg), desc='Bkg Normalize'):
+            for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
                 prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
                 prj_chunks.append(prj_tmp.copy())
                 del prj_tmp
@@ -169,12 +223,12 @@ def pre_process_prj(prj,
         except Exception as ex:
             raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
 
-        if chunk_size4downsample > 1:
+        if chunking_size > 1:
 
             path_chunker = pathlib.Path('.').absolute()
             iteration = 0
             
-            for prj_ds_chunk in tqdm(np.array_split(prj, chunk_size4downsample), desc='Downsampling Data'):
+            for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Downsampling Data'):
 
                 prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
                 save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
@@ -197,11 +251,11 @@ def pre_process_prj(prj,
 def extract(datadir, fname, basedir,
             extraction_func=dxchange.read_aps_32id, binning=1,
             outlier_diff=None, air=10, outlier_size=None,
-            starting=0, bkg_norm=False, chunk_size4bkg=10, force_positive=True, removal_val=0.001, 
+            starting=0, bkg_norm=False, chunking_size=10, force_positive=True, removal_val=0.001, 
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=False, chunk_size4downsample=10):
+            correct_norma_extremes=False, normalize_ncore=None):
 
             
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
@@ -297,16 +351,24 @@ def extract(datadir, fname, basedir,
     
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
+    
+    prj = pre_pre_process_prj(prj=prj, flat=flat, dark=dark, flat_roll=flat_roll,
+                              outlier_diff=outlier_diff, outlier_size=outlier_size,
+                              verbose=verbose, chunking_size=chunking_size, normalize_ncore=normalize_ncore, dtype=dtype)
 
 
+    all_objects = muppy.get_objects()[:muppy_amount]
+    sum1 = summary.summarize(all_objects)
+    time.sleep(2)
+    
     prj = pre_process_prj(prj=prj, flat=flat, dark=dark, flat_roll=flat_roll,
                       outlier_diff=outlier_diff, outlier_size=outlier_size,
                       air=air, custom_dataprep=custom_dataprep, binning=binning,
-                      bkg_norm=bkg_norm, chunk_size4bkg=chunk_size4bkg, verbose=verbose,
+                      bkg_norm=bkg_norm, chunking_size=chunking_size, verbose=verbose,
                       minus_log=minus_log, force_positive=force_positive, removal_val=removal_val,
                       remove_neg_vals=remove_neg_vals, remove_nan_vals=remove_nan_vals,
                       remove_inf_vals=remove_inf_vals, correct_norma_extremes=correct_norma_extremes,
-                      chunk_size4downsample=chunk_size4downsample)
+                      normalize_ncore=normalize_ncore, dtype=dtype)
         
     if save:
 
@@ -320,6 +382,9 @@ def extract(datadir, fname, basedir,
 
         if verbose:
             print('   done in %0.3f min' % ((time.time() - start_time)/60))
+            
+        del prj
+        del theta
             
     else:
         print('   done in %0.3f min' % ((time.time() - start_time)/60))
