@@ -11,6 +11,35 @@ import tifffile as tif
 import tifffile as tif
 from pympler import muppy, summary
 
+muppy_amount = 100000
+
+def cache_clearing_downsample(data, binning):
+    data = tomopy.downsample(data, level=binning)
+    data = tomopy.downsample(data, level=binning, axis=1)
+    return data
+
+
+def save_prj_ds_chunk(data, iteration, path):
+    np.save(f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
+    #print(f'saving - {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
+
+
+def load_prj_ds_chunk(iterations, path):
+    data = []
+
+    for it in range(0, iterations):
+        data.append(np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
+        #print(f'loading - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+        
+    data = np.asarray(data)
+    data = np.concatenate(data)
+    return data
+
+
+def remove_saved_prj_ds_chunk(iterations, path):
+    for it in range(0, iterations):
+        #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+        os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
 
 def pre_process_prj(prj,
                     flat,
@@ -24,7 +53,7 @@ def pre_process_prj(prj,
                     bkg_norm,
                     chunk_size4bkg,
                     verbose,
-                    minug_log,
+                    minus_log,
                     force_positive,
                     removal_val,
                     remove_neg_vals,
@@ -78,10 +107,14 @@ def pre_process_prj(prj,
 
         if correct_norma_extremes:
             if verbose:
-                print('\n** Normalization pre-log correction')
+                print(f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
 
             prj += np.abs(prj.min())
             prj += prj.max() * 0.0001
+            
+            if verbose:
+                print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
+                
 
         if minus_log:
             if verbose:
@@ -169,6 +202,8 @@ def extract(datadir, fname, basedir,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
             correct_norma_extremes=False, chunk_size4downsample=10):
+
+            
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
     
     Parameters
@@ -194,23 +229,30 @@ def extract(datadir, fname, basedir,
     outlier_size : int or None
         Size of the median filter. If None this step is ignored.
         
-    air : int
-        Number of pixels at each boundary to calculate the scaling factor. Used during the outlier removal step.
-        
     starting : int
         the starting digit for the proj_ims files name.
         
     bkg_norm : bool
         If True then a background normalization is applied through TomoPy.
         
+    air : int
+        Number of pixels at each boundary to calculate the scaling factor. Used during the bkg_norm step.
+        
     chunk_size4bkg : int
         The background normalization is RAM intensive. This allows the User to chunk the normalization process.
-    
+            
+            
     custom_dataprep : bool
         if True this allows the User to define dataprep functions in the reconstruction script. Output stops after the initial flat/dark field normalization.
     
     dtype : str
         The data type to save the data as.
+        
+    force_positive : bool
+        Force the data to be positive after all data prep but before downsampling
+        
+    removal_val : float
+        Value to be passed into the remove neg, nan, inf, parameters
         
     flat_roll : int or None
         Move the flat field over this many pixles before applying normalization. If None this step is skipped.
@@ -224,6 +266,17 @@ def extract(datadir, fname, basedir,
     save : bool
         if False this will return the extracted projections to the user in the form of a numpy array.
         
+    minus_log : bool
+        Allow the program to apply a minus log to the data.
+        
+    remove_neg - nan - inf_values : bool
+        If True it will remove theses values iwht the removal_val
+        
+    correct_norma_extremes : bool
+        If True it will try to set the data to be positive values before applying the -log()
+        
+    chunk_size4downsample : int
+        The amount of chunking steps for downsampling.
     
     Returns
     -------
