@@ -426,12 +426,16 @@ def extract(datadir, fname, basedir,
 
 
     if chunking_size > 1:
+        del prj
+        time.sleep(1)
         prj = flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount)
 
 
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
     time.sleep(2)
+
+    prj = prj.astype(dtype)
     
     if not custom_dataprep:
         
