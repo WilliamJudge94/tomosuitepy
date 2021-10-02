@@ -153,12 +153,50 @@ def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
 
     return prj
 
-def minus_log_func(minus_log, verbose, prj):
+def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 
     if minus_log:
         if verbose:
             print('\n** Applying minus log')
-        prj = tomopy.minus_log(prj)
+
+        try:
+            all_objects = muppy.get_objects()[:muppy_amount]
+            sum1 = summary.summarize(all_objects)
+
+        except Exception as ex:
+            raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
+
+        if chunking_size > 1:
+
+            path_chunker = pathlib.Path('.').absolute()
+            iteration = 0
+            
+            for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Applying Minus Log'):
+
+                prj_ds_chunk = tomopy.minus_log(prj_ds_chunk)
+                save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
+                iteration += 1
+
+                all_objects = muppy.get_objects()[:muppy_amount]
+                sum1 = summary.summarize(all_objects)
+                time.sleep(1)
+
+        else:
+            prj = tomopy.minus_log(prj)
+
+    return prj
+
+
+def minus_log_load_func(iteration, muppy_amount):
+
+    path_chunker = pathlib.Path('.').absolute()
+
+    prj = load_prj_ds_chunk(iteration, path_chunker)
+    remove_saved_prj_ds_chunk(iteration, path_chunker)
+
+    
+    all_objects = muppy.get_objects()[:muppy_amount]
+    sum1 = summary.summarize(all_objects)
 
     return prj
 
@@ -444,8 +482,13 @@ def extract(datadir, fname, basedir,
 
         prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
                 
-        prj = minus_log_func(minus_log, verbose, prj)
-        
+        prj = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
+
+        if chunking_size > 1:
+            del prj
+            time.sleep(1)
+            prj = minus_log_load_func(iteration, muppy_amount)
+
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
 
         prj = force_positive_func(force_positive, verbose, prj)
