@@ -484,7 +484,7 @@ def extract(datadir, fname, basedir,
             prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
 
         if minus_log:
-        prj, iteration, prj_chunk_shape = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
+            prj, iteration, prj_chunk_shape = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
 
         if chunking_size > 1:
             del prj
