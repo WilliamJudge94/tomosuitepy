@@ -174,6 +174,7 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
             for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Applying Minus Log'):
 
                 prj_ds_chunk = tomopy.minus_log(prj_ds_chunk)
+                prj_chunk_shape = np.shape(prj_ds_chunk)
                 save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
                 iteration += 1
                 del prj_ds_chunk
@@ -184,17 +185,16 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
         else:
             prj = tomopy.minus_log(prj)
 
-    return prj
+    return prj, iteration, prj_chunk_shape
 
 
-def minus_log_load_func(iteration, muppy_amount):
+def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
 
     path_chunker = pathlib.Path('.').absolute()
-
-    prj = load_prj_ds_chunk(iteration, path_chunker)
+l   
+    prj = load_prjs_norm_chunk(iteration, path_chunker, img_shape, dtype)
     remove_saved_prj_ds_chunk(iteration, path_chunker)
 
-    
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
 
@@ -465,7 +465,9 @@ def extract(datadir, fname, basedir,
 
     if chunking_size > 1:
         del prj
-        time.sleep(1)
+        all_objects = muppy.get_objects()[:muppy_amount]
+        sum1 = summary.summarize(all_objects)
+        time.sleep(2)
         prj = flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount)
 
 
@@ -481,13 +483,15 @@ def extract(datadir, fname, basedir,
         prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
 
         prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
-                
-        prj = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
+
+        prj, iteration, prj_chunk_shape = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
 
         if chunking_size > 1:
             del prj
-            time.sleep(1)
-            prj = minus_log_load_func(iteration, muppy_amount)
+            all_objects = muppy.get_objects()[:muppy_amount]
+            sum1 = summary.summarize(all_objects)
+            time.sleep(2)
+            prj = minus_log_load_func(iteration, muppy_amount, prj_chunk_shape, dtype)
 
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
 
