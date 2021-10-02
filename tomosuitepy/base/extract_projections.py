@@ -78,13 +78,15 @@ def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
 
 def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype, verbose):
 
+    iteration = 0 
+    prj_chunk_shape = 0
+
     if verbose:
         print('\n** Flat field correction')  
         
     if chunking_size > 1:
 
         path_chunker = pathlib.Path('.').absolute()
-        iteration = 0
 
         for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Flat Field Correction - Chunked'):
             
@@ -99,8 +101,7 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
             
         del prj
 
-        prj = load_prjs_norm_chunk(iteration, path_chunker, prj_chunk_shape, dtype)
-        remove_saved_prj_ds_chunk(iteration, path_chunker)
+        prj = 0
         
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
@@ -108,7 +109,21 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
     else:
         prj = tomopy.normalize(prj, flat, dark, ncore=normalize_ncore)
 
+    return prj, iteration, prj_chunk_shape
+
+
+def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
+
+    path_chunker = pathlib.Path('.').absolute()
+
+    prj = load_prjs_norm_chunk(iteration, path_chunker, prj_chunk_shape, dtype)
+    remove_saved_prj_ds_chunk(iteration, path_chunker)
+    
+    all_objects = muppy.get_objects()[:muppy_amount]
+    sum1 = summary.summarize(all_objects)
+
     return prj
+
 
 
 def bkg_norm_func(bkg_norm, prj, chunking_size, air):
@@ -399,16 +414,20 @@ def extract(datadir, fname, basedir,
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
 
-
-
     flat = flat_roll_func(flat, flat_roll)
 
     # Allows the User to remove outliers
     prj, flat = outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose)
         
     # Normalized the projections - Hella Memory
-    prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype, verbose)
-    
+    prj, iteration, prj_chunk_shape = flat_field_corr_func(prj, flat, dark,
+                                                        chunking_size, normalize_ncore,
+                                                        muppy_amount, dtype, verbose)
+
+
+    if chunking_size > 1:
+        prj = flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount)
+
 
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
