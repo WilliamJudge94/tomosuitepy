@@ -68,7 +68,7 @@ def flat_roll_func(flat, flat_roll):
         flat = np.roll(flat, flat_roll, axis=2)
     return flat
 
-def outlier_diff_func(prj, outlier_diff, outlier_size, verbose):
+def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
     if outlier_diff != None and outlier_size != None:
         if verbose:
             print('\n** Remove Outliers')
@@ -233,7 +233,7 @@ def pre_pre_process_prj(prj, flat, dark, flat_roll, outlier_diff,
     flat = flat_roll_func(flat, flat_roll)
 
     # Allows the User to remove outliers
-    prj, flat = outlier_diff_func(prj, outlier_diff, outlier_size, verbose)
+    prj, flat = outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose)
         
     # Normalized the projections - Hella Memory
     prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype)
@@ -398,24 +398,41 @@ def extract(datadir, fname, basedir,
     
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
-    
-    prj = pre_pre_process_prj(prj=prj, flat=flat, dark=dark, flat_roll=flat_roll,
-                              outlier_diff=outlier_diff, outlier_size=outlier_size,
-                              verbose=verbose, chunking_size=chunking_size, normalize_ncore=normalize_ncore, dtype=dtype)
 
+
+
+    flat = flat_roll_func(flat, flat_roll)
+
+    # Allows the User to remove outliers
+    prj, flat = outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose)
+        
+    # Normalized the projections - Hella Memory
+    prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype)
+    
 
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
     time.sleep(2)
     
-    prj = pre_process_prj(prj=prj, flat=flat, dark=dark, flat_roll=flat_roll,
-                      outlier_diff=outlier_diff, outlier_size=outlier_size,
-                      air=air, custom_dataprep=custom_dataprep, binning=binning,
-                      bkg_norm=bkg_norm, chunking_size=chunking_size, verbose=verbose,
-                      minus_log=minus_log, force_positive=force_positive, removal_val=removal_val,
-                      remove_neg_vals=remove_neg_vals, remove_nan_vals=remove_nan_vals,
-                      remove_inf_vals=remove_inf_vals, correct_norma_extremes=correct_norma_extremes,
-                      normalize_ncore=normalize_ncore, dtype=dtype)
+    if not custom_dataprep:
+        
+        # Apply a background normalization to the projections
+        prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
+
+        prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
+                
+        prj = minus_log_func(minus_log, verbose, prj)
+        
+        prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
+
+        prj = force_positive_func(force_positive, verbose, prj)
+
+    else:
+        if verbose:
+            print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
+
+    # Bin the data
+    prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
         
     if save:
 
