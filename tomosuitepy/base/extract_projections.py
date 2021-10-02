@@ -90,11 +90,11 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
 
         for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Flat Field Correction - Chunked'):
             
-            prj_ds_chunk2 = tomopy.normalize(prj_ds_chunk, flat, dark, ncore=normalize_ncore)
-            prj_chunk_shape = np.shape(prj_ds_chunk2)
-            save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
+            prj_ds_chunk = tomopy.normalize(prj_ds_chunk, flat, dark, ncore=normalize_ncore)
+            prj_chunk_shape = np.shape(prj_ds_chunk)
+            save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
             iteration += 1
-            del prj_ds_chunk2
+            del prj_ds_chunk
             all_objects = muppy.get_objects()[:muppy_amount]
             sum1 = summary.summarize(all_objects)
             time.sleep(1)
@@ -174,9 +174,9 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
             for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Applying Minus Log'):
 
                 prj_ds_chunk = tomopy.minus_log(prj_ds_chunk)
-                save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
+                save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
                 iteration += 1
-
+                del prj_ds_chunk
                 all_objects = muppy.get_objects()[:muppy_amount]
                 sum1 = summary.summarize(all_objects)
                 time.sleep(1)
@@ -260,10 +260,10 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
             
             for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Downsampling Data'):
 
-                prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
-                save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
+                prj_ds_chunk = cache_clearing_downsample(prj_ds_chunk, binning)
+                save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
                 iteration += 1
-
+                del prj_ds_chunk
                 all_objects = muppy.get_objects()[:muppy_amount]
                 sum1 = summary.summarize(all_objects)
                 time.sleep(1)
