@@ -62,25 +62,22 @@ def remove_saved_prj_ds_chunk(iterations, path):
         #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         
-        
-        
-        
-def pre_pre_process_prj(prj, flat, dark, flat_roll, outlier_diff,
-                         outlier_size, verbose, chunking_size, normalize_ncore, dtype):
-    
-        # Lets the User roll the flat field image
+
+def flat_roll_func(flat, flat_roll):
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
-        
-    # Allows the User to remove outliers
+    return flat
+
+def outlier_diff_func(prj, outlier_diff, outlier_size, verbose):
     if outlier_diff != None and outlier_size != None:
         if verbose:
             print('\n** Remove Outliers')
-
         prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
         flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
-        
-    # Normalized the projections - Hella Memory
+    return prj, flat
+
+def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype):
+
     if verbose:
         print('\n** Flat field correction')  
         
@@ -110,8 +107,136 @@ def pre_pre_process_prj(prj, flat, dark, flat_roll, outlier_diff,
 
     else:
         prj = tomopy.normalize(prj, flat, dark, ncore=normalize_ncore)
-        
+
     return prj
+
+
+def bkg_norm_func(bkg_norm, prj, chunking_size, air):
+
+    if bkg_norm:
+
+        prj_chunks = []
+        for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
+            prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
+            prj_chunks.append(prj_tmp.copy())
+            del prj_tmp
+
+        prj = np.concatenate(prj_chunks)
+
+    return prj
+
+def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
+    if correct_norma_extremes:
+        if verbose:
+            print(f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
+
+        prj += np.abs(prj.min())
+        prj += prj.max() * 0.0001
+
+        if verbose:
+            print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
+
+    return prj
+
+def minus_log_func(minus_log, verbose, prj):
+
+    if minus_log:
+        if verbose:
+            print('\n** Applying minus log')
+        prj = tomopy.minus_log(prj)
+
+    return prj
+
+
+def neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val):
+
+    if remove_neg_vals:
+        if verbose:
+            print('\n** Removing neg')
+        prj = tomopy.misc.corr.remove_neg(prj, val=removal_val)
+
+    if remove_nan_vals:
+        if verbose:
+            print('\n** Removing np.nan')
+        prj = tomopy.misc.corr.remove_nan(prj, val=removal_val)
+
+    if remove_inf_vals:
+        if verbose:
+            print('\n** Removing np.inf')
+
+        prj[np.where(prj == np.inf)] = removal_val
+
+    return prj
+
+
+
+def force_positive_func(force_positive, verbose, prj):
+
+    if force_positive:
+        if verbose:
+            print('\n** Making positive numbers')
+
+        # Force the projections to be >= 0
+        if np.min(prj) < 0:
+            prj += np.abs(np.min(prj))
+            
+    elif not force_positive:
+        minimum_prj = np.min(prj)
+        if minimum_prj < 0:
+            print(f"Your lowest projection value is negative ({minimum_prj}). This may result in undesireable machine learning outputs. To change this set force_positive=True.")
+
+    return prj
+
+def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
+
+    if binning>0:
+        if verbose:
+            print('\n** Down sampling data')
+
+        try:
+            all_objects = muppy.get_objects()[:muppy_amount]
+            sum1 = summary.summarize(all_objects)
+
+        except Exception as ex:
+            raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
+
+        if chunking_size > 1:
+
+            path_chunker = pathlib.Path('.').absolute()
+            iteration = 0
+            
+            for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Downsampling Data'):
+
+                prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
+                save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
+                iteration += 1
+
+                all_objects = muppy.get_objects()[:muppy_amount]
+                sum1 = summary.summarize(all_objects)
+                time.sleep(1)
+
+            prj = load_prj_ds_chunk(iteration, path_chunker)
+            remove_saved_prj_ds_chunk(iteration, path_chunker)
+
+        else:
+            prj = tomopy.downsample(prj, level=binning)
+            prj = tomopy.downsample(prj, level=binning, axis=1)   
+
+    return prj
+
+        
+        
+def pre_pre_process_prj(prj, flat, dark, flat_roll, outlier_diff,
+                         outlier_size, verbose, chunking_size, normalize_ncore, dtype):
+    
+    # Lets the User roll the flat field image
+    flat = flat_roll_func(flat, flat_roll)
+
+    # Allows the User to remove outliers
+    prj, flat = outlier_diff_func(prj, outlier_diff, outlier_size, verbose)
+        
+    # Normalized the projections - Hella Memory
+    prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype)
 
 def pre_process_prj(prj,
                     flat,
@@ -149,101 +274,23 @@ def pre_process_prj(prj,
     if not custom_dataprep:
         
         # Apply a background normalization to the projections
-        if bkg_norm:
+        prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
 
-            prj_chunks = []
-            for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
-                prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
-                prj_chunks.append(prj_tmp.copy())
-                del prj_tmp
-
-            prj = np.concatenate(prj_chunks)
-
-        if correct_norma_extremes:
-            if verbose:
-                print(f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
-
-            prj += np.abs(prj.min())
-            prj += prj.max() * 0.0001
-            
-            if verbose:
-                print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
+        prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
                 
-
-        if minus_log:
-            if verbose:
-                print('\n** Applying minus log')
-            prj = tomopy.minus_log(prj)
+        prj = minus_log_func(minus_log, verbose, prj)
         
+        prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
 
-        if remove_neg_vals:
-            if verbose:
-                print('\n** Removing neg')
-            prj = tomopy.misc.corr.remove_neg(prj, val=removal_val)
-    
-        if remove_nan_vals:
-            if verbose:
-                print('\n** Removing np.nan')
-            prj = tomopy.misc.corr.remove_nan(prj, val=removal_val)
+        prj = force_positive_func(force_positive, verbose, prj)
 
-        if remove_inf_vals:
-            if verbose:
-                print('\n** Removing np.inf')
-   
-            prj[np.where(prj == np.inf)] = removal_val
-
-        
-        if force_positive:
-            if verbose:
-                print('\n** Making positive numbers')
-
-            # Force the projections to be >= 0
-            if np.min(prj) < 0:
-                prj += np.abs(np.min(prj))
-                
-        elif not force_positive:
-            minimum_prj = np.min(prj)
-            if minimum_prj < 0:
-                print(f"Your lowest projection value is negative ({minimum_prj}). This may result in undesireable machine learning outputs. To change this set force_positive=True.")
-        
     else:
         if verbose:
             print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
 
 
     # Bin the data
-    if binning>0:
-        if verbose:
-            print('\n** Down sampling data')
-
-        try:
-            all_objects = muppy.get_objects()[:muppy_amount]
-            sum1 = summary.summarize(all_objects)
-
-        except Exception as ex:
-            raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
-
-        if chunking_size > 1:
-
-            path_chunker = pathlib.Path('.').absolute()
-            iteration = 0
-            
-            for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Downsampling Data'):
-
-                prj_ds_chunk2 = cache_clearing_downsample(prj_ds_chunk, binning)
-                save_prj_ds_chunk(prj_ds_chunk2, iteration, path_chunker)
-                iteration += 1
-
-                all_objects = muppy.get_objects()[:muppy_amount]
-                sum1 = summary.summarize(all_objects)
-                time.sleep(1)
-
-            prj = load_prj_ds_chunk(iteration, path_chunker)
-            remove_saved_prj_ds_chunk(iteration, path_chunker)
-
-        else:
-            prj = tomopy.downsample(prj, level=binning)
-            prj = tomopy.downsample(prj, level=binning, axis=1)   
+    prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
         
     return prj
     
