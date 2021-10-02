@@ -128,15 +128,13 @@ def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
 
 def bkg_norm_func(bkg_norm, prj, chunking_size, air):
 
-    if bkg_norm:
+    prj_chunks = []
+    for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
+        prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
+        prj_chunks.append(prj_tmp.copy())
+        del prj_tmp
 
-        prj_chunks = []
-        for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
-            prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
-            prj_chunks.append(prj_tmp.copy())
-            del prj_tmp
-
-        prj = np.concatenate(prj_chunks)
+    prj = np.concatenate(prj_chunks)
 
     return prj
 
@@ -464,26 +462,28 @@ def extract(datadir, fname, basedir,
 
 
     if chunking_size > 1:
-        del prj
+        del prj, flat, dark
+        time.sleep(5)
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
-        time.sleep(2)
+
         prj = flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount)
 
 
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
     time.sleep(2)
-
-    prj = prj.astype(dtype)
     
     if not custom_dataprep:
         
         # Apply a background normalization to the projections
-        prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
+        if bkg_norm:
+            prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
 
-        prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
+        if correct_norma_extremes:
+            prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
 
+        if minus_log:
         prj, iteration, prj_chunk_shape = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
 
         if chunking_size > 1:
@@ -495,14 +495,16 @@ def extract(datadir, fname, basedir,
 
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
 
-        prj = force_positive_func(force_positive, verbose, prj)
+        if force_positive:
+            prj = force_positive_func(force_positive, verbose, prj)
 
     else:
         if verbose:
             print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
 
     # Bin the data
-    prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
+    if binning>0:
+        prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
         
     if save:
 
