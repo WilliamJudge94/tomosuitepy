@@ -191,7 +191,7 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
 
     path_chunker = pathlib.Path('.').absolute()
-l   
+ 
     prj = load_prjs_norm_chunk(iteration, path_chunker, img_shape, dtype)
     remove_saved_prj_ds_chunk(iteration, path_chunker)
 
