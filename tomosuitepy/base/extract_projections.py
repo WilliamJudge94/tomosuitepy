@@ -76,7 +76,7 @@ def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
         flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
     return prj, flat
 
-def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype):
+def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype, verbose):
 
     if verbose:
         print('\n** Flat field correction')  
@@ -407,7 +407,7 @@ def extract(datadir, fname, basedir,
     prj, flat = outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose)
         
     # Normalized the projections - Hella Memory
-    prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype)
+    prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype, verbose)
     
 
     all_objects = muppy.get_objects()[:muppy_amount]
