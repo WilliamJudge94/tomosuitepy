@@ -183,6 +183,7 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 
         else:
             prj = tomopy.minus_log(prj)
+            prj_chunk_shape = np.shape(prj)
 
     return prj, iteration, prj_chunk_shape
 
