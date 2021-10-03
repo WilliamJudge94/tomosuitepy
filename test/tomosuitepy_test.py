@@ -3,6 +3,7 @@ import os, sys
 import numpy as np
 from pympler import muppy, summary
 import pathlib
+import dxchange
 
 cwd = pathlib.Path('.').absolute().parents[0]
 sys.path.append(f'{cwd}')
@@ -67,52 +68,55 @@ class TestEnv(unittest.TestCase):
         dark = np.zeros(shape=(3, 100, 100)) 
 
 
-
-
-        data1 = pre_process_prj(prj,
-                    flat,
-                    dark,
-                    flat_roll=None,
-                    outlier_diff=None,
-                    outlier_size=None,
-                    air=10,
-                    custom_dataprep=False,
+        data1 = extract(datadir='', fname='', basedir='',
+                    extraction_func=dxchange.read_aps_32id,
                     binning=1,
+                    outlier_diff=None,
+                    air=10,
+                    outlier_size=None,
+                    starting=0,
                     bkg_norm=False,
                     chunking_size=1,
+                    force_positive=True, 
+                    emoval_val=0.001, 
+                    custom_dataprep=False,
+                    dtype='float32',
+                    flat_roll=None,
+                    overwrite=True,
                     verbose=False,
+                    save=False,
                     minus_log=True,
-                    force_positive=True,
-                    removal_val=0.001,
                     remove_neg_vals=False,
                     remove_nan_vals=False,
-                    remove_inf_vals=False, 
+                    remove_inf_vals=False,
                     correct_norma_extremes=False,
-                    normalize_ncore=1,
-                    dtype='float32')
+                    normalize_ncore=None,
+                    data=[prj, flat, dark]):
 
-
-        data2 = pre_process_prj(prj,
-                    flat,
-                    dark,
-                    flat_roll=None,
-                    outlier_diff=None,
-                    outlier_size=None,
-                    air=10,
-                    custom_dataprep=False,
+        data2 = extract(datadir='', fname='', basedir='',
+                    extraction_func=dxchange.read_aps_32id,
                     binning=1,
+                    outlier_diff=None,
+                    air=10,
+                    outlier_size=None,
+                    starting=0,
                     bkg_norm=False,
                     chunking_size=10,
+                    force_positive=True, 
+                    emoval_val=0.001, 
+                    custom_dataprep=False,
+                    dtype='float32',
+                    flat_roll=None,
+                    overwrite=True,
                     verbose=False,
+                    save=False,
                     minus_log=True,
-                    force_positive=True,
-                    removal_val=0.001,
                     remove_neg_vals=False,
                     remove_nan_vals=False,
-                    remove_inf_vals=False, 
+                    remove_inf_vals=False,
                     correct_norma_extremes=False,
-                    normalize_ncore=1,
-                    dtype='float32')
+                    normalize_ncore=None,
+                    data=[prj, flat, dark]):
 
         self.assertTrue(np.array_equal(data1, data2))
 

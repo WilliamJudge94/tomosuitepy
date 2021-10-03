@@ -274,19 +274,6 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
 
     return prj
 
-        
-        
-def pre_pre_process_prj(prj, flat, dark, flat_roll, outlier_diff,
-                         outlier_size, verbose, chunking_size, normalize_ncore, dtype):
-    
-    # Lets the User roll the flat field image
-    flat = flat_roll_func(flat, flat_roll)
-
-    # Allows the User to remove outliers
-    prj, flat = outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose)
-        
-    # Normalized the projections - Hella Memory
-    prj = flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype)
 
 def pre_process_prj(prj,
                     flat,
@@ -307,7 +294,8 @@ def pre_process_prj(prj,
                     remove_nan_vals,
                     remove_inf_vals, 
                     correct_norma_extremes,
-                    normalize_ncore, dtype):
+                    normalize_ncore,
+                    dtype):
 
     """Preprocesses the projections data to be saves as .tif images
     
@@ -352,7 +340,7 @@ def extract(datadir, fname, basedir,
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=False, normalize_ncore=None):
+            correct_norma_extremes=False, normalize_ncore=None, data=None):
 
             
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
@@ -444,7 +432,11 @@ def extract(datadir, fname, basedir,
     # extract the data from the file
     if verbose:
         print('\n** Reading data')
-    prj, flat, dark, theta = extraction_func(fname)
+    
+    if data is not None:
+        prj, flat, dark, theta = extraction_func(fname)
+    else:
+        prj, flat, dark = data
     
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
