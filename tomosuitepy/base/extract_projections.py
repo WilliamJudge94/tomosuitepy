@@ -438,7 +438,7 @@ def extract(datadir, fname, basedir,
     if data is None:
         prj, flat, dark, theta = extraction_func(fname)
     else:
-        prj, flat, dark = data
+        prj, flat, dark, theta = data
     
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))

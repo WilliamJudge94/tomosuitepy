@@ -66,6 +66,7 @@ class TestEnv(unittest.TestCase):
         prj = np.random.randint(100, size=(50, 100, 100))  
         flat = np.zeros(shape=(3, 100, 100))  
         dark = np.zeros(shape=(3, 100, 100)) 
+        theta = np.linspace(0, 180, 100)
 
 
         data1 = extract(datadir='', fname='', basedir='',
@@ -91,7 +92,7 @@ class TestEnv(unittest.TestCase):
                     remove_inf_vals=False,
                     correct_norma_extremes=False,
                     normalize_ncore=None,
-                    data=[prj, flat, dark])
+                    data=[prj, flat, dark, theta])
 
         data2 = extract(datadir='', fname='', basedir='',
                     extraction_func=dxchange.read_aps_32id,
@@ -116,7 +117,7 @@ class TestEnv(unittest.TestCase):
                     remove_inf_vals=False,
                     correct_norma_extremes=False,
                     normalize_ncore=None,
-                    data=[prj, flat, dark])
+                    data=[prj, flat, dark, theta])
 
         self.assertTrue(np.array_equal(data1, data2))
 
