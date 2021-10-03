@@ -8,7 +8,7 @@ import dxchange
 cwd = pathlib.Path('.').absolute().parents[0]
 sys.path.append(f'{cwd}')
 
-from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, pre_process_prj
+from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, pre_process_prj, extract
 from tomosuitepy.base.reconstruct import tomo_recon, reconstruct_single_slice
 
 
@@ -91,7 +91,7 @@ class TestEnv(unittest.TestCase):
                     remove_inf_vals=False,
                     correct_norma_extremes=False,
                     normalize_ncore=None,
-                    data=[prj, flat, dark]):
+                    data=[prj, flat, dark])
 
         data2 = extract(datadir='', fname='', basedir='',
                     extraction_func=dxchange.read_aps_32id,
@@ -116,7 +116,7 @@ class TestEnv(unittest.TestCase):
                     remove_inf_vals=False,
                     correct_norma_extremes=False,
                     normalize_ncore=None,
-                    data=[prj, flat, dark]):
+                    data=[prj, flat, dark])
 
         self.assertTrue(np.array_equal(data1, data2))
 
