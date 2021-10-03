@@ -153,6 +153,8 @@ def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
 
 def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 
+    iteration = 0
+
     if minus_log:
         if verbose:
             print('\n** Applying minus log')
@@ -167,7 +169,6 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
         if chunking_size > 1:
 
             path_chunker = pathlib.Path('.').absolute()
-            iteration = 0
             
             for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Applying Minus Log'):
 
@@ -433,7 +434,7 @@ def extract(datadir, fname, basedir,
     if verbose:
         print('\n** Reading data')
     
-    if data is not None:
+    if data is None:
         prj, flat, dark, theta = extraction_func(fname)
     else:
         prj, flat, dark = data
