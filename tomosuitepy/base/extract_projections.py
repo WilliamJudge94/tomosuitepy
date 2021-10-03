@@ -220,7 +220,6 @@ def neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_
     return prj
 
 
-
 def force_positive_func(force_positive, verbose, prj):
 
     if force_positive:
