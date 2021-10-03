@@ -119,7 +119,7 @@ class TestEnv(unittest.TestCase):
                     normalize_ncore=None,
                     data=[prj, flat, dark, theta])
 
-        self.assertTrue(np.array_equal(data1, data2))
+        self.assertTrue(np.array_equal(data1[0], data2[0]))
 
 
     def test_recon(self):
