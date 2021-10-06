@@ -11,7 +11,7 @@ import tifffile as tif
 import tifffile as tif
 from pympler import muppy, summary
 
-muppy_amount = 100000
+muppy_amount = 1000
 
 
 
