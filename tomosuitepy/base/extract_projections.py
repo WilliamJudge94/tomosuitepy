@@ -470,6 +470,10 @@ def extract(datadir, fname, basedir,
         prj, flat, dark, theta = extraction_func(fname)
     else:
         prj, flat, dark, theta = data
+        
+        
+    if len(prj) % chunking_size != 0:
+        raise ValueError(f'Length of projections ({len(prj)}) is not divisible by chunking_size ({chunking_size}).')
     
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
