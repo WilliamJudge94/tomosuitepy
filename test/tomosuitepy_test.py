@@ -11,6 +11,7 @@ sys.path.append(f'{cwd}')
 from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, pre_process_prj, extract
 from tomosuitepy.base.reconstruct import tomo_recon, reconstruct_single_slice
 
+muppy_ammount = 1000
 
 class TestEnv(unittest.TestCase):
 
@@ -51,8 +52,8 @@ class TestEnv(unittest.TestCase):
     def test_muppy(self):
 
         try:
-            all_objects = muppy.get_objects()[:100000]
-            self.assertTrue(100000 == len(all_objects))
+            all_objects = muppy.get_objects()[:muppy_ammount]
+            self.assertTrue(muppy_ammount == len(all_objects))
             sum1 = summary.summarize(all_objects)
             self.assertTrue(True)
 
