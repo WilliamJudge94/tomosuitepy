@@ -15,8 +15,11 @@ muppy_amount = 100000
 
 
 
-def replace_bad_values(data, kernel_selective):
+def replace_bad_values(data, kernel_selective, verbose):
     
+    if verbose:
+        print('\n** Removing Bad Values')  
+        
     bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
     og_shape = np.shape(data)
     
@@ -172,8 +175,8 @@ def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
         if verbose:
             print(f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
 
-        prj += np.abs(prj.min())
-        prj += prj.max() * 0.0001
+        prj += np.abs(prj.nanmin())
+        prj += prj.nanmax() * 0.0001
 
         if verbose:
             print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
@@ -517,7 +520,7 @@ def extract(datadir, fname, basedir,
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
         
         if neg_nan_inf_selective:
-            prj = replace_bad_values(prj, kernel_selective)
+            prj = replace_bad_values(prj, kernel_selective, verbose)
 
         if force_positive:
             prj = force_positive_func(force_positive, verbose, prj)
