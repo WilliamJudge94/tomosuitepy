@@ -13,6 +13,35 @@ from pympler import muppy, summary
 
 muppy_amount = 100000
 
+
+
+def replace_bad_values(data, kernel_selective):
+    
+    bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
+    og_shape = np.shape(data)
+    
+    for value in tqdm(bad_values, desc='Removing Bad Values'):
+        first = value[0]
+        second_v1 = value[1] - kernel_selective
+        second_v2 = value[1] + kernel_selective + 1
+
+        if second_v1 < 0:
+            second_v1 = 0
+        if second_v2 > og_shape[1]-1:
+            second_v2= og_shape[1]-1
+
+        third_v1 = value[2] - kernel_selective
+        third_v2 = value[2] + kernel_selective + 1
+
+        if third_v1 < 0:
+            third_v1 = 0
+        if third_v2 > og_shape[2]-1:
+            third_v2= og_shape[2]-1
+        mini_data = np.nanmedian(data[first, second_v1:second_v2, third_v1:third_v2])
+        data[first, value[1], value[2]] = mini_data
+        
+    return data
+
 def cache_clearing_downsample(data, binning):
     data = tomopy.downsample(data, level=binning)
     data = tomopy.downsample(data, level=binning, axis=1)
@@ -333,7 +362,6 @@ def pre_process_prj(prj,
     prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
         
     return prj
-    
 
 def extract(datadir, fname, basedir,
             extraction_func=dxchange.read_aps_32id, binning=1,
@@ -342,7 +370,7 @@ def extract(datadir, fname, basedir,
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=False, normalize_ncore=None, data=None):
+            correct_norma_extremes=False, normalize_ncore=None, neg_nan_inf_selective=False, kernel_selective=1, data=None):
 
             
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
@@ -487,6 +515,9 @@ def extract(datadir, fname, basedir,
             prj = minus_log_load_func(iteration, muppy_amount, prj_chunk_shape, dtype)
 
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
+        
+        if neg_nan_inf_selective:
+            prj = replace_bad_values(prj, kernel_selective)
 
         if force_positive:
             prj = force_positive_func(force_positive, verbose, prj)
