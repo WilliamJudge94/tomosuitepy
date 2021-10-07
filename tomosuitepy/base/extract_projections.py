@@ -50,9 +50,11 @@ def cache_clearing_downsample(data, binning):
 
 
 def save_prj_ds_chunk(data, iteration, path):
-    np.save(f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy', data)
-    #print(f'saving - {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy')
-
+    save_path = f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+    try:
+        np.save(save_path, data)
+    except Exception as ex:
+        raise ValueError(f"Unable to save data - path={save_path}\nError - {ex}")
     
     
 def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
