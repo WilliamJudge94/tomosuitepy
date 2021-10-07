@@ -11,8 +11,6 @@ import tifffile as tif
 import tifffile as tif
 from pympler import muppy, summary
 
-muppy_amount = 1000
-
 
 
 def replace_bad_values(data, kernel_selective, verbose):
@@ -373,7 +371,7 @@ def extract(datadir, fname, basedir,
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=False, normalize_ncore=None, neg_nan_inf_selective=False, kernel_selective=1, data=None):
+            correct_norma_extremes=False, normalize_ncore=None, neg_nan_inf_selective=False, kernel_selective=1, muppy_amount=1000, data=None):
 
             
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
