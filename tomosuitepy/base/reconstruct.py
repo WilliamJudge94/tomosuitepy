@@ -84,7 +84,11 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              reconstruct_func=tomo_recon, recon_type='standard',
                              power2pad=False, edge_transition=None,
                              chunk_recon_size=1, dtypes=np.float32,
-                             rot_center_shift_check=None, muppy_amount=1000):
+                             rot_center_shift_check=None,
+                             muppy_amount=1000,
+                             zero_pad_amount=None, view_one=False, minus_val=0):
+    
+    prj_data -= minus_val
     
     # Apply a median filter on all data
     if med_filter and all_data_med_filter:
@@ -114,16 +118,22 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     
     # Pad projections based on the power of 2 shape
     if power2pad:
+
         shape_finder = prj.shape[2]
         power_of_2 = int(np.ceil(math.log(shape_finder, 2)))
         pad_value = 2 ** power_of_2
+        mode='edge'
+        
+        if zero_pad_amount is not None:
+            pad_value = zero_pad_amount + shape_finder
+            mode='edge'
         
         pad = (pad_value - prj.shape[-1]) // 2
         pad1 = pad_value - prj.shape[-1] - pad
         prj = np.pad(
             prj,
             pad_width=((0, 0), (0, 0), (pad, pad1)),
-            mode='edge',  # Pad with constant zero instead to get ring back
+            mode=mode,  # Pad with constant zero instead to get ring back
         )
         
         rot_center = rot_center + pad
@@ -132,6 +142,12 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     user_extra_store = []
     
     prj_shape = np.shape(prj)
+    
+    if view_one:
+        plt.imshow(prj[:, 0, :])
+        plt.title((prj[:, 0, :].min(), prj[:, 0, :].max()))
+        plt.show()
+        xxx = input('Press Any Key To Continue...')
     
     # Prefill Array For Better Speed + RAM Usage
     recon_store = np.zeros((prj_shape[1], prj_shape[2], prj_shape[2]))
@@ -386,7 +402,7 @@ def reconstruct_data(basedir,
                      chunk_recon_size=1,
                      dtypes=np.float32,
                      rot_center_shift_check=None,
-                     muppy_amount=1000):
+                     muppy_amount=1000, zero_pad_amount=None, view_one=False, minus_val=0):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -515,7 +531,9 @@ def reconstruct_data(basedir,
                                            chunk_recon_size=chunk_recon_size,
                                            dtypes=dtypes,
                                            rot_center_shift_check=rot_center_shift_check,
-                                           muppy_amount=muppy_amount)
+                                           muppy_amount=muppy_amount,
+                                           zero_pad_amount=zero_pad_amount,
+                                           view_one=view_one, minus_val=minus_val)
         
         
     return slc_proj, user_extra

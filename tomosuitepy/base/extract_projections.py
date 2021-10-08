@@ -261,8 +261,15 @@ def force_positive_func(force_positive, verbose, prj):
             print('\n** Making positive numbers')
 
         # Force the projections to be >= 0
-        if np.min(prj) < 0:
-            prj += np.abs(np.min(prj))
+        if np.nanmin(prj) < 0:
+            min1 = np.nanmin(prj)
+            prj += np.abs(np.nanmin(prj))
+            
+            # Force min projection to be zero
+            prj -= np.nanmin(prj)
+            
+            print(f'\n** Applying positive numbers - OG min: {min1} Corrected Min: {np.nanmin(prj)}')
+        
             
     elif not force_positive:
         minimum_prj = np.min(prj)
@@ -373,7 +380,8 @@ def extract(datadir, fname, basedir,
             custom_dataprep=False, dtype='float32', flat_roll=None,
             overwrite=True, verbose=True, save=True, minus_log=True,
             remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=False, normalize_ncore=None, neg_nan_inf_selective=False, kernel_selective=1, muppy_amount=1000, data=None):
+            correct_norma_extremes=False, normalize_ncore=None,
+            nan_inf_selective=False, kernel_selective=1, muppy_amount=1000, data=None):
 
             
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
@@ -523,11 +531,8 @@ def extract(datadir, fname, basedir,
 
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
         
-        if neg_nan_inf_selective:
+        if nan_inf_selective:
             prj = replace_bad_values(prj, kernel_selective, verbose)
-
-        if force_positive:
-            prj = force_positive_func(force_positive, verbose, prj)
 
     else:
         if verbose:
@@ -536,6 +541,10 @@ def extract(datadir, fname, basedir,
     # Bin the data
     if binning>0:
         prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
+        
+    if not custom_dataprep:
+        if force_positive:
+            prj = force_positive_func(force_positive, verbose, prj)
         
     if save:
 
