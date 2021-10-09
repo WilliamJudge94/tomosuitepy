@@ -12,40 +12,40 @@ import tifffile as tif
 from pympler import muppy, summary
 
 
-  def replace_bad_values(data, kernel_selective, verbose):
-   
-      if verbose:
-          print('\n** Removing Bad Values')  
-          
-      bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
-      og_shape = np.shape(data)
-      
-      for value in tqdm(bad_values, desc='Removing Bad Values'):
-          first = value[0]
-          second_v1 = value[1] - kernel_selective
-          second_v2 = value[1] + kernel_selective + 1
-  
-          if second_v1 < 0:
-              second_v1 = 0
-          if second_v2 > og_shape[1]-1:
-              second_v2= og_shape[1]-1
-  
-          third_v1 = value[2] - kernel_selective
-          third_v2 = value[2] + kernel_selective + 1
-  
-          if third_v1 < 0:
-              third_v1 = 0
-          if third_v2 > og_shape[2]-1:
-              third_v2= og_shape[2]-1
-              
-          new_data = data[first, second_v1:second_v2, third_v1:third_v2]
-          new_data = np.asarray(new_data)
-          
-          mini_data = np.median(new_data[np.isfinite(new_data)])
-          
-          data[first, value[1], value[2]] = mini_data
-          
-      return data
+def replace_bad_values(data, kernel_selective, verbose):
+
+    if verbose:
+        print('\n** Removing Bad Values')  
+
+    bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
+    og_shape = np.shape(data)
+
+    for value in tqdm(bad_values, desc='Removing Bad Values'):
+        first = value[0]
+        second_v1 = value[1] - kernel_selective
+        second_v2 = value[1] + kernel_selective + 1
+
+        if second_v1 < 0:
+            second_v1 = 0
+        if second_v2 > og_shape[1]-1:
+            second_v2= og_shape[1]-1
+
+        third_v1 = value[2] - kernel_selective
+        third_v2 = value[2] + kernel_selective + 1
+
+        if third_v1 < 0:
+            third_v1 = 0
+        if third_v2 > og_shape[2]-1:
+            third_v2= og_shape[2]-1
+
+        new_data = data[first, second_v1:second_v2, third_v1:third_v2]
+        new_data = np.asarray(new_data)
+
+        mini_data = np.median(new_data[np.isfinite(new_data)])
+
+        data[first, value[1], value[2]] = mini_data
+
+    return data
 
 
 def cache_clearing_downsample(data, binning):

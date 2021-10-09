@@ -13,6 +13,10 @@ def start_project(basedir):
     -------
     Nothing. Creates project directories.
     """
+    
+    if basedir[-1] != '/':
+        raise ValueError('Please add / to the end of your basedir.')
+    
     create_folders = ['extracted/projections',
     
                     'extracted/theta', 
