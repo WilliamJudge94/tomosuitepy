@@ -12,36 +12,41 @@ import tifffile as tif
 from pympler import muppy, summary
 
 
+  def replace_bad_values(data, kernel_selective, verbose):
+   
+      if verbose:
+          print('\n** Removing Bad Values')  
+          
+      bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
+      og_shape = np.shape(data)
+      
+      for value in tqdm(bad_values, desc='Removing Bad Values'):
+          first = value[0]
+          second_v1 = value[1] - kernel_selective
+          second_v2 = value[1] + kernel_selective + 1
+  
+          if second_v1 < 0:
+              second_v1 = 0
+          if second_v2 > og_shape[1]-1:
+              second_v2= og_shape[1]-1
+  
+          third_v1 = value[2] - kernel_selective
+          third_v2 = value[2] + kernel_selective + 1
+  
+          if third_v1 < 0:
+              third_v1 = 0
+          if third_v2 > og_shape[2]-1:
+              third_v2= og_shape[2]-1
+              
+          new_data = data[first, second_v1:second_v2, third_v1:third_v2]
+          new_data = np.asarray(new_data)
+          
+          mini_data = np.median(new_data[np.isfinite(new_data)])
+          
+          data[first, value[1], value[2]] = mini_data
+          
+      return data
 
-def replace_bad_values(data, kernel_selective, verbose):
-    
-    if verbose:
-        print('\n** Removing Bad Values')  
-        
-    bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
-    og_shape = np.shape(data)
-    
-    for value in tqdm(bad_values, desc='Removing Bad Values'):
-        first = value[0]
-        second_v1 = value[1] - kernel_selective
-        second_v2 = value[1] + kernel_selective + 1
-
-        if second_v1 < 0:
-            second_v1 = 0
-        if second_v2 > og_shape[1]-1:
-            second_v2= og_shape[1]-1
-
-        third_v1 = value[2] - kernel_selective
-        third_v2 = value[2] + kernel_selective + 1
-
-        if third_v1 < 0:
-            third_v1 = 0
-        if third_v2 > og_shape[2]-1:
-            third_v2= og_shape[2]-1
-        mini_data = np.nanmedian(data[first, second_v1:second_v2, third_v1:third_v2])
-        data[first, value[1], value[2]] = mini_data
-        
-    return data
 
 def cache_clearing_downsample(data, binning):
     data = tomopy.downsample(data, level=binning)
@@ -75,7 +80,6 @@ def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
     return prj_store
 
 
-
 def load_prj_ds_chunk(iterations, path):
     
     data = []
@@ -100,6 +104,7 @@ def flat_roll_func(flat, flat_roll):
         flat = np.roll(flat, flat_roll, axis=2)
     return flat
 
+
 def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
     if outlier_diff != None and outlier_size != None:
         if verbose:
@@ -107,6 +112,7 @@ def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
         prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
         flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
     return prj, flat
+
 
 def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype, verbose):
 
@@ -157,7 +163,6 @@ def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
     return prj
 
 
-
 def bkg_norm_func(bkg_norm, prj, chunking_size, air):
 
     prj_chunks = []
@@ -169,6 +174,7 @@ def bkg_norm_func(bkg_norm, prj, chunking_size, air):
     prj = np.concatenate(prj_chunks)
 
     return prj
+
 
 def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
     if correct_norma_extremes:
@@ -182,6 +188,7 @@ def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
             print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
 
     return prj
+
 
 def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 
@@ -278,6 +285,7 @@ def force_positive_func(force_positive, verbose, prj):
 
     return prj
 
+
 def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
 
     if binning>0:
@@ -315,63 +323,6 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
 
     return prj
 
-
-def pre_process_prj(prj,
-                    flat,
-                    dark,
-                    flat_roll,
-                    outlier_diff,
-                    outlier_size,
-                    air,
-                    custom_dataprep,
-                    binning,
-                    bkg_norm,
-                    chunking_size,
-                    verbose,
-                    minus_log,
-                    force_positive,
-                    removal_val,
-                    remove_neg_vals,
-                    remove_nan_vals,
-                    remove_inf_vals, 
-                    correct_norma_extremes,
-                    normalize_ncore,
-                    dtype):
-
-    """Preprocesses the projections data to be saves as .tif images
-    
-    Parameters
-    ----------
-    All variables defined in the extract() function
-    
-    Returns
-    -------
-    Pre-processed projection data
-    """
-            
-    # Trying to figure out how to incorporate this
-    if not custom_dataprep:
-        
-        # Apply a background normalization to the projections
-        prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
-
-        prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
-                
-        prj = minus_log_func(minus_log, verbose, prj)
-        
-        prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
-
-        prj = force_positive_func(force_positive, verbose, prj)
-
-    else:
-        if verbose:
-            print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
-
-
-    # Bin the data
-    prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
-        
-    return prj
 
 def extract(datadir, fname, basedir,
             extraction_func=dxchange.read_aps_32id, binning=1,
@@ -566,8 +517,7 @@ def extract(datadir, fname, basedir,
         print('   done in %0.3f min' % ((time.time() - start_time)/60))
         return np.asarray(prj), np.asarray(theta)
 
-    
-    
+
 def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
     """Extract projection files from file experimental file formats. Then apply normalization, minus_log, negative, nan, and infinity corrections.
     
@@ -654,8 +604,7 @@ def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_r
     else:
         return np.asarray(prj), np.asarray(theta)
     
-    
-    
+      
 def obtain_phantoms(files):
     
     data = []
@@ -673,8 +622,7 @@ def obtain_phantoms(files):
     
     return output_data
         
-        
-    
+
 def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
     start_time = time.time()
     
@@ -755,4 +703,3 @@ def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, 
             
     else:
         return np.asarray(prj), np.asarray(theta)    
-    
