@@ -187,7 +187,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     if chunker_save:
         tiff.imsave(f"{basedir}/tomsuitepy_recon_FINAL.tiff", recon[:, pad:-pad1, pad:-pad1])
         for it in range(0, idx):
-        os.remove(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff")
+            os.remove(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff")
 
     # Renaming data
     #np.concatenate(chunk_recon_store)
