@@ -12,6 +12,7 @@ from pympler import muppy, summary
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
 from ..base.common import loading_tiff_prj
+from ..base.email4recon import send_email
 from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable 
 
@@ -23,6 +24,23 @@ def colorbar(mappable, font_size=12):
     cax = divider.append_axes("right", size="5%", pad=0.05)
     cax.tick_params(labelsize=font_size)
     return fig.colorbar(mappable, cax=cax, )
+
+
+def save_load_delete_image_email(prj, basedir):
+
+    fig = plt.figure(figsize=figsize)
+    image = plt.imshow(prj, cmap='Greys_r')
+    ax1 = plt.gca()
+    ax1.tick_params(labelsize=15)
+    colorbar(image)
+    plt.clim(None, None)
+    fig.savefig(f'{basedir}email_image.png')
+
+    image = open(f'{basedir}email_image.png', 'rb').read()
+
+    os.remove(f'{basedir}email_image.png')
+
+    return image
 
 
 def tomo_recon(prj, theta, rot_center, user_extra=None):
@@ -91,7 +109,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              view_one=False,
                              minus_val=0,
                              chunker_save=False,
-                             basedir=None):
+                             basedir=None, emailer=None):
     
     prj_data -= minus_val
     
@@ -175,6 +193,13 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
 
         if chunker_save:
             tiff.imsave(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff", recon[:, pad:-pad1, pad:-pad1])
+
+        if emailer is not None:
+            recipient, gmail_user, gmail_pass, divider = emailer
+            if idx % divider == 0:
+                email_im = save_load_delete_image_email(recon[0, pad:-pad1, pad:-pad1], basedir)
+                send_email(recipient, email_im, f"Iteration {idx} out of {chunk_recon_size}", f"Recon {basedir}", gmail_user, gmail_pass )
+                
 
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
