@@ -194,6 +194,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
 
         if chunker_save:
             if os.path.exists(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff"):
+                
                 if emailer is not None:
                     recipient, gmail_user, gmail_pass, divider = emailer
                     email_im = save_load_delete_image_email(recon[0, pad:-pad1, pad:-pad1], basedir)
@@ -529,6 +530,24 @@ def reconstruct_data(basedir,
         power2pad may create a Ring Glitch in the reconstruction. This is due to a hash transition from
         the dataset to the padded area. This will remove sinogram edge columns to limit how harsh this
         boundary is.
+
+    muppy_amount : int
+        the amount of data to load when viewing the current RAM usage. This allows tomopy to refresh the RAM usage allowing for resource efficent tasks.
+
+    zero_pad_amount : int
+        the amount of zeros to pad to the sides of the sinogram.
+
+    view_one : bool
+        if True the User will be able to view a single sinogram as well as the min and max values. This allows for accurate recons for SIRT. If the min and max values are too high then the reconstruciton will be poor.
+
+    minus_val : int
+        the value to subtract from the sinogram to correct for large values in the sinogram. Allows for better SIRT reconstructions.
+    
+    chunker_save : bool
+        If the User would like to chunk save their recons as well as save the final output then set this to True.
+
+    emailer : array
+        if not None the set to the following to send emails [recipient_email_str, sender_email_str, sender_pass_str, send_every_X_chunks_int]
         
     
     Returns

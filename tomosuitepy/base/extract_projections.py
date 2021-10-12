@@ -369,9 +369,8 @@ def extract(datadir, fname, basedir,
     air : int
         Number of pixels at each boundary to calculate the scaling factor. Used during the bkg_norm step.
         
-    chunk_size4bkg : int
+    chunking_size : int
         The background normalization is RAM intensive. This allows the User to chunk the normalization process.
-            
             
     custom_dataprep : bool
         if True this allows the User to define dataprep functions in the reconstruction script. Output stops after the initial flat/dark field normalization.
@@ -406,9 +405,18 @@ def extract(datadir, fname, basedir,
     correct_norma_extremes : bool
         If True it will try to set the data to be positive values before applying the -log()
         
-    chunk_size4downsample : int
-        The amount of chunking steps for downsampling.
-    
+    nan_inf_selective : bool
+        if True apply median blur only to nan and inf values
+
+    kernel_selective : int
+        the kernel size for the nan_inf_selective opperation
+
+    muppy_amount : int
+        amount of data to read from the RAM usage
+
+    data : np.array
+        array that has prj, flat, dark, theta = data if the User wants to load in their own data outside of dxchange.
+        
     Returns
     -------
     Nothing. Only saves the corrected projection files to the designated folder. Unless save=False.
