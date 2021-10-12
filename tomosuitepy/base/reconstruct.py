@@ -188,7 +188,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
 
     # Saving chunked data if requested and deleting the chunks
     if chunker_save:
-        tiff.imsave(f"{basedir}/tomsuitepy_recon_FINAL.tiff", recon[:, pad:-pad1, pad:-pad1])
+        tiff.imsave(f"{basedir}/tomsuitepy_recon_FINAL.tiff", recon_store[:, pad:-pad1, pad:-pad1])
         for it in range(0, counter):
             os.remove(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff")
 
