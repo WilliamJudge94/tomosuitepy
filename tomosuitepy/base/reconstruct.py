@@ -196,8 +196,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
             if os.path.exists(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff"):
                 if emailer is not None:
                     recipient, gmail_user, gmail_pass, divider = emailer
-                        email_im = save_load_delete_image_email(recon[0, pad:-pad1, pad:-pad1], basedir)
-                        send_email(recipient, email_im, f"ABOUT TO OVERWRITE FILES", f"Move chunked recon files in {basedir}.", gmail_user, gmail_pass )
+                    email_im = save_load_delete_image_email(recon[0, pad:-pad1, pad:-pad1], basedir)
+                    send_email(recipient, email_im, f"ABOUT TO OVERWRITE FILES", f"Move chunked recon files in {basedir}.", gmail_user, gmail_pass )
 
                 _ = input(f"You are about to overwrite chunked files. They are in {basedir}. Move them or hit ENTER to continue.")
 
