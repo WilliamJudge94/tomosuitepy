@@ -174,13 +174,20 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         recon_store[idx * prj_chunked_main_shape[2]: (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
 
         if chunker_save:
-            tiff.imsave(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff", recon)
+            tiff.imsave(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff", recon[:, pad:-pad1, pad:-pad1])
 
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
         del recon
         #chunk_recon_store.append(recon)
         user_extra_store.append(user_extra)
+
+
+    # Saving chunked data if requested and deleting the chunks
+    if chunker_save:
+        tiff.imsave(f"{basedir}/tomsuitepy_recon_FINAL.tiff", recon[:, pad:-pad1, pad:-pad1])
+        for it in range(0, idx):
+        os.remove(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff")
 
     # Renaming data
     #np.concatenate(chunk_recon_store)
