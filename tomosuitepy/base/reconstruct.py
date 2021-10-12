@@ -28,7 +28,7 @@ def colorbar(mappable, font_size=12):
 
 def save_load_delete_image_email(prj, basedir):
 
-    fig = plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=(12, 12))
     image = plt.imshow(prj, cmap='Greys_r')
     ax1 = plt.gca()
     ax1.tick_params(labelsize=15)
