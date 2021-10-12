@@ -40,6 +40,8 @@ def save_load_delete_image_email(prj, basedir):
 
     os.remove(f'{basedir}email_image.png')
 
+    plt.close('all')
+
     return image
 
 
