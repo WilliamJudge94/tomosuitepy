@@ -167,6 +167,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     prj_chunked_main = np.array_split(prj, chunk_recon_size, axis=1)
     prj_chunked_main_shape = np.shape(prj_chunked_main)
     
+    counter = 0
     # Iterate through the recon chunks
     for idx, prj_chunked in enumerate(tqdm(prj_chunked_main, desc='Tomo Recon Progress', total=len(prj_chunked_main))):
         # Feed into reconstruction function
@@ -182,11 +183,13 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         #chunk_recon_store.append(recon)
         user_extra_store.append(user_extra)
 
+        counter += 1
+
 
     # Saving chunked data if requested and deleting the chunks
     if chunker_save:
         tiff.imsave(f"{basedir}/tomsuitepy_recon_FINAL.tiff", recon[:, pad:-pad1, pad:-pad1])
-        for it in range(0, idx):
+        for it in range(0, counter):
             os.remove(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff")
 
     # Renaming data
