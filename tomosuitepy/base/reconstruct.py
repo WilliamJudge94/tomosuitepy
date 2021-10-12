@@ -6,6 +6,7 @@ import tomopy
 import pathlib
 import numpy as np
 from tqdm import tqdm
+import tifffile as tiff
 import matplotlib.pyplot as plt
 from pympler import muppy, summary
 from skimage.color import rgb2gray
@@ -86,7 +87,11 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              chunk_recon_size=1, dtypes=np.float32,
                              rot_center_shift_check=None,
                              muppy_amount=1000,
-                             zero_pad_amount=None, view_one=False, minus_val=0):
+                             zero_pad_amount=None,
+                             view_one=False,
+                             minus_val=0,
+                             chunker_save=False,
+                             basedir=None):
     
     prj_data -= minus_val
     
@@ -167,6 +172,10 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         # Feed into reconstruction function
         recon, user_extra = reconstruct_func(prj_chunked.copy(), theta, rot_center=rot_center)
         recon_store[idx * prj_chunked_main_shape[2]: (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
+
+        if chunker_save:
+            tiff.imsave(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff", recon)
+
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
         del recon
@@ -402,7 +411,11 @@ def reconstruct_data(basedir,
                      chunk_recon_size=1,
                      dtypes=np.float32,
                      rot_center_shift_check=None,
-                     muppy_amount=1000, zero_pad_amount=None, view_one=False, minus_val=0):
+                     muppy_amount=1000,
+                     zero_pad_amount=None,
+                     view_one=False,
+                     minus_val=0,
+                     chunker_save=False):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -533,7 +546,8 @@ def reconstruct_data(basedir,
                                            rot_center_shift_check=rot_center_shift_check,
                                            muppy_amount=muppy_amount,
                                            zero_pad_amount=zero_pad_amount,
-                                           view_one=view_one, minus_val=minus_val)
+                                           view_one=view_one, minus_val=minus_val,
+                                           chunker_save=chunker_save, basedir=basedir)
         
         
     return slc_proj, user_extra
