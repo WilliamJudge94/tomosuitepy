@@ -109,7 +109,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              view_one=False,
                              minus_val=0,
                              chunker_save=False,
-                             basedir=None, emailer=None):
+                             basedir=None,
+                             emailer=None):
     
     prj_data -= minus_val
     
@@ -447,7 +448,8 @@ def reconstruct_data(basedir,
                      zero_pad_amount=None,
                      view_one=False,
                      minus_val=0,
-                     chunker_save=False):
+                     chunker_save=False,
+                     emailer=None):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -579,7 +581,7 @@ def reconstruct_data(basedir,
                                            muppy_amount=muppy_amount,
                                            zero_pad_amount=zero_pad_amount,
                                            view_one=view_one, minus_val=minus_val,
-                                           chunker_save=chunker_save, basedir=basedir)
+                                           chunker_save=chunker_save, basedir=basedir, emailer=emailer)
         
         
     return slc_proj, user_extra
