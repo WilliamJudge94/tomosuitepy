@@ -558,11 +558,12 @@ def reconstruct_data(basedir,
     """
 
     # Saving MetaData Recon
-    metadata_dic = {}
-    metadata_keys = [var for var in locals().keys() if '__' not in var]
-    for metadata_key in metadata_keys:
-        metadata_dic[metadata_key] = locals()[metadata_key]
-    save_metadata(basedir, metadata_dic, meta_data_type='recon')
+    if rot_center_shift_check == None:
+        metadata_dic = {}
+        metadata_keys = [var for var in locals().keys() if '__' not in var]
+        for metadata_key in metadata_keys:
+            metadata_dic[metadata_key] = locals()[metadata_key]
+        save_metadata(basedir, metadata_dic, meta_data_type='recon')
 
     if network == None:
         recon_type = 'standard'
