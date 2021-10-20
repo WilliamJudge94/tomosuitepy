@@ -10,6 +10,7 @@ from tqdm import tqdm
 import tifffile as tif
 import tifffile as tif
 from pympler import muppy, summary
+from ..base.common import save_metadata
 
 
 def replace_bad_values(data, kernel_selective, verbose):
@@ -422,6 +423,13 @@ def extract(datadir, fname, basedir,
     Nothing. Only saves the corrected projection files to the designated folder. Unless save=False.
     Then it will return a numpy array with the projections.
     """
+
+    # Saving MetaData
+    metadata_dic = {}
+    metadata_keys = [var for var in locals().keys() if '__' not in var]
+    for metadata_key in metadata_keys:
+        metadata_dic[metadata_key] = locals()[metadata_key]
+    save_metadata(basedir, metadata_dic)
 
     # Determine the location of the hdf5 file
     fname = os.path.join(datadir, fname)

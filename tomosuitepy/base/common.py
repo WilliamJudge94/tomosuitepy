@@ -1,4 +1,5 @@
 import os
+import pickle
 import numpy as np
 import tifffile as tif
 import h5py
@@ -167,3 +168,16 @@ def interactive_data_viewer():
     print("import itk")
     print("from itkwidgets import view")
     print("view(slcs)")
+
+
+def save_metadata(basedir, meta_data2save, meta_data_type='extracted'):
+    if meta_data_type == 'recon':
+        meta_data_type = ''
+    with open(f'{basedir}{meta_data_type}/meta_data.pkl', 'wb') as f:
+        pickle.dump( meta_data2save, f, pickle.HIGHEST_PROTOCOL)
+
+def load_metadata(basedir, meta_data_type='extracted'):
+    if meta_data_type == 'recon':
+        meta_data_type = ''
+    with open(f'{basedir}{meta_data_type}/meta_data.pkl', 'rb') as f:
+        return pickle.load(f)

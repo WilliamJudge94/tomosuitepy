@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from pympler import muppy, summary
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
-from ..base.common import loading_tiff_prj
+from ..base.common import loading_tiff_prj, save_metadata
 from ..base.email4recon import send_email
 from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable 
@@ -556,6 +556,13 @@ def reconstruct_data(basedir,
     -------
     The reconstructed data and a user_extra data that is output from the reconstruct_func()
     """
+
+    # Saving MetaData Recon
+    metadata_dic = {}
+    metadata_keys = [var for var in locals().keys() if '__' not in var]
+    for metadata_key in metadata_keys:
+        metadata_dic[metadata_key] = locals()[metadata_key]
+    save_metadata(basedir, metadata_dic, meta_data_type='recon')
 
     if network == None:
         recon_type = 'standard'
