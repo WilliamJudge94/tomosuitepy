@@ -162,8 +162,6 @@ def h5group_list(file, group_name='base'):
             g1=hdf.get(group_name)
             return (list(g1.items()))
         
-        
-        
 def interactive_data_viewer():
     print("import itk")
     print("from itkwidgets import view")
