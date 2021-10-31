@@ -97,18 +97,19 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
 
     
     print(f'The sparse angle projection size is: {prj_data.shape}')
-    prj_data -= prj_data.min()
     
     if apply_exp:
         prj_data = np.exp(prj_data)
     
     if force_positive:
-        if prj_data.min() < 0:
-            prj_min = prj_data.min()
+        if np.nanmin(prj_data) < 0:
+            prj_min = np.nanmin(prj_data)
+            prj_max = np.nanmax(prj_data)
             prj_data += np.abs(prj_min)
-            prj_new_min = prj_data.min()
-            print(f'Forcing values to be positive. Before: {prj_min} --- After: {prj_new_min}')
-    prj_data = prj_data/np.max(prj_data)
+            prj_new_min = np.nanmin(prj_data)
+            prj_new_max = np.nanmax(prj_data)
+            print(f'Forcing values to be positive. Before: Min/Max:{prj_min}/{prj_max} --- After: Min/Max:{prj_new_min}/{prj_new_max}')
+    prj_data = prj_data/np.nanmax(prj_data)
     prj_data = prj_data * 255.0
     
     print(f"Projection Min: {prj_data.min()} --- Max: {prj_data.max()}")
