@@ -58,7 +58,7 @@ def deal_with_sparse_angle(prj_data, theta,
     return prj_data, theta
 
 
-def create_prj_mp4(basedir, video_type='input', types='base', sparse_angle_removal=0, fps=30, torf=False, apply_exp=True):
+def create_prj_mp4(basedir, video_type='input', types='base', force_positive=False, sparse_angle_removal=0, fps=30, torf=False, apply_exp=True):
     """Prepare a mp4 video file of the projection files for RIFE.
     
     Parameters
@@ -102,6 +102,12 @@ def create_prj_mp4(basedir, video_type='input', types='base', sparse_angle_remov
     if apply_exp:
         prj_data = np.exp(prj_data)
     
+    if force_positive:
+        if prj_data.min() < 0:
+            prj_min = prj_data.min()
+            prj_data += np.abs(prj_min)
+            prj_new_min = prj_data.min()
+            print(f'Forcing values to be positive. Before: {prj_min} --- After: {prj_new_min}')
     prj_data = prj_data/np.max(prj_data)
     prj_data = prj_data * 255.0
     
