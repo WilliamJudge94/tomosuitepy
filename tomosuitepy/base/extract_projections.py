@@ -79,7 +79,7 @@ def median_filter_nonfinite(data, size=3, verbose=False):
         print('\n** Removing Bad Values')  
 
     # Iterating throug each projection to save on RAM
-    for projection in tqdm(data):
+    for projection in tqdm(data, position=0):
         nonfinite_idx = np.nonzero(~np.isfinite(projection))
 
         # Iterating through each bad value and replace it with finite median
