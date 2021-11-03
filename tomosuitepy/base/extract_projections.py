@@ -108,8 +108,6 @@ def median_filter_nonfinite(data, size=3, verbose=False):
             # Replacing bad data with finite median
             projection[x_idx, y_idx] = median_corrected_data
 
-        callback(data.shape[0], 'Nonfinite median filter', ' prjs')
-
     return data
 
 
@@ -592,7 +590,7 @@ def extract(datadir, fname, basedir,
             
         del prj
         del theta
-        
+
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
             
