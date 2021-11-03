@@ -426,7 +426,7 @@ def prepare_rife(basedir, start_row, end_row, rife_types, verbose):
         start = start_row
         
     if end_row == None:
-        end = shape
+        end = prj_data.shape[1]
     else:
         end = end_row
     

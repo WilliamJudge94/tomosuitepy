@@ -246,8 +246,8 @@ def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
         if verbose:
             print(f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
 
-        prj += np.abs(prj.nanmin())
-        prj += prj.nanmax() * 0.0001
+        prj += np.abs(np.nanmin(prj))
+        prj += np.nanmax(prj) * 0.0001
 
         if verbose:
             print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
