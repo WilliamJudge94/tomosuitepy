@@ -13,38 +13,102 @@ from pympler import muppy, summary
 from ..base.common import save_metadata
 
 
-def replace_bad_values(data, kernel_selective, verbose):
+def _determine_nonfinite_kernel_idxs(x_idx, y_idx, kernel, shape_x, shape_y):
+    """
+    Determine the proper kernel bounds for a given x, y index, and kernel size.
 
+    Parameters
+    ----------
+    x_idx : int
+        The x index for a given nonfinite value.
+    y_idx :  int
+        The y index for a given nonfinite value.
+    shape_x : int
+        The max shape of the 2D projection in the x dimension.
+    shape_y : int
+        The max shape of the 2D projection in the y dimension.
+
+    Returns
+    -------
+    x_lower, x_higher, y_lower, y_higher : int
+        The integer kernel bounds to surround the nonfinite value with.
+    """
+
+    # Determining x kernel
+    x_idx_lower = x_idx - kernel
+    x_idx_higher = x_idx + kernel + 1
+
+    if x_idx_lower < 0:
+        x_idx_lower = 0
+    if x_idx_higher > shape_x:
+        x_idx_higher = shape_x
+
+    # Determining y kernel
+    y_idx_lower = y_idx - kernel
+    y_idx_higher = y_idx + kernel + 1
+
+    if y_idx_lower < 0:
+        y_idx_lower = 0
+    if y_idx_higher > shape_y:
+        y_idx_higher = shape_y
+
+    return x_idx_lower, x_idx_higher, y_idx_lower, y_idx_higher
+
+
+def median_filter_nonfinite(data, size=3, verbose=False):
+    """
+    Remove nonfinite values from a 3D array using an in-place 2D median filter.
+
+    The 2D selective median filter is applied along the last two axes of
+    the array.
+
+    Parameters
+    ----------
+    data : ndarray
+        The 3D array of data with nonfinite values in it.
+    size : int, optional
+        The size of the filter.
+
+    Returns
+    -------
+    ndarray
+        The corrected 3D array with all nonfinite values removed based upon the local
+        median value defined by the kernel size.
+    """
     if verbose:
         print('\n** Removing Bad Values')  
 
-    bad_values = np.concatenate((np.argwhere(np.isnan(data)), np.argwhere(np.isinf(data))))
-    og_shape = np.shape(data)
+    # Iterating throug each projection to save on RAM
+    for projection in tqdm(data):
+        nonfinite_idx = np.nonzero(~np.isfinite(projection))
 
-    for value in tqdm(bad_values, desc='Removing Bad Values'):
-        first = value[0]
-        second_v1 = value[1] - kernel_selective
-        second_v2 = value[1] + kernel_selective + 1
+        # Iterating through each bad value and replace it with finite median
+        for x_idx, y_idx in zip(*nonfinite_idx):
 
-        if second_v1 < 0:
-            second_v1 = 0
-        if second_v2 > og_shape[1]-1:
-            second_v2= og_shape[1]-1
+            # Determining the lower and upper bounds for kernel
+            (
+                x_lower,
+                x_higher,
+                y_lower,
+                y_higher,
+            ) = _determine_nonfinite_kernel_idxs(
+                x_idx,
+                y_idx,
+                size // 2,
+                data.shape[1],
+                data.shape[2],
+            )
 
-        third_v1 = value[2] - kernel_selective
-        third_v2 = value[2] + kernel_selective + 1
+            # Extracting kernel data and fining finite median
+            kernel_cropped_data = projection[x_lower:x_higher,
+                                             y_lower:y_higher]
+            median_corrected_data = np.median(
+                kernel_cropped_data[np.isfinite(kernel_cropped_data)])
 
-        if third_v1 < 0:
-            third_v1 = 0
-        if third_v2 > og_shape[2]-1:
-            third_v2= og_shape[2]-1
+            # Replacing bad data with finite median
+            projection[x_idx, y_idx] = median_corrected_data
 
-        new_data = data[first, second_v1:second_v2, third_v1:third_v2]
-        new_data = np.asarray(new_data)
-
-        mini_data = np.median(new_data[np.isfinite(new_data)])
-
-        data[first, value[1], value[2]] = mini_data
+        callback(data.shape[0], 'Nonfinite median filter', ' prjs')
 
     return data
 
@@ -499,7 +563,7 @@ def extract(datadir, fname, basedir,
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
         
         if nan_inf_selective:
-            prj = replace_bad_values(prj, kernel_selective, verbose)
+            prj = median_filter_nonfinite(data=prj, size=kernel_selective, verbose=verbose)
 
     else:
         if verbose:
@@ -528,6 +592,9 @@ def extract(datadir, fname, basedir,
             
         del prj
         del theta
+        
+        all_objects = muppy.get_objects()[:muppy_amount]
+        sum1 = summary.summarize(all_objects)
             
     else:
         print('   done in %0.3f min' % ((time.time() - start_time)/60))
