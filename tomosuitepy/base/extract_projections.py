@@ -13,49 +13,7 @@ from pympler import muppy, summary
 from ..base.common import save_metadata
 
 
-def _determine_nonfinite_kernel_idxs(x_idx, y_idx, kernel, shape_x, shape_y):
-    """
-    Determine the proper kernel bounds for a given x, y index, and kernel size.
-
-    Parameters
-    ----------
-    x_idx : int
-        The x index for a given nonfinite value.
-    y_idx :  int
-        The y index for a given nonfinite value.
-    shape_x : int
-        The max shape of the 2D projection in the x dimension.
-    shape_y : int
-        The max shape of the 2D projection in the y dimension.
-
-    Returns
-    -------
-    x_lower, x_higher, y_lower, y_higher : int
-        The integer kernel bounds to surround the nonfinite value with.
-    """
-
-    # Determining x kernel
-    x_idx_lower = x_idx - kernel
-    x_idx_higher = x_idx + kernel + 1
-
-    if x_idx_lower < 0:
-        x_idx_lower = 0
-    if x_idx_higher > shape_x:
-        x_idx_higher = shape_x
-
-    # Determining y kernel
-    y_idx_lower = y_idx - kernel
-    y_idx_higher = y_idx + kernel + 1
-
-    if y_idx_lower < 0:
-        y_idx_lower = 0
-    if y_idx_higher > shape_y:
-        y_idx_higher = shape_y
-
-    return x_idx_lower, x_idx_higher, y_idx_lower, y_idx_higher
-
-
-def median_filter_nonfinite(data, size=3, verbose=False):
+def median_filter_nonfinite(data, size=3, callback=None, tshoot=False):
     """
     Remove nonfinite values from a 3D array using an in-place 2D median filter.
 
@@ -68,45 +26,59 @@ def median_filter_nonfinite(data, size=3, verbose=False):
         The 3D array of data with nonfinite values in it.
     size : int, optional
         The size of the filter.
+    callback : func(total, description, unit)
+        A function called after every internal loop iteration.
+        total is number of loop iterations.
+        description is 'Nonfinite median filter'.
+        unit is ' prjs'.
 
     Returns
     -------
     ndarray
         The corrected 3D array with all nonfinite values removed based upon the local
         median value defined by the kernel size.
+
+    Raises
+    ------
+    ValueError
+        If the filter comes across a kernel only containing non-finite values a ValueError
+        is raised for the user to increase their kernel size to avoid replacing the current
+        pixel with 0.
     """
-    if verbose:
-        print('\n** Removing Bad Values')  
+    # Defining a callback function if None is provided
+    if callback is None:
+
+        def callback(total, description, unit):
+            pass
 
     # Iterating throug each projection to save on RAM
-    for projection in tqdm(data, position=0):
+    for projection in data:
         nonfinite_idx = np.nonzero(~np.isfinite(projection))
 
         # Iterating through each bad value and replace it with finite median
         for x_idx, y_idx in zip(*nonfinite_idx):
 
             # Determining the lower and upper bounds for kernel
-            (
-                x_lower,
-                x_higher,
-                y_lower,
-                y_higher,
-            ) = _determine_nonfinite_kernel_idxs(
-                x_idx,
-                y_idx,
-                size // 2,
-                data.shape[1],
-                data.shape[2],
-            )
+            x_lower = max(0, x_idx - (size // 2))
+            x_higher = min(data.shape[1], x_idx + (size // 2) + 1)
+            y_lower = max(0, y_idx - (size // 2))
+            y_higher = min(data.shape[2], y_idx + (size // 2) + 1)
 
             # Extracting kernel data and fining finite median
             kernel_cropped_data = projection[x_lower:x_higher,
                                              y_lower:y_higher]
+
+            if len(kernel_cropped_data[np.isfinite(kernel_cropped_data)]) == 0:
+                raise ValueError("Found kernel containing only non-finite values.\
+                                 Please increase kernel size")
+
             median_corrected_data = np.median(
                 kernel_cropped_data[np.isfinite(kernel_cropped_data)])
 
             # Replacing bad data with finite median
             projection[x_idx, y_idx] = median_corrected_data
+
+        callback(data.shape[0], 'Nonfinite median filter', ' prjs')
 
     return data
 
