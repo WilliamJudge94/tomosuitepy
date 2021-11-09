@@ -71,8 +71,6 @@ def median_filter_nonfinite(data, size=3, verbose=False):
             # Replacing bad data with finite median
             projection[x_idx, y_idx] = median_corrected_data
 
-        callback(data.shape[0], 'Nonfinite median filter', ' prjs')
-
     return data
 
 
