@@ -17,6 +17,19 @@ from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable 
 
 
+
+def determine_bad_prjs(data, difference_val):
+    store_idx = []
+    
+    for idx, prj in enumerate(tqdm(data[:-1])):
+        if np.sum(np.subtract(prj, data[idx+1])) <= difference_val:
+            store_idx.append(idx)
+            
+    if np.sum(np.subtract(data[-1], data[-2])) <= difference_val:
+        store_idx.append(len(data)-1)
+    return store_idx
+
+
 def colorbar(mappable, font_size=12):
     ax = mappable.axes
     fig = ax.figure
@@ -461,7 +474,8 @@ def reconstruct_data(basedir,
                      view_one=False,
                      minus_val=0,
                      chunker_save=False,
-                     emailer=None):
+                     emailer=None,
+                     select_prjs2use=None):
     
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
     
@@ -551,6 +565,8 @@ def reconstruct_data(basedir,
     emailer : array
         if not None the set to the following to send emails [recipient_email_str, sender_email_str, sender_pass_str, send_every_X_chunks_int]
         
+    select_prjs2use : ndarray
+        an array containing integers of which projectsion to use during the recon. This allows users to remove bad projections.
     
     Returns
     -------
@@ -601,6 +617,10 @@ def reconstruct_data(basedir,
 
     except Exception as ex:
         raise ValueError(f"Failed to initiate muppy RAM collection - Error: {ex}")
+
+    if select_prjs2use is not None:
+        prj_data = prj_data[tuple([select_prjs2use])]
+        theta = theta[tuple([select_prjs2use])]
 
     slc_proj, user_extra = reconstruct_single_slice(prj_data.copy(), 
                                            theta,
