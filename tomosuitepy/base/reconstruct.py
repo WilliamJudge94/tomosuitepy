@@ -621,6 +621,7 @@ def reconstruct_data(basedir,
     if select_prjs2use is not None:
         prj_data = prj_data[tuple([select_prjs2use])]
         theta = theta[tuple([select_prjs2use])]
+        print(f'Removed {len(select_prjs2use)} Prj From Recon. len_prj_data={len(prj_data)}  len_theta={len(theta)}')
 
     slc_proj, user_extra = reconstruct_single_slice(prj_data.copy(), 
                                            theta,
