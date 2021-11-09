@@ -13,7 +13,7 @@ from pympler import muppy, summary
 from ..base.common import save_metadata
 
 
-def median_filter_nonfinite(data, size=3, callback=None, tshoot=False):
+def median_filter_nonfinite(data, size=3, verbose=False):
     """
     Remove nonfinite values from a 3D array using an in-place 2D median filter.
 
@@ -26,11 +26,6 @@ def median_filter_nonfinite(data, size=3, callback=None, tshoot=False):
         The 3D array of data with nonfinite values in it.
     size : int, optional
         The size of the filter.
-    callback : func(total, description, unit)
-        A function called after every internal loop iteration.
-        total is number of loop iterations.
-        description is 'Nonfinite median filter'.
-        unit is ' prjs'.
 
     Returns
     -------
@@ -46,13 +41,11 @@ def median_filter_nonfinite(data, size=3, callback=None, tshoot=False):
         pixel with 0.
     """
     # Defining a callback function if None is provided
-    if callback is None:
-
-        def callback(total, description, unit):
-            pass
+    if verbose:
+        print('\n** Removing Bad Values')  
 
     # Iterating throug each projection to save on RAM
-    for projection in data:
+    for projection in tqdm(data):
         nonfinite_idx = np.nonzero(~np.isfinite(projection))
 
         # Iterating through each bad value and replace it with finite median
