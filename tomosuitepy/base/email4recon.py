@@ -13,6 +13,31 @@ def send_email(recipient,
                             body,
                             gmail_user,
                             gmail_pass):
+  
+  
+    """
+    Allow users to send an email.
+    
+    Parameters
+    ----------
+    recipient : list of str
+        A list of all email addresses to send emails to.
+    image : nd.array
+        Image data to send in the email.
+    subject : str
+        The subject of the email.
+    body : str
+        The body of the email.
+    gmail_user : str
+        The email address of the sender.
+    gmail_pass : str
+        The email senders password.
+ 
+    Returns
+    -------
+    None
+        Sends email to designated addresses.
+    """
 
 
     # Create message container.
