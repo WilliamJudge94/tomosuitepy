@@ -6,14 +6,15 @@ import glob
 import shutil
 import numpy as np
 import tifffile as tif
-import warnings  
+import warnings
 
-with warnings.catch_warnings():  
-    warnings.filterwarnings("ignore",category=FutureWarning)
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=FutureWarning)
     import tensorflow as tf
     import neuralgym as ng
 
 from inpaint_model import InpaintCAModel
+
 
 def multigpu_graph_def(model, FLAGS, data, gpu_id=0, loss_type='g'):
     with tf.device('/cpu:0'):
@@ -30,16 +31,16 @@ def multigpu_graph_def(model, FLAGS, data, gpu_id=0, loss_type='g'):
         return losses['d_loss']
     else:
         raise ValueError('loss type is not supported.')
-        
-        
+
+
 def tensorboard_command_deepfillv2(basedir):
     """Return the command line command used to launch a tensorboard instance for tracking Noise2Noise's progress
-    
+
     Parameters
     ----------
     basedir : str
         the path to the project
-        
+
     Returns
     -------
     The command used to launch tensorboard instance for TomoGAN
@@ -49,9 +50,9 @@ def tensorboard_command_deepfillv2(basedir):
 
 
 def train_deepfillv2(basedir, gpu='0'):
-    
+
     logdir = f"{basedir}deepfillv2/logs"
-    if os.path.isdir(logdir): 
+    if os.path.isdir(logdir):
         shutil.rmtree(logdir)
     os.mkdir(logdir)
 
@@ -84,13 +85,11 @@ def train_deepfillv2(basedir, gpu='0'):
         for i in range(FLAGS.static_view_size):
             static_fnames = val_fnames[i:i+1]
             FLAGS.static_fnames = static_fnames
-            
-            
-            #print('/n')
-            #print(static_fnames)
-            #print('/n')
-            
-            
+
+            # print('/n')
+            # print(static_fnames)
+            # print('/n')
+
             static_images = ng.data.DataFromFNames(
                 static_fnames, img_shapes, nthreads=1,
                 random_crop=FLAGS.random_crop).data_pipeline(1)
@@ -135,9 +134,12 @@ def train_deepfillv2(basedir, gpu='0'):
     trainer.add_callbacks([
         discriminator_training_callback,
         ng.callbacks.WeightsViewer(),
-        ng.callbacks.ModelRestorer(trainer.context['saver'], dump_prefix=FLAGS.model_restore+'/snap', optimistic=True),
-        ng.callbacks.ModelSaver(FLAGS.train_spe, trainer.context['saver'], FLAGS.log_dir+'/snap'),
-        ng.callbacks.SummaryWriter((FLAGS.val_psteps//1), trainer.context['summary_writer'], tf.summary.merge_all()),
+        ng.callbacks.ModelRestorer(
+            trainer.context['saver'], dump_prefix=FLAGS.model_restore+'/snap', optimistic=True),
+        ng.callbacks.ModelSaver(
+            FLAGS.train_spe, trainer.context['saver'], FLAGS.log_dir+'/snap'),
+        ng.callbacks.SummaryWriter(
+            (FLAGS.val_psteps//1), trainer.context['summary_writer'], tf.summary.merge_all()),
     ])
     # launch training
     trainer.train()
