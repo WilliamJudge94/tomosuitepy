@@ -2,7 +2,6 @@
 language: python
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
-  - "3.6"
   - "3.7"
   - "3.8"
 install:
@@ -22,7 +21,7 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment -c conda-forge python=$TRAVIS_PYTHON_VERSION pympler==0.9 dxchange==0.1.6 tqdm==4.62.3 matplotlib==3.4.3 tomopy==1.10.1 itk==5.1.2 itkwidgets==0.32.0 coveralls==3.3.1 pytest==6.2.4 pytest-cov==3.0.0
+  - conda create -q -n test-environment -c conda-forge python=$TRAVIS_PYTHON_VERSION pympler==0.9 dxchange==0.1.6 tqdm==4.62.3 matplotlib==3.4.3 tomopy==1.10.1 itk==5.1.2 itkwidgets==0.32.0 coveralls==3.3.1 pytest==6.2.4 pytest-cov==3.0.0 opencv==4.5.3
   - conda activate test-environment
 
 script:
