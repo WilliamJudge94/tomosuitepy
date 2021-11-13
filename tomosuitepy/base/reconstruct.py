@@ -459,7 +459,7 @@ def reconstruct_data(basedir,
                      wedge_removal=0,
                      sparse_angle_removal=1,
                      types='denoise',
-                     rife_types=['output_frames', '.png', False],
+                     rife_types=['frames', '.tif', False],
                      second_basedir=None,
                      checkpoint_num=None,
                      double_sparse=None,
@@ -494,7 +494,8 @@ def reconstruct_data(basedir,
         If True it will apply a median filter to the data.
         
     all_data_med_filter : bool
-        If True this will apple filter to entire dataset. If False then it will be applied to the the data selected from the start_row:end_row
+        If True this will apple filter to entire dataset.
+        If False then it will be applied to the the data selected from the start_row:end_row
         
     med_filter_kernel : array
         The median filter kernel
@@ -548,29 +549,34 @@ def reconstruct_data(basedir,
         boundary is.
 
     muppy_amount : int
-        the amount of data to load when viewing the current RAM usage. This allows tomopy to refresh the RAM usage allowing for resource efficent tasks.
+        the amount of data to load when viewing the current RAM usage.
+        This allows tomopy to refresh the RAM usage allowing for resource efficent tasks.
 
     zero_pad_amount : int
         the amount of zeros to pad to the sides of the sinogram.
 
     view_one : bool
-        if True the User will be able to view a single sinogram as well as the min and max values. This allows for accurate recons for SIRT. If the min and max values are too high then the reconstruciton will be poor.
+        if True the User will be able to view a single sinogram as well as the min and max values.
+        This allows for accurate recons for SIRT. If the min and max values are too high then the reconstruciton will be poor.
 
     minus_val : int
-        the value to subtract from the sinogram to correct for large values in the sinogram. Allows for better SIRT reconstructions.
+        the value to subtract from the sinogram to correct for large values in the sinogram.
+        Allows for better SIRT reconstructions.
     
     chunker_save : bool
         If the User would like to chunk save their recons as well as save the final output then set this to True.
 
     emailer : array
-        if not None the set to the following to send emails [recipient_email_str, sender_email_str, sender_pass_str, send_every_X_chunks_int]
+        if not None the set to the following to send emails
+        [recipient_email_str, sender_email_str, sender_pass_str, send_every_X_chunks_int]
         
     select_prjs2use : ndarray
         an array containing integers of which projectsion to use during the recon. This allows users to remove bad projections.
     
     Returns
     -------
-    The reconstructed data and a user_extra data that is output from the reconstruct_func()
+    nd.array, nd.array
+        The reconstructed data and a user_extra data that is output from the reconstruct_func()
     """
 
     # Saving MetaData Recon
@@ -648,25 +654,30 @@ def reconstruct_data(basedir,
 
 
 def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', interactive=True):
-    """Allow the User to plot the data that was output from the reconstruction
+    """
+    Allow the User to plot the data that was output from the reconstruction.
     
     Parameters
     ----------
     slc_proj : nd.array
-        the output from the tomosuite.base.reconstruc.reconstruct_data() function
+        The output from the tomosuite.base.reconstruc.reconstruct_data() function.
     
     figsize : list
-        the figsize to be passed to plt.figure()
+        The figsize to be passed to plt.figure()
         
     clim : list
-        clim lower and upper limits to be passed into plt.clim()
+        clim lower and upper limits to be passed into plt.clim().
         
     cmap : str
-        the cmap passed to plt.imshow()
+        The cmap passed to plt.imshow().
+    
+    iteractive : bool
+        If False then plt.imshow() plt.show() is used to display all images individually. 
         
     Returns
     -------
-    Shows the plots for the given input data
+    None
+        Shows the plots for the given input data.
     """
     if interactive:
         sliders = widgets.IntSlider(value=0, min=0, max=len(slc_proj)-1)
@@ -686,8 +697,10 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Gre
 
         return fig
 
-def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', absolute_middle_rotation=None, interactive=True):
-    """Allow the User to plot the data that was output from the reconstruction
+def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r', 
+                                absolute_middle_rotation=None, interactive=True):
+    """
+    Allow the User to plot the data that was output from the reconstruction
     
     Parameters
     ----------
@@ -702,10 +715,17 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
         
     cmap : str
         the cmap passed to plt.imshow()
+    
+    absolute_middle_rotation : int
+        The middle pixle idx value.
+    
+    interactive : bool
+        If False the plot slcs individually.
         
     Returns
     -------
-    Shows the plots for the given input data
+    None
+        Shows the plots for the given input data.
     """
 
     starting_rotation_center = absolute_middle_rotation

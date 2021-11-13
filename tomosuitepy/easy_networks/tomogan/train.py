@@ -19,14 +19,26 @@ path1 = os.path.dirname(__file__)
 path2 = '/'.join(path1.split('/')[:-2])
 vgg19_path = f'{path2}/hard_networks/TomoGAN/vgg19_weights_notop.h5'
 
-def train_tomogan(basedir, epochs=120001, gpus='0', lmse=0.5, lperc=2.0, 
-                  ladv=20, lunet=3, depth=1, itg=1, itd=2, mb_size=2, img_size=896, types='noise'):
-    """Allows the User to use TomoGAN to denoise a dataset with no extra data. Please use tomosuite.noise_test_tomogan to 
+def train_tomogan(basedir, mb_size=2, img_size=896, types='noise', epochs=120001, gpus='0', lmse=0.5, lperc=2.0, 
+                  ladv=20, lunet=3, depth=1, itg=1, itd=2,):
+    """
+    Allows the User to use TomoGAN to denoise a dataset with no extra data.
+    
+    Please use tomosuite.noise_test_tomogan to 
     
     Parameters
     ----------
     basedir : str
         the path to the project
+
+    mb_size : int
+        the batch size
+
+    img_size : int
+        the size of the image (must be square)
+
+    types : str
+        the type of data being passed to TomoGAN. Example 'noise' or 'artifact'
         
     epochs : int
         the number of epochs to train TomoGAN
@@ -54,19 +66,11 @@ def train_tomogan(basedir, epochs=120001, gpus='0', lmse=0.5, lperc=2.0,
         
     itd : int
         the interations of the descriminator
-        
-    mb_size : int
-        the batch size
-        
-    img_size : int
-        the size of the image (must be square)
-        
-    types : str
-        the type of data being passed to TomoGAN. Example 'noise' or 'artifact'
     
     Returns
     -------
-    Allows User to train TomoGAN for denoising tomographic projections
+    None
+        Allows User to train TomoGAN for denoising tomographic projections.
     """
 
     # Setting up TomoGAN parameters
@@ -223,7 +227,8 @@ def train_tomogan(basedir, epochs=120001, gpus='0', lmse=0.5, lperc=2.0,
         sys.stdout.flush()
         
 def tensorboard_command_tomogan(basedir):
-    """Return the command line command used to launch a tensorboard instance for tracking TomoGAN's progress
+    """
+    Return the command line command used to launch a tensorboard instance for tracking TomoGAN's progress
     
     Parameters
     ----------
@@ -232,7 +237,8 @@ def tensorboard_command_tomogan(basedir):
         
     Returns
     -------
-    The command used to launch tensorboard instance for TomoGAN
+    command
+        The command used to launch tensorboard instance for TomoGAN
     """
     command = f"tensorboard --logdir='{basedir}tomogan/logs/' --samples_per_plugin=images=300"
     print(command)

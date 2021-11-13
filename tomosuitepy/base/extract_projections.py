@@ -26,6 +26,8 @@ def median_filter_nonfinite(data, size=3, verbose=False):
         The 3D array of data with nonfinite values in it.
     size : int, optional
         The size of the filter.
+    verbose : bool
+        If True then a step name is printed to the User.
 
     Returns
     -------
@@ -81,6 +83,24 @@ def cache_clearing_downsample(data, binning):
 
 
 def save_prj_ds_chunk(data, iteration, path):
+    """
+    Saving data to iterated numpy files.
+
+    Parameters
+    ----------
+    data : nd.array
+        A data array to save
+    iteration : int
+        The iteration number for that data chunk.
+    path : str
+        The path where to save the file to.
+
+    Returns
+    -------
+    None
+        Saves chunked data to
+        {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy
+    """
     save_path = f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
     try:
         np.save(save_path, data)
@@ -89,6 +109,25 @@ def save_prj_ds_chunk(data, iteration, path):
     
     
 def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
+    """
+    Loading saved data chunks for normalization.
+
+    Parameters
+    ----------
+    iterations : int
+        The max amount of iterations to load.
+    path : str
+        The path to the save chunks.
+    img_shape : list
+        The shape of all chunked data
+    dtypes : dtype
+        The data type to load data into
+
+    Returns
+    -------
+    nd.array
+        The complete data - unchunked.
+    """
     
     chunk_amount = img_shape[0]
     
@@ -107,6 +146,21 @@ def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
 
 
 def load_prj_ds_chunk(iterations, path):
+    """
+    Loading chunked data for the downsampling.
+
+    Parameters
+    ----------
+    iterations : int
+        The total amount of iterations to load.
+    path : str
+        The path where the chunked data is saved.
+
+    Returns
+    -------
+    nd. array
+        The unchunked data.
+    """
     
     data = []
 
@@ -120,18 +174,69 @@ def load_prj_ds_chunk(iterations, path):
 
 
 def remove_saved_prj_ds_chunk(iterations, path):
+    """
+    Deletes the saved chunked data for downsampling.
+
+    Parameters
+    ----------
+    iterations : int
+        The max amount of iterations to remove.
+    path : str
+        The path where the chunked data is located.
+
+    Returns
+    -------
+    None
+        Deletes the chunked data from storage. 
+    """
     for it in range(0, iterations):
         #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         
 
 def flat_roll_func(flat, flat_roll):
+    """
+    Rolls the flat-fild images left or right.
+
+    Parameters
+    ----------
+    flat : nd.array
+        The data array for the flat-field images.
+    flat_roll : int
+        How many pixles the User wants to roll the image by.
+
+    Returns
+    -------
+    nd.array
+        The flat field images rolled.
+    """
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
     return flat
 
 
 def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
+    """
+    Containerizing data-prep function tomopy.misc.corr.remove_outlier.
+
+    Parameters
+    ----------
+    prj : nd.array
+        An array containing the projection data.
+    flat : nd. array
+        An array containing the flat-field data.
+    outlier_diff : float
+        Value to be passed into tomopy.misc.corr.remove_outlier.
+    outlier_size : float
+        Value to be passed into tomopy.misc.corr.remove_outlier.
+    verbose : bool
+        If True prints out current step name.
+
+    Returns
+    -------
+    nd. array, nd.array
+        tomopy.misc.corr.remove_outlier corrected projections and flat-field data. 
+    """
     if outlier_diff != None and outlier_size != None:
         if verbose:
             print('\n** Remove Outliers')
@@ -141,7 +246,33 @@ def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
 
 
 def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_amount, dtype, verbose):
+    """
+    Containerizing data-prep function tomopy.normalize.
 
+    Parameters
+    ----------
+    prj : nd.array
+        An array containing the projection data.
+    flat : nd.array
+        An array containing the flat-field data.
+    datk : nd.array
+        An array containing the dark-field data.
+    chunking_size : int
+        The amount of data chunks to iterate through.
+    normalize_ncore : int
+        The amount of cores to use for normalization.
+    muppy_ammount : int
+        The amount of global variables to check - rests RAM usage.
+    dtype : data-type
+        The data type to load data into.
+    verbose : bool
+        If True prints out current step name.
+
+    Returns
+    -------
+    nd. array, int, list
+        The corrected projection data, iteration number, and total projection_chunk_shape.
+    """
     iteration = 0 
     prj_chunk_shape = 0
 
@@ -307,7 +438,8 @@ def force_positive_func(force_positive, verbose, prj):
     elif not force_positive:
         minimum_prj = np.min(prj)
         if minimum_prj < 0:
-            print(f"Your lowest projection value is negative ({minimum_prj}). This may result in undesireable machine learning outputs. To change this set force_positive=True.")
+            print(f"Your lowest projection value is negative ({minimum_prj}). This may result in undesireable machine\
+                learning outputs. To change this set force_positive=True.")
 
     return prj
 
@@ -351,14 +483,33 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
 
 
 def extract(datadir, fname, basedir,
-            extraction_func=dxchange.read_aps_32id, binning=1,
-            outlier_diff=None, air=10, outlier_size=None,
-            starting=0, bkg_norm=False, chunking_size=10, force_positive=True, removal_val=0.001, 
-            custom_dataprep=False, dtype='float32', flat_roll=None,
-            overwrite=True, verbose=True, save=True, minus_log=True,
-            remove_neg_vals=False, remove_nan_vals=False, remove_inf_vals=False,
-            correct_norma_extremes=False, normalize_ncore=None,
-            nan_inf_selective=False, kernel_selective=1, muppy_amount=1000, data=None):
+            extraction_func=dxchange.read_aps_32id,
+            binning=1,
+            starting=0,
+            chunking_size=10,
+            normalize_ncore=None,
+            minus_log=True,
+            nan_inf_selective=False,
+            kernel_selective=5,
+            remove_neg_vals=True,
+            removal_val=0.001, 
+            dtype='float32',
+            muppy_amount=1000,
+            overwrite=True,
+            verbose=True,
+            save=True,
+            custom_dataprep=False,
+            data=None,
+            outlier_diff=None,
+            outlier_size=None,
+            bkg_norm=False,
+            air=10,
+            flat_roll=None,
+            force_positive=False,
+            remove_nan_vals=False,
+            remove_inf_vals=False,
+            correct_norma_extremes=False,
+            ):
 
             
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
@@ -369,25 +520,72 @@ def extract(datadir, fname, basedir,
         the base path to the Users experimental files.
     
     fname : str
-        the name of the file the User would like to extract projections from.
+        The name of the file the User would like to extract projections from.
         
     basedir : str
-        the path with starting file name for the files to be saved. Example: /home/user/folder/proj_ims creates proj_ims_0000.tif inside this folder.
+        The path with starting file name for the files to be saved.
+        Example: /home/user/folder/proj_ims creates proj_ims_0000.tif inside this folder.
         
     extraction_fun : func
-        the function from dxchange the User would like to use to extract the prj, flat, and dark field projections.
+        The function from dxchange the User would like to use to extract the
+        prj, flat, and dark field projections.
         
     binning : int
-        an integer used to determine the downsampling rate of the data.
+        An integer used to determine the downsampling rate of the data.
         
+    starting : int
+        The starting digit for the proj_ims files name.
+
+    chunking_size : int
+        The background normalization is RAM intensive. This allows the User to
+        chunk the normalization process.
+
+    normalize_ncore : int
+        The amount of cores to use during tomopy.normalize()       
+
+    minus_log : bool
+        Allow the program to apply a minus log to the data.
+
+    nan_inf_selective : bool
+        Tf True apply median blur only to nan and inf values.
+
+    kernel_selective : int
+        The kernel size for the nan_inf_selective opperation.
+
+    remove_neg - nan - inf_values : bool
+        If True it will remove theses values iwht the removal_val.
+
+    removal_val : float
+        Value to be passed into the remove neg, nan, inf, parameters.
+
+    dtype : str
+        The data type to save the data as.
+
+    muppy_amount : int
+        Amount of data to read from the RAM usage.
+
+    overwrite : bool
+        If True then the projections files will overwrite the designated folder.
+        
+    verbose : bool
+        If True this will output print statements for each section of the extraction process.
+    
+    save : bool
+        If False this will return the extracted projections to the user in the form of anumpy array.
+        
+    custom_dataprep : bool
+        If True this allows the User to define dataprep functions in the reconstruction script.
+        Output stops after the initial flat/dark field normalization.
+
+    data : np.array
+        array that has prj, flat, dark, theta = data if the User wants to load in their own data outside of dxchange.
+
     outlier_diff : int or None
-        Expected difference value between outlier value and the median value of the array. If None this step is ignored.
+        Expected difference value between outlier value and the median value of the array.
+        If None this step is ignored.
         
     outlier_size : int or None
         Size of the median filter. If None this step is ignored.
-        
-    starting : int
-        the starting digit for the proj_ims files name.
         
     bkg_norm : bool
         If True then a background normalization is applied through TomoPy.
@@ -395,58 +593,20 @@ def extract(datadir, fname, basedir,
     air : int
         Number of pixels at each boundary to calculate the scaling factor. Used during the bkg_norm step.
         
-    chunking_size : int
-        The background normalization is RAM intensive. This allows the User to chunk the normalization process.
-            
-    custom_dataprep : bool
-        if True this allows the User to define dataprep functions in the reconstruction script. Output stops after the initial flat/dark field normalization.
-    
-    dtype : str
-        The data type to save the data as.
-        
-    force_positive : bool
-        Force the data to be positive after all data prep but before downsampling
-        
-    removal_val : float
-        Value to be passed into the remove neg, nan, inf, parameters
-        
     flat_roll : int or None
         Move the flat field over this many pixles before applying normalization. If None this step is skipped.
-        
-    overwrite : bool
-        if True then the projections files will overwrite the designated folder.
-        
-    verbose : bool
-        if True this will output print statements for each section of the extraction process.
-    
-    save : bool
-        if False this will return the extracted projections to the user in the form of a numpy array.
-        
-    minus_log : bool
-        Allow the program to apply a minus log to the data.
-        
-    remove_neg - nan - inf_values : bool
-        If True it will remove theses values iwht the removal_val
-        
+  
+    force_positive : bool
+        Force the data to be positive after all data prep but before downsampling.
+
     correct_norma_extremes : bool
-        If True it will try to set the data to be positive values before applying the -log()
-        
-    nan_inf_selective : bool
-        if True apply median blur only to nan and inf values
+        If True it will try to set the data to be positive values before applying the -log().
 
-    kernel_selective : int
-        the kernel size for the nan_inf_selective opperation
-
-    muppy_amount : int
-        amount of data to read from the RAM usage
-
-    data : np.array
-        array that has prj, flat, dark, theta = data if the User wants to load in their own data outside of dxchange.
-        
     Returns
     -------
-    Nothing. Only saves the corrected projection files to the designated folder. Unless save=False.
-    Then it will return a numpy array with the projections.
+    None, nd.array
+        Only saves the corrected projection files to the designated folder.
+        Unless save=False. Then it will return a numpy array with the projections.
     """
 
     # Saving MetaData

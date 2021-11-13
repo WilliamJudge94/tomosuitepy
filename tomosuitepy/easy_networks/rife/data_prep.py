@@ -58,8 +58,10 @@ def deal_with_sparse_angle(prj_data, theta,
     return prj_data, theta
 
 
-def create_prj_mp4(basedir, video_type='input', types='base', force_positive=False, sparse_angle_removal=0, fps=30, torf=False, apply_exp=True):
-    """Prepare a mp4 video file of the projection files for RIFE.
+def create_prj_mp4(basedir, video_type='input', types='base', force_positive=False,
+                    sparse_angle_removal=0, fps=30, torf=False, apply_exp=False):
+    """
+    Prepare a mp4 video file of the projection files for RIFE.
     
     Parameters
     ----------
@@ -72,6 +74,9 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
     types : str
         Where to retrieve the data from. types='base' pulls from the extracted files. types='noise' or types='artifact'
         uses the cleaned tomogan projection files. 
+
+    force_positive : bool
+        All projections to be positive numbers.
         
     sparse_angle_removal : int
         Remove every x amount of images from the projections
@@ -80,11 +85,15 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
         Frame rate of the video
     
     torf : bool
-        Sometimes the cv2.VideoWriter would like the User to use True instead of False. Not sure why
-        
+        Sometimes the cv2.VideoWriter would like the User to use True instead of False. Not sure why.
+    
+    apply_exp : bool
+        Apple np.exp() to data before saving projections to movie file.
+
     Returns
     -------
-    A mp4 file saved to the User designated loation. This is to be used by RIFE. 
+    None
+        A mp4 file saved to the User designated loation. This is to be used by RIFE. 
     """
     prj_data, theta = obtain_prj_data_deepfillv2(basedir, types)
     
@@ -143,8 +152,10 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
     return prj_data, np.asarray(out_data)
     
     
-def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, gpu='0', video_input_type='input', video_output_type='predicted'):
-    """Use the neural network called RIFE to upscale the amount of projections.
+def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, gpu='0',
+                video_input_type='input', video_output_type='predicted'):
+    """
+    Use the neural network called RIFE to upscale the amount of projections.
     
     Parameters
     ----------
@@ -158,13 +169,21 @@ def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, gpu='0',
         2 to the power of exp that the frames will be upscaled by
         
     scale : float
-        If your frames are too large and using too much VRAM, you can scale the images down by a scaling factor. Fraction=smaller image
-        
+        If your frames are too large and using too much VRAM, you can scale the images down by a scaling factor. Fraction=smaller image.
+    
+    gpu : str
+        The string index of the gpu to use.
+
     video_input_type : str
         The name of the mp4 file to use for the upscaling found at {basedir}rife/video/{video_input_type}.mp4
         
     video_output_type : str
         The name of the mp4 file to be created at {basedir}rife/video/{video_output_type}.mp4
+    
+    Returns
+    -------
+    command
+        A command to be used in a terminal with the RIFE conda env variables installed.
     """
     
     pre = f'cd {location_of_rife} &&'
@@ -179,7 +198,9 @@ def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, gpu='0',
     
     
 def obtain_frames(basedir, video_type='predicted', return_frames=False, output_folder='frames'):
-    """Based on the designated .mp4 file found in {basedir}rife/video/ store the frames into {basedir}rife/{output_folder}
+    """
+    Based on the designated .mp4 file found in {basedir}rife/video/
+    store the frames into {basedir}rife/{output_folder}
     
     Parameters
     ----------
@@ -197,7 +218,8 @@ def obtain_frames(basedir, video_type='predicted', return_frames=False, output_f
         
     Returns
     -------
-    Nothing unless User specifies to return the Greyscale projections.    
+    None, nd.array
+        Nothing unless User specifies to return the Greyscale projections with return_frames=True.    
     """
 
     vidcap = cv2.VideoCapture(f'{basedir}rife/video/{video_type}.mp4')

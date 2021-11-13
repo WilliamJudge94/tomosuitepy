@@ -46,14 +46,16 @@ def predict_tomogan(basedir,
                     data,
                     weights_iter,
                     chunk_size=5,
+                    types='noise',
                     gpu='0', 
                     lunet=3,
                     in_depth=1,
                     data_type=np.float32,
                     verbose=False,
-                    types='noise'):
+                    ):
 
-    """Predict new images based on trained TomoGAN network
+    """
+    Predict new images based on trained TomoGAN network
     
     Parameters
     ----------
@@ -68,6 +70,9 @@ def predict_tomogan(basedir,
         
     chunk_size : int
         chunk the data as to not OOM the GPU
+
+    types : str
+        incase TomoGAN is being used for 'noise' or 'artifact' removal
         
     gpu : str
         to be passed to os.environ['CUDA_VISIBLE_DEVICES'] = 
@@ -84,12 +89,10 @@ def predict_tomogan(basedir,
     verbose : bool
         outputs more useful text
         
-    types : str
-        incase TomoGAN is being used for 'noise' or 'artifact' removal
-        
     Returns
     -------
-    clean_data array, input_data array
+    nd.array, nd.array
+        clean_data array, input_data array
     """
 
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu
@@ -127,7 +130,8 @@ def predict_tomogan(basedir,
 
 
 def save_predict_tomogan(basedir, good_data, bad_data, second_basedir=None, types='noise'):
-    """Save the predicted Denoised Images from TomoGAN network.
+    """
+    Save the predicted Denoised Images from TomoGAN network.
     
     Parameters
     ----------
@@ -148,7 +152,8 @@ def save_predict_tomogan(basedir, good_data, bad_data, second_basedir=None, type
     
     Returns
     -------
-    Nothing. Saves data to either the basedir or the second_basedir under tomogan/denoise_ _data.npy or tomogan/noise_exp_data.npy.
+    None
+        Saves data to either the basedir or the second_basedir under tomogan/denoise_ _data.npy or tomogan/noise_exp_data.npy.
     """
     
     if second_basedir is None:

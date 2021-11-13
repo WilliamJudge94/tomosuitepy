@@ -2,16 +2,19 @@ import os
 import pathlib
 
 def start_project(basedir):
-    """Create directories necessary for a standard analysis package.
+    """
+    Create directories necessary for a standard analysis package.
     
     Parameters
     ----------
     basedir : str
-        the path used to create your experimental tomosuite directory. Example: /home/user/Destkop/experimental/
+        the path used to create your experimental tomosuite directory.
+        Example: /home/user/Destkop/experimental/
         
     Returns
     -------
-    Nothing. Creates project directories.
+    None
+        Creates project directories.
     """
     
     if basedir[-1] != '/':

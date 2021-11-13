@@ -3,7 +3,8 @@ from tqdm import tqdm
 from base.common import h5create_file, h5create_dataset
 
 def format_data_tomogan(clean_data, noisy_data, interval=5, dtype=np.float32):
-    """Formats data for TomoGAN network.
+    """
+    Formats data for TomoGAN network.
 
     Parameters
     ----------
@@ -15,10 +16,14 @@ def format_data_tomogan(clean_data, noisy_data, interval=5, dtype=np.float32):
 
     interval : int
         every 'interval' number of images is placed into the training dataset
+    
+    dtype : np.dtype
+        the data type to load the data into
 
     Returns
     -------
-    np.arrays of order xtrain, ytrain, xtest, ytest
+    nd.arrays
+        np.arrays of order xtrain, ytrain, xtest, ytest
     """
 
     # Initiating the data arrays
@@ -68,6 +73,11 @@ def setup_data_tomogan(basedir, xtrain, ytrain, xtest, ytest, types='noise'):
         
     types : str
         the type of data being passed to TomoGAN. Example 'noise' or 'artifact'
+    
+    Returns
+    -------
+    None
+        Saves data to the correct h5py format for TomoGAN.
     """
     
     data_shape = xtrain.shape

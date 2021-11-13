@@ -54,8 +54,12 @@ def plot_sino(sino_data, idx, og_center, min_idx_val, ranger, store, center_of_i
     ax2.set_title(f"Shifts for ---- {og_center} + {range_vals[idx]} = {og_center + range_vals[idx]}")
 
 
-def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplier=40, number2zero=None, crop_sinogram=0, med_filter=False, min_val=0):
-    """Plots a figure to help Users determine the proper rotation center. Applied a Fourier Transform to the sinogram, shifts the sinogram left and right,
+def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplier=40,
+                            number2zero=None, crop_sinogram=0, med_filter=False, min_val=0):
+    """
+    Plots a figure to help Users determine the proper rotation center.
+    
+    Applied a Fourier Transform to the sinogram, shifts the sinogram left and right,
     and plots the summed values of the results. The lowest value is the rotation center.
     
     Parameters
@@ -74,9 +78,19 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
         
     number2zero : int
         If number2zero != None then zero out this many projections from the start and end of the data files.
+
+    crop_sinogram : int
+        The amount of pixles on the left and right to crop out.
+    
+    med_filter : bool
+        If True apply a (3, 3) median filter to data.
+
+    min_val : int
+        The minimum value for the sinogram. All sinograms are scaled from 0.0 - 1.0.
         
     Returns:
-    A figure
+    Fig
+        An interactive figure.
     """
     
     data = load_extracted_prj(basedir)
