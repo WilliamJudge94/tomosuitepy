@@ -153,8 +153,10 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
     return prj_data, np.asarray(out_data)
 
 
-def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, gpu='0',
-                 video_input_type='input', video_output_type='predicted'):
+def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0,
+                gpu='0', video_input_type='input',
+                video_output_type='predicted',
+                python_location=''):
     """
     Use the neural network called RIFE to upscale the amount of projections.
 
@@ -188,14 +190,14 @@ def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0, gpu='0',
     """
 
     pre = f'cd {location_of_rife} &&'
-    first = f'python3 inference_video.py'
+    first = f'{python_location}python inference_video.py'
     second = f'--exp={exp}'
     third = f'--video={basedir}rife/video/{video_input_type}.mp4'
     fourth = f'--scale={scale}'
     fourth_inter = f'--gpu={gpu}'
     fifth = f"--output={basedir}rife/video/{video_output_type}.mp4"
 
-    print(f"{pre} {first} {second} {third} {fourth} {fourth_inter} {fifth}")
+    return f"{pre} {first} {second} {third} {fourth} {fourth_inter} {fifth}"
 
 
 def obtain_frames(basedir, video_type='predicted', return_frames=False, output_folder='frames'):
