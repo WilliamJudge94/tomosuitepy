@@ -277,7 +277,7 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
 
     Returns
     -------
-    nd. array, int, list
+    nd.array, int, list
         The corrected projection data, iteration number, and total projection_chunk_shape.
     """
     iteration = 0
@@ -316,6 +316,26 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
 
 
 def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
+    """
+    Containerizing loading chunked data from tomopy.normalize.
+
+    Parameters
+    ----------
+    iteration : int
+        The max iterations to import.
+    prj_chunk_shape : list
+        The shape of the total chunked data.
+    dtype : dtype, str
+        The dtype to import the data as.
+    muppy_ammount : int
+        The amount of values to check for muppy.
+        RAM reset for tomopy.
+
+    Returns
+    -------
+    nd.array
+        The loaded chunked data from the flat field correction.
+    """
 
     path_chunker = pathlib.Path('.').absolute()
 
@@ -329,6 +349,25 @@ def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
 
 
 def bkg_norm_func(bkg_norm, prj, chunking_size, air):
+    """
+    Containerizing the tomopy.normalize.normalize_bg()
+
+    Parameters
+    ----------
+    bkg_norm : bool
+        Left over from update.
+    prj : nd.array
+        The data array one would like to apply the normalization to.
+    chunking_size : int
+        The amount of data chunks to save the data as.
+    air : int
+        The air value passed into the normalization.
+
+    Returns
+    -------
+    nd.array
+        The background normalized projections.
+    """
 
     prj_chunks = []
     for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
@@ -343,6 +382,23 @@ def bkg_norm_func(bkg_norm, prj, chunking_size, air):
 
 
 def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
+    """
+    Makes sure no values are less than or equal to zero in the array.
+
+    Parameters
+    ----------
+    correct_norma_extremes : bool
+        Continue with this procedure if this is true.
+    verbose : bool
+        If verbose then print current operation.
+    prj : nd.array
+        The data array to apply the correction to.
+
+    Returns
+    -------
+    nd.array
+        The corrected array.
+    """
     if correct_norma_extremes:
         if verbose:
             print(
@@ -359,6 +415,27 @@ def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
 
 
 def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
+    """
+    Containerized the tomopy.minus_log() function.
+
+    Parameters
+    ----------
+    minus_log : bool
+        If True then continue with the operation.
+    verbose : bool
+        If true then print out operation name.
+    prj : nd.array
+        The data the User wants to apply the minus log to.
+    muppy_amount : int
+        The amount of local variables to load to reset RAM usage.
+    chunking_size : int
+        The amount of data chunks to create.
+
+    Returns
+    -------
+    nd.array
+        The array that has had a minus log applied to it.
+    """
 
     iteration = 0
 
@@ -397,6 +474,25 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 
 
 def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
+    """
+    Loading chunked minus_log data.
+
+    Parameters
+    ----------
+    iteration : int
+        The max iteration to load.
+    muppy_ammount : int
+        The amount of local variables to load. Resets RAM usage.
+    img_shape : list
+        Total chunked data shape.
+    dtype : dtype, str
+        The dtype to load the data into.
+
+    Returns
+    -------
+    nd.array
+        The loaded minus_log data after it was saved from chunking.
+    """
 
     path_chunker = pathlib.Path('.').absolute()
 
@@ -410,7 +506,27 @@ def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
 
 
 def neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val):
+    """
+    Containerizeing the neg/nan/inf correction.
 
+    Parameters
+    ----------
+    prj : nd.array
+        The data to correct.
+    remove_neg_vals : bool
+        If True then remove neg values.
+    remove_nan_vals : bool
+        If True then remove nan values.
+    remove_inf_vals : bool
+        If True then remove inf values.
+    removal_val : float
+        The value to replace these non-finite values with.
+
+    Returns
+    -------
+    nd.array
+        The corrected prj array.
+    """
     if remove_neg_vals:
         if verbose:
             print('\n** Removing neg')
@@ -431,7 +547,25 @@ def neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_
 
 
 def force_positive_func(force_positive, verbose, prj):
+    """
+    Containerizing the force positive function.
 
+    Forces all values in array to be positive values. 
+
+    Parameters
+    ----------
+    force_positive : bool
+        If True then complete operation.
+    verbose : bool
+        If True then print out operation name.
+    prj : nd.array
+        The data array to be corrected.
+
+    Returns
+    -------
+    nd.array
+        The array to correct.
+    """
     if force_positive:
         if verbose:
             print('\n** Making positive numbers')
@@ -457,7 +591,27 @@ def force_positive_func(force_positive, verbose, prj):
 
 
 def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
+    """
+    Containerizes the tomopy.downsample() function.
 
+    Parameters
+    ----------
+    binning : int
+        The power of 2 to bin data to.
+    verbose : bool
+        If True then print the name of operation.
+    muppy_amount : int
+        The amount of local variables to load. Resets RAM usage.
+    chunking_size : int
+        The amount of data chunks to create.
+    prj : nd.array
+        The data to downsample.
+
+    Returns
+    -------
+    nd.array
+        The downsampled data.
+    """
     if binning > 0:
         if verbose:
             print('\n** Down sampling data')
@@ -523,7 +677,8 @@ def extract(datadir, fname, basedir,
             remove_inf_vals=False,
             correct_norma_extremes=False,
             ):
-    """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
+    """
+    Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
 
     Parameters
     ----------
@@ -741,7 +896,8 @@ def extract(datadir, fname, basedir,
 
 
 def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
-    """Extract projection files from file experimental file formats. Then apply normalization, minus_log, negative, nan, and infinity corrections.
+    """Extract projection files from file experimental file formats.
+    Then apply normalization, minus_log, negative, nan, and infinity corrections.
 
     Parameters
     ----------
@@ -752,7 +908,8 @@ def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_r
         the name of the file the User would like to extract projections from.
 
     basedir : str
-        the path with starting file name for the files to be saved. Example: /home/user/folder/proj_ims creates proj_ims_0000.tif inside this folder.
+        the path with starting file name for the files to be saved.
+        Example: /home/user/folder/proj_ims creates proj_ims_0000.tif inside this folder.
 
 
     starting : int
@@ -845,7 +1002,8 @@ def obtain_phantoms(files):
     return output_data
 
 
-def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
+def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0,
+                      dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
     start_time = time.time()
 
     prj_files = os.listdir(f"{prjs_dir}")
