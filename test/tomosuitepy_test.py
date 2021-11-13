@@ -70,7 +70,7 @@ class TestEnv(unittest.TestCase):
         theta = np.linspace(0, 180, 100)
 
 
-        data1 = extract(datadir='', fname='', basedir='',
+        data1 = extract(datadir='', fname='', basedir='/tmp/',
                     extraction_func=dxchange.read_aps_32id,
                     binning=1,
                     outlier_diff=None,
@@ -95,7 +95,7 @@ class TestEnv(unittest.TestCase):
                     normalize_ncore=None,
                     data=[prj, flat, dark, theta])
 
-        data2 = extract(datadir='', fname='', basedir='',
+        data2 = extract(datadir='', fname='', basedir='/tmp/',
                     extraction_func=dxchange.read_aps_32id,
                     binning=1,
                     outlier_diff=None,
