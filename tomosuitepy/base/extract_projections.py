@@ -9,6 +9,7 @@ import numpy as np
 from tqdm import tqdm
 import tifffile as tif
 import tifffile as tif
+from warnings import warn
 from pympler import muppy, summary
 from ..base.common import save_metadata
 
@@ -774,13 +775,16 @@ def extract(datadir, fname, basedir,
         Only saves the corrected projection files to the designated folder.
         Unless save=False. Then it will return a numpy array with the projections.
     """
-
-    # Saving MetaData
-    metadata_dic = {}
-    metadata_keys = [var for var in locals().keys() if '__' not in var]
-    for metadata_key in metadata_keys:
-        metadata_dic[metadata_key] = locals()[metadata_key]
-    save_metadata(basedir, metadata_dic)
+    try:
+        # Saving MetaData
+        metadata_dic = {}
+        metadata_keys = [var for var in locals().keys() if '__' not in var]
+        for metadata_key in metadata_keys:
+            metadata_dic[metadata_key] = locals()[metadata_key]
+        save_metadata(basedir, metadata_dic)
+    except:
+        warn('Unable to save meta-data.')
+        
 
     # Determine the location of the hdf5 file
     fname = os.path.join(datadir, fname)
