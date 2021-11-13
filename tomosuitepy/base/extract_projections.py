@@ -44,7 +44,7 @@ def median_filter_nonfinite(data, size=3, verbose=False):
     """
     # Defining a callback function if None is provided
     if verbose:
-        print('\n** Removing Bad Values')  
+        print('\n** Removing Bad Values')
 
     # Iterating throug each projection to save on RAM
     for projection in tqdm(data):
@@ -105,9 +105,10 @@ def save_prj_ds_chunk(data, iteration, path):
     try:
         np.save(save_path, data)
     except Exception as ex:
-        raise ValueError(f"Unable to save data - path={save_path}\nError - {ex}")
-    
-    
+        raise ValueError(
+            f"Unable to save data - path={save_path}\nError - {ex}")
+
+
 def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
     """
     Loading saved data chunks for normalization.
@@ -128,20 +129,22 @@ def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
     nd.array
         The complete data - unchunked.
     """
-    
+
     chunk_amount = img_shape[0]
-    
-    prj_store = np.zeros((chunk_amount * iterations, img_shape[1], img_shape[2]))
+
+    prj_store = np.zeros(
+        (chunk_amount * iterations, img_shape[1], img_shape[2]))
     prj_store = prj_store.astype(dtypes)
 
     for idx in tqdm(range(0, iterations), desc='Reading Chunked Data'):
         first = idx * chunk_amount
         second = (idx + 1) * chunk_amount
-        var = np.load(f'{path}/tomsuitepy_downsample_save_it_{str(idx).zfill(4)}.npy') 
-        
+        var = np.load(
+            f'{path}/tomsuitepy_downsample_save_it_{str(idx).zfill(4)}.npy')
+
         prj_store[first: second] = var.copy()
         del var
-        
+
     return prj_store
 
 
@@ -161,13 +164,14 @@ def load_prj_ds_chunk(iterations, path):
     nd. array
         The unchunked data.
     """
-    
+
     data = []
 
     for it in tqdm(range(0, iterations), desc='Reading Chunked Data'):
-        data.append(np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
+        data.append(
+            np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
         #print(f'loading - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
-        
+
     data = np.asarray(data)
     data = np.concatenate(data)
     return data
@@ -191,8 +195,9 @@ def remove_saved_prj_ds_chunk(iterations, path):
     """
     for it in range(0, iterations):
         #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
-        os.remove(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
-        
+        os.remove(
+            f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+
 
 def flat_roll_func(flat, flat_roll):
     """
@@ -240,8 +245,10 @@ def outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose):
     if outlier_diff != None and outlier_size != None:
         if verbose:
             print('\n** Remove Outliers')
-        prj = tomopy.misc.corr.remove_outlier(prj, outlier_diff, size=outlier_size, axis=0)
-        flat = tomopy.misc.corr.remove_outlier(flat, outlier_diff, size=outlier_size, axis=0)
+        prj = tomopy.misc.corr.remove_outlier(
+            prj, outlier_diff, size=outlier_size, axis=0)
+        flat = tomopy.misc.corr.remove_outlier(
+            flat, outlier_diff, size=outlier_size, axis=0)
     return prj, flat
 
 
@@ -273,19 +280,20 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
     nd. array, int, list
         The corrected projection data, iteration number, and total projection_chunk_shape.
     """
-    iteration = 0 
+    iteration = 0
     prj_chunk_shape = 0
 
     if verbose:
-        print('\n** Flat field correction')  
-        
+        print('\n** Flat field correction')
+
     if chunking_size > 1:
 
         path_chunker = pathlib.Path('.').absolute()
 
         for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Flat Field Correction - Chunked'):
-            
-            prj_ds_chunk = tomopy.normalize(prj_ds_chunk, flat, dark, ncore=normalize_ncore)
+
+            prj_ds_chunk = tomopy.normalize(
+                prj_ds_chunk, flat, dark, ncore=normalize_ncore)
             prj_chunk_shape = np.shape(prj_ds_chunk)
             save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
             iteration += 1
@@ -293,11 +301,11 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
             all_objects = muppy.get_objects()[:muppy_amount]
             sum1 = summary.summarize(all_objects)
             time.sleep(1)
-            
+
         del prj
 
         prj = 0
-        
+
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
 
@@ -313,7 +321,7 @@ def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
 
     prj = load_prjs_norm_chunk(iteration, path_chunker, prj_chunk_shape, dtype)
     remove_saved_prj_ds_chunk(iteration, path_chunker)
-    
+
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
 
@@ -324,7 +332,8 @@ def bkg_norm_func(bkg_norm, prj, chunking_size, air):
 
     prj_chunks = []
     for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
-        prj_tmp = tomopy.prep.normalize.normalize_bg(prj_chunk, air=air, ncore=1)
+        prj_tmp = tomopy.prep.normalize.normalize_bg(
+            prj_chunk, air=air, ncore=1)
         prj_chunks.append(prj_tmp.copy())
         del prj_tmp
 
@@ -336,13 +345,15 @@ def bkg_norm_func(bkg_norm, prj, chunking_size, air):
 def correct_norma_extremes_func(correct_norma_extremes, verbose, prj):
     if correct_norma_extremes:
         if verbose:
-            print(f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
+            print(
+                f'\n** Normalization pre-log correction - Min: {prj.min()} - Max: {prj.max()}')
 
         prj += np.abs(np.nanmin(prj))
         prj += np.nanmax(prj) * 0.0001
 
         if verbose:
-            print(f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
+            print(
+                f'\n** After Normalization Min: {prj.min()} - Max: {prj.max()}')
 
     return prj
 
@@ -360,12 +371,13 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
             sum1 = summary.summarize(all_objects)
 
         except Exception as ex:
-            raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
+            raise ValueError(
+                f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
 
         if chunking_size > 1:
 
             path_chunker = pathlib.Path('.').absolute()
-            
+
             for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Applying Minus Log'):
 
                 prj_ds_chunk = tomopy.minus_log(prj_ds_chunk)
@@ -387,7 +399,7 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
 def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
 
     path_chunker = pathlib.Path('.').absolute()
- 
+
     prj = load_prjs_norm_chunk(iteration, path_chunker, img_shape, dtype)
     remove_saved_prj_ds_chunk(iteration, path_chunker)
 
@@ -428,13 +440,13 @@ def force_positive_func(force_positive, verbose, prj):
         if np.nanmin(prj) < 0:
             min1 = np.nanmin(prj)
             prj += np.abs(np.nanmin(prj))
-            
+
             # Force min projection to be zero
             prj -= np.nanmin(prj)
-            
-            print(f'\n** Applying positive numbers - OG min: {min1} Corrected Min: {np.nanmin(prj)}')
-        
-            
+
+            print(
+                f'\n** Applying positive numbers - OG min: {min1} Corrected Min: {np.nanmin(prj)}')
+
     elif not force_positive:
         minimum_prj = np.min(prj)
         if minimum_prj < 0:
@@ -446,7 +458,7 @@ def force_positive_func(force_positive, verbose, prj):
 
 def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
 
-    if binning>0:
+    if binning > 0:
         if verbose:
             print('\n** Down sampling data')
 
@@ -455,13 +467,14 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
             sum1 = summary.summarize(all_objects)
 
         except Exception as ex:
-            raise ValueError(f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
+            raise ValueError(
+                f"\n** Failed to initiate muppy RAM collection - Error: {ex}")
 
         if chunking_size > 1:
 
             path_chunker = pathlib.Path('.').absolute()
             iteration = 0
-            
+
             for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Downsampling Data'):
 
                 prj_ds_chunk = cache_clearing_downsample(prj_ds_chunk, binning)
@@ -477,7 +490,7 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
 
         else:
             prj = tomopy.downsample(prj, level=binning)
-            prj = tomopy.downsample(prj, level=binning, axis=1)   
+            prj = tomopy.downsample(prj, level=binning, axis=1)
 
     return prj
 
@@ -492,7 +505,7 @@ def extract(datadir, fname, basedir,
             nan_inf_selective=False,
             kernel_selective=5,
             remove_neg_vals=True,
-            removal_val=0.001, 
+            removal_val=0.001,
             dtype='float32',
             muppy_amount=1000,
             overwrite=True,
@@ -510,29 +523,27 @@ def extract(datadir, fname, basedir,
             remove_inf_vals=False,
             correct_norma_extremes=False,
             ):
-
-            
     """Extract projection files from file experimental file formats. Allows User to not apply corrections after normalization.
-    
+
     Parameters
     ----------
     datadir : str
         the base path to the Users experimental files.
-    
+
     fname : str
         The name of the file the User would like to extract projections from.
-        
+
     basedir : str
         The path with starting file name for the files to be saved.
         Example: /home/user/folder/proj_ims creates proj_ims_0000.tif inside this folder.
-        
+
     extraction_fun : func
         The function from dxchange the User would like to use to extract the
         prj, flat, and dark field projections.
-        
+
     binning : int
         An integer used to determine the downsampling rate of the data.
-        
+
     starting : int
         The starting digit for the proj_ims files name.
 
@@ -566,13 +577,13 @@ def extract(datadir, fname, basedir,
 
     overwrite : bool
         If True then the projections files will overwrite the designated folder.
-        
+
     verbose : bool
         If True this will output print statements for each section of the extraction process.
-    
+
     save : bool
         If False this will return the extracted projections to the user in the form of anumpy array.
-        
+
     custom_dataprep : bool
         If True this allows the User to define dataprep functions in the reconstruction script.
         Output stops after the initial flat/dark field normalization.
@@ -583,19 +594,19 @@ def extract(datadir, fname, basedir,
     outlier_diff : int or None
         Expected difference value between outlier value and the median value of the array.
         If None this step is ignored.
-        
+
     outlier_size : int or None
         Size of the median filter. If None this step is ignored.
-        
+
     bkg_norm : bool
         If True then a background normalization is applied through TomoPy.
-        
+
     air : int
         Number of pixels at each boundary to calculate the scaling factor. Used during the bkg_norm step.
-        
+
     flat_roll : int or None
         Move the flat field over this many pixles before applying normalization. If None this step is skipped.
-  
+
     force_positive : bool
         Force the data to be positive after all data prep but before downsampling.
 
@@ -625,29 +636,29 @@ def extract(datadir, fname, basedir,
     # extract the data from the file
     if verbose:
         print('\n** Reading data')
-    
+
     if data is None:
         prj, flat, dark, theta = extraction_func(fname)
     else:
         prj, flat, dark, theta = data
-        
-        
+
     if len(prj) % chunking_size != 0:
-        raise ValueError(f'Length of projections ({len(prj)}) is not divisible by chunking_size ({chunking_size}).')
-    
+        raise ValueError(
+            f'Length of projections ({len(prj)}) is not divisible by chunking_size ({chunking_size}).')
+
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
 
     flat = flat_roll_func(flat, flat_roll)
 
     # Allows the User to remove outliers
-    prj, flat = outlier_diff_func(prj, flat, outlier_diff, outlier_size, verbose)
-        
+    prj, flat = outlier_diff_func(
+        prj, flat, outlier_diff, outlier_size, verbose)
+
     # Normalized the projections - Hella Memory
     prj, iteration, prj_chunk_shape = flat_field_corr_func(prj, flat, dark,
-                                                        chunking_size, normalize_ncore,
-                                                        muppy_amount, dtype, verbose)
-
+                                                           chunking_size, normalize_ncore,
+                                                           muppy_amount, dtype, verbose)
 
     if chunking_size > 1:
         del prj, flat, dark
@@ -655,68 +666,75 @@ def extract(datadir, fname, basedir,
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
 
-        prj = flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount)
-
+        prj = flat_field_load_func(
+            iteration, prj_chunk_shape, dtype, muppy_amount)
 
     all_objects = muppy.get_objects()[:muppy_amount]
     sum1 = summary.summarize(all_objects)
     time.sleep(2)
-    
+
     if not custom_dataprep:
-        
+
         # Apply a background normalization to the projections
         if bkg_norm:
             prj = bkg_norm_func(bkg_norm, prj, chunking_size, air)
 
         if correct_norma_extremes:
-            prj = correct_norma_extremes_func(correct_norma_extremes, verbose, prj)
+            prj = correct_norma_extremes_func(
+                correct_norma_extremes, verbose, prj)
 
         if minus_log:
-            prj, iteration, prj_chunk_shape = minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size)
+            prj, iteration, prj_chunk_shape = minus_log_func(
+                minus_log, verbose, prj, muppy_amount, chunking_size)
 
         if chunking_size > 1:
             del prj
             all_objects = muppy.get_objects()[:muppy_amount]
             sum1 = summary.summarize(all_objects)
             time.sleep(2)
-            prj = minus_log_load_func(iteration, muppy_amount, prj_chunk_shape, dtype)
+            prj = minus_log_load_func(
+                iteration, muppy_amount, prj_chunk_shape, dtype)
 
-        prj = neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val)
-        
+        prj = neg_nan_inf_func(prj, verbose, remove_neg_vals,
+                               remove_nan_vals, remove_inf_vals, removal_val)
+
         if nan_inf_selective:
-            prj = median_filter_nonfinite(data=prj, size=kernel_selective, verbose=verbose)
+            prj = median_filter_nonfinite(
+                data=prj, size=kernel_selective, verbose=verbose)
 
     else:
         if verbose:
-            print('\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
+            print(
+                '\n** Not applying data manipulation after tomopy.normalize - Except for downsampling')
 
     # Bin the data
-    if binning>0:
-        prj = downsample_func(binning, verbose, muppy_amount, chunking_size, prj)
-        
+    if binning > 0:
+        prj = downsample_func(
+            binning, verbose, muppy_amount, chunking_size, prj)
+
     if not custom_dataprep:
         if force_positive:
             prj = force_positive_func(force_positive, verbose, prj)
-        
+
     if save:
 
         if verbose:
             print('\n** Dumping tiff\n')
 
-        dxchange.write_tiff_stack(prj[:,:,:], fname=f'{basedir}extracted/projections/proj',
+        dxchange.write_tiff_stack(prj[:, :, :], fname=f'{basedir}extracted/projections/proj',
                                   dtype=dtype, axis=0, digit=digits, start=starting, overwrite=overwrite)
 
         np.save(f'{basedir}extracted/theta/theta.npy', np.asarray(theta))
 
         if verbose:
             print('   done in %0.3f min' % ((time.time() - start_time)/60))
-            
+
         del prj
         del theta
 
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
-            
+
     else:
         print('   done in %0.3f min' % ((time.time() - start_time)/60))
         return np.asarray(prj), np.asarray(theta)
@@ -724,32 +742,32 @@ def extract(datadir, fname, basedir,
 
 def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
     """Extract projection files from file experimental file formats. Then apply normalization, minus_log, negative, nan, and infinity corrections.
-    
+
     Parameters
     ----------
     datadir : str
         the base path to the Users experimental files.
-    
+
     fname : str
         the name of the file the User would like to extract projections from.
-        
+
     basedir : str
         the path with starting file name for the files to be saved. Example: /home/user/folder/proj_ims creates proj_ims_0000.tif inside this folder.
 
-        
+
     starting : int
         the starting digit for the proj_ims files name.
-        
+
     overwrite : bool
         if True then the projections files will overwrite the designated folder.
-        
+
     verbose : bool
         if True this will output print statements for each section of the extraction process.
-    
+
     save : bool
         if False this will return the extracted projections to the user.
-        
-    
+
+
     Returns
     -------
     Nothing. Only saves the corrected projection files to the designated folder.
@@ -763,14 +781,14 @@ def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_r
     if verbose:
         print('\n** Reading data')
     prj, flat, dark, theta = extraction_func(fname)
-    
+
     digits = len(str(len(prj)))
 
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
-        
+
     if verbose:
-        print('\n** Flat field correction')  
+        print('\n** Flat field correction')
     prj = tomopy.normalize(prj, flat, dark)
 
     if verbose:
@@ -786,82 +804,79 @@ def extract_phantom(datadir, fname, basedir, starting=0, dtype='float32', flat_r
         print('\n** Removing inf')
     prj[np.where(prj == np.inf)] = 0.001
 
-    if binning>0:
+    if binning > 0:
         if verbose:
             print('\n** Down sampling data\n')
         prj = tomopy.downsample(prj, level=binning)
         prj = tomopy.downsample(prj, level=binning, axis=1)
-        
+
     if save:
 
         if verbose:
             print('\n** Dumping tiff\n')
 
-        dxchange.write_tiff_stack(prj[:,:,:], fname=f'{basedir}extracted/projections/proj',
+        dxchange.write_tiff_stack(prj[:, :, :], fname=f'{basedir}extracted/projections/proj',
                                   dtype=dtype, axis=0, digit=digits, start=starting, overwrite=overwrite)
 
         np.save(f'{basedir}extracted/theta/theta.npy', np.asarray(theta))
 
         if verbose:
             print('   done in %0.3f min' % ((time.time() - start_time)/60))
-            
+
     else:
         return np.asarray(prj), np.asarray(theta)
-    
-      
+
+
 def obtain_phantoms(files):
-    
+
     data = []
-    
+
     for idx, file in tqdm(enumerate(files), total=len(files), desc='Importing Data'):
         im = tif.imread(file)
         data.append(im)
-        
+
     data = np.asarray(data)
-    
+
     output_data = []
-    
+
     for i in tqdm(range(data.shape[1]), desc="Saving Data"):
         output_data.append(data[:, i, :])
-    
+
     return output_data
-        
+
 
 def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, dtype='float32', flat_roll=None, overwrite=True, verbose=True, save=True):
     start_time = time.time()
-    
+
     prj_files = os.listdir(f"{prjs_dir}")
     prj_files = [f"{prjs_dir}{x}" for x in prj_files]
-    
-    
+
     flat_files = os.listdir(f"{flat_field_dir}")
     flat_files = [f"{flat_field_dir}{x}" for x in flat_files]
-    
-    
+
     prj = obtain_phantoms(prj_files)
     flat = obtain_phantoms(flat_files)
     dark = np.zeros(np.shape(flat))
-    
+
     prj = np.asarray(prj)
     flat = np.asarray(flat)
     dark = np.asarray(dark)
-    
+
     theta = tomopy.angles(prj.shape[0], 0, 180)
-    
-    
+
     digits = len(str(len(prj)))
 
     if flat_roll != None:
         flat = np.roll(flat, flat_roll, axis=2)
-        
+
     if verbose:
-        print('\n** Flat field correction')  
+        print('\n** Flat field correction')
     prj = tomopy.normalize(prj, flat, dark)
 
     if verbose:
         print('\n** Applying minus log')
     prj = tomopy.minus_log(prj)
-    
+
     if verbose:
         print('\n** Removing np.nan')
 
@@ -885,25 +900,24 @@ def save_phantom_data(basedir, prjs_dir, flat_field_dir, binning=0, starting=0, 
     if np.min(prj) < 0:
         prj += np.abs(np.min(prj))
 
-
-    if binning>0:
+    if binning > 0:
         if verbose:
             print('\n** Down sampling data\n')
         prj = tomopy.downsample(prj, level=binning)
         prj = tomopy.downsample(prj, level=binning, axis=1)
-        
+
     if save:
 
         if verbose:
             print('\n** Dumping tiff\n')
 
-        dxchange.write_tiff_stack(prj[:,:,:], fname=f'{basedir}extracted/projections/proj',
+        dxchange.write_tiff_stack(prj[:, :, :], fname=f'{basedir}extracted/projections/proj',
                                   dtype=dtype, axis=0, digit=digits, start=starting, overwrite=overwrite)
 
         np.save(f'{basedir}extracted/theta/theta.npy', np.asarray(theta))
 
         if verbose:
             print('   done in %0.3f min' % ((time.time() - start_time)/60))
-            
+
     else:
-        return np.asarray(prj), np.asarray(theta)    
+        return np.asarray(prj), np.asarray(theta)

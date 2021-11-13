@@ -7,26 +7,26 @@ from tqdm import tqdm
 import itk
 from itkwidgets import view
 
-def loading_tiff_prj(folder):
 
+def loading_tiff_prj(folder):
     """
     For a given folder return all the .tiff images in a numpy array.
-    
+
     Parameters
     ----------
     folder : str
         The path to the folder which contains the .tiff images.
-        
+
     Returns
     -------
     nd.array
         A numpy array with the loaded .tiff images.
     """
     data = []
-    
+
     files = sorted(os.listdir(folder))
     files = [f'{folder}{fil}' for fil in files]
-    
+
     for file in tqdm(files, desc='Importing TIFF Projections'):
         if '.tiff' in file or '.tif' in file:
             data.append(tif.imread(file))
@@ -36,12 +36,12 @@ def loading_tiff_prj(folder):
 def load_extracted_prj(basedir):
     """
     Load the extracted data completed by TomoSuitePY.
-    
+
     Parameters
     ----------
     basedir : str
         The path for the expermental file.
-        
+
     Returns
     -------
     nd.array
@@ -54,12 +54,12 @@ def load_extracted_prj(basedir):
 def load_extracted_theta(basedir):
     """
     Allow the User to retrive the extracted theta angles.
-    
+
     Parameters
     ----------
     basedir : str
         The path for the expermental file.
-        
+
     Returns
     -------
     nd.array
@@ -72,15 +72,15 @@ def load_extracted_theta(basedir):
 def skip_lowdose(basedir):
     """
     Allow the user to skip low-dose machine learning for de-wedge machine learning.
-    
+
     Save the raw projection data to /low_dose/noise.py. This function is used for
     ML inpainting and artifact removal when noise removal is not carried out.
-    
+
     Parameters
     ----------
     basedir : str
         the path to the project
-        
+
     Returns
     -------
     None
@@ -91,19 +91,19 @@ def skip_lowdose(basedir):
 
     data = loading_tiff_prj(f'{basedir}extracted/projections/')
     np.save(f'{basedir}tomogan/noise_exp_data.npy', data)
-    
-    
+
+
 def h5create_file(loc, name):
     """
     Creates hdf5 file
-    
+
     Parameters
     ---------
     loc : str
         The location of the hdf5 file.
     name : str
         The name of the hdf5 file WITHOUT .h5 at the end.
-        
+
     Returns
     -------
     None
@@ -112,19 +112,19 @@ def h5create_file(loc, name):
 
     with h5py.File('{}/{}.h5'.format(loc, name), "w") as f:
         pass
-    
-    
+
+
 def h5grab_data(file, data_loc):
     """
     Returns the data stored in the user defined group in h5py file.
-    
+
     Parameters
     ----------
     file : str
         The user defined hdf5 file.
     data_loc : str
         The group the user would like to pull data from.
-        
+
     Returns
     -------
     arb
@@ -141,7 +141,7 @@ def h5grab_data(file, data_loc):
 def h5create_dataset(file, ds_path, ds_data):
     """
     Creates a dataset in the user defined group with data equal to the user defined data.
-    
+
     Parameters
     ----------
     file : str
@@ -150,7 +150,7 @@ def h5create_dataset(file, ds_path, ds_data):
         The group path to the dataset inside the hdf5 file.
     ds_data : nd.array
         a numpy array the user would like to store
-        
+
     Returns
     -------
     None
@@ -158,19 +158,19 @@ def h5create_dataset(file, ds_path, ds_data):
     """
     with h5py.File(file, 'a') as hdf:
         hdf.create_dataset(ds_path, data=ds_data)
-        
-        
+
+
 def h5group_list(file, group_name='base'):
     """
     Displays all group members for a user defined group.
-    
+
     Parameters
     ----------
     file : str
         The path to the hdf5 file.
     group_name : str
         The path to the group the user wants the Keys for. Set to 'base' if you want the top most group.
-        
+
     Returns
     -------
     list
@@ -181,18 +181,19 @@ def h5group_list(file, group_name='base'):
         if group_name == 'base':
             return (list(hdf.items()))
         else:
-            g1=hdf.get(group_name)
+            g1 = hdf.get(group_name)
             return (list(g1.items()))
-        
+
+
 def interactive_data_viewer():
     """
     Show the commands used for viewing 3D volumes in an interactive way.
-    
+
     Parameters
     ----------
     None : None
         There are no parameters
-        
+
     Returns
     -------
     None
@@ -206,7 +207,7 @@ def interactive_data_viewer():
 def save_metadata(basedir, meta_data2save, meta_data_type='extracted'):
     """
     Saving function metadata calls to a pkl file.
-    
+
     Parameters
     ----------
     basedir : str
@@ -216,24 +217,25 @@ def save_metadata(basedir, meta_data2save, meta_data_type='extracted'):
     medta_data_type : str
         Designation on where to save meta data.
         Either 'extracted' or 'recon'.
-        
+
     Returns
     -------
     None
         Saves function meta data to a pkl file. 
     """
-    
+
     if meta_data_type == 'recon':
         meta_data_type = ''
     elif meta_data_type == 'extracted':
         meta_data_type = 'extracted/'
     with open(f'{basedir}{meta_data_type}meta_data.pkl', 'wb') as f:
-        pickle.dump( meta_data2save, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(meta_data2save, f, pickle.HIGHEST_PROTOCOL)
+
 
 def load_metadata(basedir, meta_data_type='extracted'):
     """
     Loading function metadata from pkl file.
-    
+
     Parameters
     ----------
     basedir : str
@@ -241,7 +243,7 @@ def load_metadata(basedir, meta_data_type='extracted'):
     medta_data_type : str
         Designation on which meta data to load.
         Either 'extracted' or 'recon'.
-        
+
     Returns
     -------
     dic

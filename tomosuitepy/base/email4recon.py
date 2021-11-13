@@ -8,16 +8,14 @@ import email
 
 
 def send_email(recipient,
-                            image,
-                            subject,
-                            body,
-                            gmail_user,
-                            gmail_pass):
-  
-  
+               image,
+               subject,
+               body,
+               gmail_user,
+               gmail_pass):
     """
     Allow users to send an email.
-    
+
     Parameters
     ----------
     recipient : list of str
@@ -32,13 +30,12 @@ def send_email(recipient,
         The email address of the sender.
     gmail_pass : str
         The email senders password.
- 
+
     Returns
     -------
     None
         Sends email to designated addresses.
     """
-
 
     # Create message container.
     msgRoot = MIMEMultipart('related')
@@ -48,7 +45,7 @@ def send_email(recipient,
 
     # Create the body of the message.
     html = """\
-        <p><br/>""" +  '<br/> <br/>' + body + """<br/>
+        <p><br/>""" + '<br/> <br/>' + body + """<br/>
             <img src="cid:image1">
 
         </p>
@@ -56,7 +53,7 @@ def send_email(recipient,
 
     # Record the MIME types.
     msgHtml = MIMEText(html, 'html')
-    
+
     msgImg = MIMEImage(image, 'png')
     msgImg.add_header('Content-ID', '<image1>')
 
