@@ -5,8 +5,11 @@ from pympler import muppy, summary
 import pathlib
 import dxchange
 
-cwd = pathlib.Path('.').absolute().parents[0]
-sys.path.append(f'{cwd}')
+cwd1 = pathlib.Path('.').absolute().parents[0]
+sys.path.append(f'{cwd1}')
+
+cwd2 = pathlib.Path('..').absolute().parents[0]
+sys.path.append(f'{cwd2}')
 
 from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, extract
 from tomosuitepy.base.reconstruct import tomo_recon, reconstruct_single_slice
