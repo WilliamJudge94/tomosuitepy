@@ -25,7 +25,7 @@ install:
   - conda activate test-environment
 
 script:
-  - pytest --cov=tomosuitepy test/
+  - pytest --cov=tomosuitepy tests/
 
 notifications:
   email: williamjudge94@gmail.com
