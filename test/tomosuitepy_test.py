@@ -162,7 +162,7 @@ class TestEnv(unittest.TestCase):
                 body='',
                 gmail_user='',
                 gmail_pass='',
-                send=False):
+                send=False)
         except:
             testing = 'fail'
         
