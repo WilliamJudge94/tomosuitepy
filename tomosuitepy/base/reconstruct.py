@@ -18,6 +18,22 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 def determine_bad_prjs(data, difference_val):
+    """
+    Find projections that may have a strange artifact in them.
+
+    Parameters
+    ----------
+    data : nd.array
+        The projection data
+    difference_val : float
+        The differece between the current and
+        next projection that will be counted as a bad projection.
+
+    Returns
+    -------
+    nd.array
+        The index values of projections that are ok.
+    """
     store_idx = []
 
     for idx, prj in enumerate(tqdm(data[:-1])):
@@ -30,6 +46,21 @@ def determine_bad_prjs(data, difference_val):
 
 
 def colorbar(mappable, font_size=12):
+    """
+    Create a matplotlib colorbar with equal dimensions of the plot.
+
+    Parameters
+    ----------
+    mappable : matplotlib mappable
+        The image to add a colorbar to.
+    font_size : int
+        The font size of the colorbar.
+
+    Returns
+    -------
+    matplotlib.fig
+        Matplotlib figure.
+    """
     ax = mappable.axes
     fig = ax.figure
     divider = make_axes_locatable(ax)
@@ -62,9 +93,7 @@ def tomo_recon(prj, theta, rot_center, user_extra=None):
     # Allow User to select what type of recon they want
     types = 'gridrec'
 
-    #prj = tomopy.remove_stripe_ti(prj, 2)
     if types == 'gridrec':
-        #recon = tomopy.recon(prj, theta, center=rot_center, algorithm='gridrec', ncore=16, filter_name='parzen')
         recon = tomopy.recon(prj, theta, center=rot_center,
                              algorithm='gridrec', ncore=2)
         recon = tomopy.circ_mask(recon, axis=0, ratio=0.95)
@@ -75,9 +104,6 @@ def tomo_recon(prj, theta, rot_center, user_extra=None):
                    'num_iter': 200, 'extra_options': extra_options}
         recon = tomopy.recon(prj, theta, center=rot_center,
                              algorithm=tomopy.astra, ncore=1, options=options)
-
-    # Remove ring artifacts, this comes with a slight resolution cost
-    #recon = tomopy.remove_ring(recon, center_x=None, center_y=None, thresh=300.0)
 
     return recon, user_extra
 
@@ -101,9 +127,11 @@ def obtain_rot_center_sinos(prj, shift_range=20):
     return_shifted_shape = return_shifted.shape
 
     print(
-        f"Applying Rotation Finder Protocol - After Adjusting For Shift Changes Rotation Center Set To True Center Of {return_shifted_shape[-1]/2}")
+        f"Applying Rotation Finder Protocol - After Adjusting For\
+            Shift Changes Rotation Center Set To True Center Of {return_shifted_shape[-1]/2}")
     print(
-        f"absolute_middle_rotation={(return_shifted_shape[-1]/2) + shift_range} - with a search range of {return_shifted_shape[-1]/2} - {(return_shifted_shape[-1]/2) + 2*shift_range}")
+        f"absolute_middle_rotation={(return_shifted_shape[-1]/2) + shift_range} - with a\
+            search range of {return_shifted_shape[-1]/2} - {(return_shifted_shape[-1]/2) + 2*shift_range}")
 
     old_shape = return_shifted.shape
     new_shape = (old_shape[1], 1, old_shape[-1])
@@ -203,7 +231,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     # Error out when chunker is not the right shape
     if prj_shape[1] % chunk_recon_size != 0:
         raise ValueError(
-            f'Projection dimension {prj_shape[1]} cannot be divided evenly by chunk_recon_size={chunk_recon_size}. Remainder={prj_shape[1] % chunk_recon_size}')
+            f'Projection dimension {prj_shape[1]} cannot be divided evenly by\
+                chunk_recon_size={chunk_recon_size}. Remainder={prj_shape[1] % chunk_recon_size}')
 
     prj = prj.astype(dtypes)
     prj_chunked_main = np.array_split(prj, chunk_recon_size, axis=1)
