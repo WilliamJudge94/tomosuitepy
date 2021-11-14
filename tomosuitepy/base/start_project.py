@@ -15,7 +15,7 @@ def start_project(basedir):
     Returns
     -------
     None
-        Creates project directories.
+        Creates project directories with the correct structure.
     """
 
     if basedir[-1] != '/':
