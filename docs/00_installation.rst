@@ -5,7 +5,6 @@ Installation of TomoSuitePY
 ===============================
 
 
-
 Installing Conda Environment To Jupyter
 =======================================
 
