@@ -12,9 +12,10 @@ cwd2 = pathlib.Path('..').absolute().parents[0]
 sys.path.append(f'{cwd2}')
 
 from tomosuitepy.methods.denoise_type1.denoise_t1_dataprep import *
+
 from tomosuitepy.methods.denoise_type2.denoise_t2_dataprep import *
 
-muppy_ammount = 1000
+muppy_ammount = 1001
 
 class TestEnv(unittest.TestCase):
 
