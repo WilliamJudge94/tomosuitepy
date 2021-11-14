@@ -12,7 +12,8 @@ def send_email(recipient,
                subject,
                body,
                gmail_user,
-               gmail_pass):
+               gmail_pass,
+               send=True):
     """
     Allow users to send an email.
 
@@ -30,7 +31,8 @@ def send_email(recipient,
         The email address of the sender.
     gmail_pass : str
         The email senders password.
-
+    send : bool
+        If False the email wont send.
     Returns
     -------
     None
@@ -63,6 +65,7 @@ def send_email(recipient,
     # Send the message via local SMTP server.
     s = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     s.ehlo()
-    s.login(gmail_user, gmail_pass)
-    s.sendmail(gmail_user, recipient, msgRoot.as_string())
+    if send:
+        s.login(gmail_user, gmail_pass)
+        s.sendmail(gmail_user, recipient, msgRoot.as_string())
     s.quit()

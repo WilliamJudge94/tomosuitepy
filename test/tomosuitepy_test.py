@@ -13,6 +13,9 @@ sys.path.append(f'{cwd2}')
 
 from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, extract
 from tomosuitepy.base.reconstruct import tomo_recon, reconstruct_single_slice
+from tomosuitepy.base.email4recon import send_email
+from tomosuitepy.base.rotation_center import *
+from tomosuitepy.base.start_project import start_project
 
 muppy_ammount = 1000
 
@@ -149,6 +152,21 @@ class TestEnv(unittest.TestCase):
         print(value)
         tf = np.array_equal(value, 0.004251825623214245)
         self.assertTrue(value <= 0.005)
+
+    def test_send_email(self):
+        testing = ''
+        try:
+            send_email(recipient=['dummy_email@gmail.com', ],
+                image='',
+                subject='',
+                body='',
+                gmail_user='',
+                gmail_pass='',
+                send=False):
+        except:
+            testing = 'fail'
+        
+        self.assertTrue(testing=='')
 
 
 
