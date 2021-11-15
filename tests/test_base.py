@@ -11,6 +11,12 @@ sys.path.append(f'{cwd1}')
 cwd2 = pathlib.Path('..').absolute().parents[0]
 sys.path.append(f'{cwd2}')
 
+# h5 testing
+testh5_path = os.path.dirname(__file__)
+mainh5_path = '{}/'.format(testh5_path)
+testh5_file_path = mainh5_path+'test.h5'
+
+from tomosuitepy.base.common import *
 from tomosuitepy.base.extract_projections import save_prj_ds_chunk, load_prj_ds_chunk, remove_saved_prj_ds_chunk, extract
 from tomosuitepy.base.reconstruct import tomo_recon, reconstruct_single_slice
 from tomosuitepy.base.email4recon import send_email
@@ -20,6 +26,25 @@ from tomosuitepy.base.start_project import start_project
 muppy_ammount = 1000
 
 class TestEnv(unittest.TestCase):
+    
+    def test_h5create_file(self):
+
+        h5create_file(mainh5_path, 'test')
+        file_check = os.path.isfile('{}/test.h5'.format(testh5_path))
+        self.assertTrue(file_check)
+        
+    def test_h5grab_data(self):
+        file = testh5_file_path
+        h5create_dataset(file, 'group1/group2/test_data2', [100])
+        data = h5grab_data(file, 'group1/group2/test_data2')
+        self.assertEqual(data, [100])
+        
+    def test_h5group_list(self):
+        file = testh5_file_path
+        result1 = h5group_list(file)[0][0]
+        result2 = h5group_list(file, 'group1')[0][0]
+        self.assertEqual(result1, 'group1')
+        self.assertEqual(result2, 'group2')
 
     def test_save_prjs_ds_chunk(self):
 
@@ -168,8 +193,10 @@ class TestEnv(unittest.TestCase):
         
         self.assertTrue(testing=='')
 
-
-
+    @classmethod
+    def tearDownClass(cls):
+        file = testh5_file_path
+        h5delete_file(file)
 
 if __name__ == '__main__':
     unittest.main()

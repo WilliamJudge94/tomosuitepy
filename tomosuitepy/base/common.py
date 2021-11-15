@@ -184,6 +184,23 @@ def h5group_list(file, group_name='base'):
             g1 = hdf.get(group_name)
             return (list(g1.items()))
 
+        
+def h5delete_file(file):
+    """
+    Deletes the file set by the user
+    
+    Parameters
+    ----------
+    file : str
+        the full location of the hdf5 file the user would like to delete
+        
+    Returns
+    -------
+    None
+        removes an h5 file.
+    """
+    os.remove(file)
+
 
 def interactive_data_viewer():
     """
