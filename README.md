@@ -9,12 +9,13 @@ TomoSuitePY is a culmination of machine learning networks and data preparation m
 Motivation & Features
 ---------------------
 
-
+- Wrapper for the tomopy python module.
+- Makes resource limited extraction and reconstruction of tomography datasets easy.
+- Allows for easy use of TomoGAN network (Low Dose Noise Correction).
+- Allows for easy use of RIFE network (Sparse Angle Interpolation)
 
 BASIC Installation (git)
 -------------------------
-
-# Installing basic packages
 
 - conda create -n test_basic python=3.6
 - conda env update -n test_basic --file /location/to/tomosuitpy/github/clone/envs/basic.yml
