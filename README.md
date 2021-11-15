@@ -15,33 +15,30 @@ BASIC Installation (git)
 -------------------------
 
 # Installing basic packages
-conda create -n test_basic python=3.6
-conda env update -n test_basic --file /location/to/tomosuitpy/github/clone/envs/basic.yml
 
-source activate test_basic
+- conda create -n test_basic python=3.6
+- conda env update -n test_basic --file /location/to/tomosuitpy/github/clone/envs/basic.yml
 
-pip install pandas
-pip install pympler
+- source activate test_basic
 
-pip install ipykernel
-ipython kernel install --user --name=test_basic
+- ipython kernel install --user --name=test_basic
 
 
 Usage
 -----
 
-Please see the https://tomosuitepy.readthedocs.io/en/latest/ for more details
+Please see the https://tomosuitepy.readthedocs.io/en/latest/ for more details.
 
 
 License
 -------
 
-This project is released under the `GNU General Public License version 3`_.
+This project is released under the `GNU General Public License version 2`.
 
 This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
 
-.. _GNU General Public License version 3: https://www.gnu.org/licenses/gpl-3.0.en.html
+GNU General Public License version 2: https://www.gnu.org/licenses/gpl-2.0.en.html
 
