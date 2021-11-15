@@ -1,7 +1,8 @@
 import numpy as np
 from tqdm import tqdm
 from ...base.common import load_extracted_prj, loading_tiff_prj
-from skimage.metrics import structural_similarity as ssim
+#from skimage.metrics import structural_similarity as ssim
+from sewar.full_ref import ssim
 from ...easy_networks.tomogan.data_prep import format_data_tomogan, setup_data_tomogan
 
 
@@ -14,8 +15,8 @@ def determine_ave_ssim(loaded_prj, split_amount):
         master_im = array[0]
         mini_store = []
         for ar in array:
-            mini_store.append(
-                ssim(master_im, ar, data_range=master_im.max() - master_im.min()))
+            mini_store.append(ssim(master_im, ar, MAX=np.max(master_im))[0])
+                #ssim(master_im, ar, data_range=master_im.max() - master_im.min()))
         store.append(np.mean(mini_store))
     return np.asarray(store)
 
