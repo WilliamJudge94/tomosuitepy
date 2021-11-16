@@ -3,8 +3,6 @@ language: python
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "3.6"
-  - "3.7"
-  - "3.8"
 install:
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
@@ -22,10 +20,9 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment -c conda-forge python=$TRAVIS_PYTHON_VERSION tomopy==1.2.1 pympler==0.9 dxchange==0.1.5 tqdm==4.61.2 matplotlib==3.1.0 coveralls==3.3.1 pytest==6.2.5 pytest-cov=3.0.0 opencv==3.4.2 progressbar ipykernel==5.5.5
+  - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda env update -n test-environment --file envs/basic.yml
   - conda activate test-environment
-  - pip install itk==5.2.0.post3
-  - pip install itkwidgets==0.32.1
 
 script:
   - pytest --cov=tomosuitepy tests/
