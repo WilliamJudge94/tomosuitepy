@@ -1,8 +1,7 @@
 TomoSuitePY
 ===========
 
-[![Build Status](https://app.travis-ci.com/WilliamJudge94/tomosuitepy.svg?token=37Jbsp5zphrcthqkyvzn&branch=main)](https://app.travis-ci.com/WilliamJudge94/tomosuitepy)
-
+![example workflow](https://github.com/WilliamJudge94/tomosuitepy/actions/workflows/python-package-conda.yml/badge.svg)
 
 TomoSuitePY is a culmination of machine learning networks and data preparation methods for those networks to enhance poor-quality tomographic datasets. Novel implementations of existing architectures are available for Users to de-noise, de-wedge artifact, de-sparse angle artifact, and de-ring artifact their own datasets without the need for obtaining any true ground truth datasets. This project aims not only to bring these networks into the tomographic world, but to make them as user friendly as possible, expanding the usability to novices in the machine learning domain.
 
