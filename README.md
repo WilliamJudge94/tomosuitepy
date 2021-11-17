@@ -35,6 +35,12 @@ the need to append the github path to each python/jupyter notebook file.
 - source activate test_basic
 - pip install tomosuitepy
 
+Running Tests
+-------------
+
+- source activate test_basic
+- pytest --cov=tomosuitepy tests/
+
 Usage
 -----
 
