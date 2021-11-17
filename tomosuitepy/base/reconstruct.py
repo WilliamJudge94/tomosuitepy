@@ -70,6 +70,20 @@ def colorbar(mappable, font_size=12):
 
 
 def save_load_delete_image_email(prj, basedir):
+    """
+    Obtaining the image to send during an email.
+
+    Parameters
+    ----------
+    prj : nd.array
+        The image array the User would like to send.
+    basedir : str
+        The path to the project
+
+    Returns
+    -------
+    A figure that can be sent in an email.
+    """
 
     fig = plt.figure(figsize=(12, 12))
     image = plt.imshow(prj, cmap='Greys_r')
@@ -89,6 +103,24 @@ def save_load_delete_image_email(prj, basedir):
 
 
 def tomo_recon(prj, theta, rot_center, user_extra=None):
+    """The function called for tomographic reconstructions.
+
+    Parameters
+    ----------
+    prj : nd.array
+        Projection values passed into tomopy.recon()
+    theta : nd.array
+        Theta values passed into tomopy.recon()
+    rot_center : float
+        The rotation center passed into tomopy.recon()
+    user_extra : array
+        An array that can be output by the User for testing purposes.
+
+    Returns
+    -------
+    nd.array, nd.array
+        The reconstructed data, and the user_extra array
+    """
 
     # Allow User to select what type of recon they want
     types = 'gridrec'

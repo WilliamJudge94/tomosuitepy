@@ -784,7 +784,6 @@ def extract(datadir, fname, basedir,
         save_metadata(basedir, metadata_dic)
     except:
         warn('Unable to save meta-data.')
-        
 
     # Determine the location of the hdf5 file
     fname = os.path.join(datadir, fname)

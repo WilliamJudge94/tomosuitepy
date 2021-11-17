@@ -84,9 +84,10 @@ def skip_lowdose(basedir):
     Returns
     -------
     None
-        Saves raw projection files into an easy to ready numpy file (/basedir/low_dose/noise.py).
-        To be used for inpainting and arifact removal when the User has no need to perform noise
-        removal.
+        Saves raw projection files into an easy to read
+        numpy file (/basedir/low_dose/noise.py).
+        To be used for inpainting and arifact removal
+        when the User has no need to perform noise removal.
     """
 
     data = loading_tiff_prj(f'{basedir}extracted/projections/')
@@ -140,7 +141,8 @@ def h5grab_data(file, data_loc):
 
 def h5create_dataset(file, ds_path, ds_data):
     """
-    Creates a dataset in the user defined group with data equal to the user defined data.
+    Creates a dataset in the user defined group
+    with data equal to the user defined data.
 
     Parameters
     ----------
@@ -169,7 +171,8 @@ def h5group_list(file, group_name='base'):
     file : str
         The path to the hdf5 file.
     group_name : str
-        The path to the group the user wants the Keys for. Set to 'base' if you want the top most group.
+        The path to the group the user wants the Keys for.
+        Set to 'base' if you want the top most group.
 
     Returns
     -------
@@ -184,16 +187,16 @@ def h5group_list(file, group_name='base'):
             g1 = hdf.get(group_name)
             return (list(g1.items()))
 
-        
+
 def h5delete_file(file):
     """
     Deletes the file set by the user
-    
+
     Parameters
     ----------
     file : str
         the full location of the hdf5 file the user would like to delete
-        
+
     Returns
     -------
     None

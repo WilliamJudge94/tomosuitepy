@@ -8,7 +8,9 @@ from ipywidgets import interact, interactive, fixed, widgets
 
 
 def obtain_prj_sinograms(prj_data):
-    """Also found in tomosuite.easy_networks.deepfillv2.data_prep """
+    """
+    Also found in tomosuite.easy_networks.deepfillv2.data_prep
+    """
     rows = np.arange(0, np.shape(prj_data)[1])
     sino = prj_data[:, rows]
 
@@ -43,13 +45,16 @@ def plot_sino(sino_data, idx, og_center, min_idx_val, ranger, store, center_of_i
     ax1.plot(ranger, store)
     ax1.plot(polyline, model(polyline))
     ax1.set_xlabel(
-        f'Pixels away from the absolute center of {center_of_image} - This script assumes you have input a 0-180 degree scan')
+        f'Pixels away from the absolute center of {center_of_image} - This script\
+        assumes you have input a 0-180 degree scan')
     ax1.set_ylabel('Sum of FFT for a given pixel shift')
     ax1.axvline(range_vals[idx], color='k')
     ax1.axvline(ranger[finder[0]], color='C0')
     ax1.axvline(ranger[finds2[0]], color='C1')
     ax1.set_title(
-        f"Algo Min Rot Center Is: {center_of_image + ranger[finder[0]] } --- PolyFit Min Rot Center Is: {center_of_image + ranger[finds2[0]] } --- User's Selected Rot Center is: {og_center + range_vals[idx]}")
+        f"Algo Min Rot Center Is: {center_of_image + ranger[finder[0]] } ---\
+        PolyFit Min Rot Center Is: {center_of_image + ranger[finds2[0]] } ---\
+        User's Selected Rot Center is: {og_center + range_vals[idx]}")
 
     ax2.imshow(sino_data[idx][0])
 
@@ -80,7 +85,8 @@ def obtain_rotation_center(basedir, pixel_shift_range, sino_idx=0, log_multiplie
         A number to be multipled by the log of the np.abs() of the FFT
 
     number2zero : int
-        If number2zero != None then zero out this many projections from the start and end of the data files.
+        If number2zero != None then zero out this many projections from the
+        start and end of the data files.
 
     crop_sinogram : int
         The amount of pixles on the left and right to crop out.
