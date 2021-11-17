@@ -21,6 +21,13 @@ One can create these plots through the obtain_rotation_center() function through
 
 It is to be noted, that this may take some manual tuning to get correct.
 
+.. warning::
+
+If you are using the PyPi version of TomoSuitePY,
+Please view :ref:`installation` and :ref:`starting_project`
+before attempting to load in the module. 
+
+
 .. code:: python
 
     # Importing the proper functions through tomosuitepy

@@ -4,8 +4,14 @@
 General Importer To Use TomoGAN
 ================================
 
-If any User would like to use "poor-quality" and "good-quality" image pairs to clean "poor-quality" datasets use the following steps.
+If any User would like to use "poor-quality" and "good-quality"
+image pairs to clean "poor-quality" datasets use the following steps.
 
+.. warning::
+
+If you are using the PyPi version of TomoSuitePY,
+Please view :ref:`installation` and :ref:`starting_project`
+before attempting to load in the module. 
 
 Create A Project
 ================

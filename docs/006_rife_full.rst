@@ -2,6 +2,11 @@
 Using RIFE Network to DeSparse - Full
 ======================================
 
+.. warning::
+
+If you are using the PyPi version of TomoSuitePY,
+Please view :ref:`installation` and :ref:`starting_project`
+before attempting to load in the module. 
 
 RIFE Conda Environment Installation - Command Line
 ===================================================

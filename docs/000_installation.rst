@@ -66,8 +66,23 @@ Install the required packages to be used for RIFE networks.
 .. code:: python
 
     # Installing RIFE packages
-    conda create -n rife_tomosuitepy --file /location/to/tomosuitpy/github/clone/envs/rife.yml
+    conda create -n rife_tomosuitepy python=3.6
+    conda env update -n rife_tomosuitepy --file /location/to/tomosuitpy/github/clone/envs/rife.yml
     
     source activate rife_tomosuitepy
     
     ipython kernel install --user --name=rife_tomosuitepy
+
+Installing Through (PyPi)
+==========================
+
+.. warning::
+
+The PyPi package has no dependencies listed.
+Users must complete the instructions listed above
+before installing the PyPi version of TomoSuitePY.
+
+.. code:: bash
+    
+    source activate conda_env
+    pip install tomosuitepy

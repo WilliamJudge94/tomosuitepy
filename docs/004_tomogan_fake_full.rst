@@ -4,6 +4,11 @@
 Using TomoGAN Network to DeNoise - FAKE NOISE - Full
 ====================================================
 
+.. warning::
+
+If you are using the PyPi version of TomoSuitePY,
+Please view :ref:`installation` and :ref:`starting_project`
+before attempting to load in the module. 
 
 
 TomoGAN Conda Environment Installation - Command Line

@@ -1,0 +1,7 @@
+name: Python Package Using Anaconda
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest

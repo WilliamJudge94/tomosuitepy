@@ -10,14 +10,28 @@ but this is only when one is to use a sacraficial sample for network training.
 All use cases of a second project are detailed in the documentation of TomoSuitePY
 
 
-Importing TomoSuitePY
-=====================
+Importing TomoSuitePY (dev)
+===========================
 
 .. code:: python
 
     import sys
     sys.path.append('/path/to/tomosuitepy/github/clone/tomosuitepy/')
     import tomosuitepy
+
+    from tomosuitepy.base.start_project import start_project
+    from tomosuitepy.base.extract_projections import extract
+    
+Importing TomoSuitePY (PyPi)
+===========================
+
+.. warning::
+
+The PyPi package has no dependencies listed.
+Users must complete the conda install instructions (:ref:`installation`.)
+before installing/using the PyPi version of TomoSuitePY.
+
+.. code:: python
 
     from tomosuitepy.base.start_project import start_project
     from tomosuitepy.base.extract_projections import extract
