@@ -86,7 +86,9 @@ def setup_data_tomogan(basedir, xtrain, ytrain, xtest, ytest, types='noise'):
 
     if data_shape[1] < 384 or data_shape[2] < 384:
         raise ValueError(
-            f'Image dimensions must be greater than 384 x 384. Current shape for xtrain is: {data_shape}. Please correct all train and test data.')
+            f'Image dimensions must be greater than 384 x 384.\
+            Current shape for xtrain is: {data_shape}.\
+            Please correct all train and test data.')
 
     location = f'{basedir}tomogan/'
     ident = f'tomogan_{types}_AI'
