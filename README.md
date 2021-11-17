@@ -23,6 +23,17 @@ BASIC Installation (git)
 
 - ipython kernel install --user --name=test_basic
 
+BASIC Installation (pip)
+-------------------------
+
+One must complete the installation instructions for git (listed above).
+The PyPi installation of TomoSuitePY does not come with any dependencies.
+Those are all defined in the env.yml files in the envs folder of the TomoSuitePY github repo.
+The pip installable version of TomoSuitePY allows Users to import the package directly without
+the need to append the github path to each python/jupyter notebook file.
+
+- source activate test_basic
+- pip install tomosuitepy
 
 Usage
 -----
