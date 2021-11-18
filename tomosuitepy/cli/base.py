@@ -6,7 +6,9 @@ import tomopy
 import pathlib
 import imageio
 import dxchange
+import numpy as np
 import tifffile as tif
+from functools import partial
 from skimage import img_as_ubyte
 
 
@@ -21,14 +23,12 @@ from tomosuitepy.base.common import get_projection_shape
 
 def tomo_recon(prj, theta, rot_center,
                ncore=1, user_extra=None):
-    
+
     recon = tomopy.recon(prj, theta,
                         center=rot_center,
                         algorithm='gridrec',
                         ncore=ncore)
-    
     return recon, user_extra
-
 
 dxchange_reader = {
     'aps_32id': dxchange.read_aps_32id,
@@ -144,7 +144,90 @@ def find_centers(basedir: str = typer.Argument(..., help="the project directory"
     elif ext == 'png':
         for idx, slc in enumerate(slcs):
             imageio.imsave(f"{save_path}rot_center-{str(idx+starting_number).zfill(len(str(len(slcs))))}.png", slc)
-            
+
+
+@app.command()
+def recon(basedir: str = typer.Argument(..., help="directory absolute/relative path where\
+                                                            the User would like to start a project"),
+          rot_center: int = typer.Argument(..., help="rotation center"),
+          recon_cores: int = typer.Option(1, help="amount of cores to use for grid-rec recon"),
+          power2pad: bool = typer.Option(True, help="pad data to nearest power of 2"),
+          edge_transition: int = typer.Option(15, help="remove x amount of pixles from sides of sinogram"),
+          chunking_size: int = typer.Option(1, help="amount of data chunks to create"),
+          med_filter: bool = typer.Option(False, help="apply a (1, 3, 3) median filter to data"),
+          network: str = typer.Option('None', help="Network to use. None/tomogan/rife"),
+          types: str = typer.Option('denoise', help="data to load for tomogan"),
+          second_basedir: str = typer.Option("None", help="data to predict for tomogan"),
+          checkpoint_num: str = typer.Option('None', help="checkpoint to use for tomogan"),
+          muppy_amount: int = typer.Option(1000, help="reset tomopy RAM usage"),
+          ext: str = typer.Option('tiff', help="save as a multiple tiff or multiple png"),
+          output_dir: str = typer.Option('recons/', help="dir relative to basedir to save recons to"),
+         ):
+    
+    if network == 'None':
+        network = None
+
+    if second_basedir == 'None':
+        second_basedir = None
+    
+    if checkpoint_num == 'None':
+        checkpoint_num == None
+        
+    tomo_rec = partial(tomo_recon, ncore=recon_cores)
+    
+    slcs, user_extra = reconstruct_data_import(basedir=basedir,
+                     rot_center=rot_center,
+                     start_row=None,
+                     end_row=None,
+                     med_filter=med_filter,
+                     all_data_med_filter=False,
+                     med_filter_kernel=(1, 3, 3),
+                     reconstruct_func=tomo_rec,
+                     network=network,
+                     wedge_removal=0,
+                     sparse_angle_removal=1,
+                     types=types,
+                     rife_types=['frames', '.tif', False],
+                     second_basedir=second_basedir,
+                     checkpoint_num=checkpoint_num,
+                     double_sparse=None,
+                     power2pad=power2pad,
+                     edge_transition=edge_transition,
+                     verbose=False,
+                     chunk_recon_size=chunking_size,
+                     dtypes=np.float32,
+                     rot_center_shift_check=None,
+                     muppy_amount=muppy_amount,
+                     zero_pad_amount=None,
+                     view_one=False,
+                     minus_val=0,
+                     chunker_save=False,
+                     emailer=None,
+                     select_prjs2use=None)
+    
+    
+    
+    save_path = f"{basedir}{output_dir}"
+    if os.path.exists(save_path):
+        print(f"Removing Centers Dir - To Save New Centers - {save_path}")
+        _ = input(f"You will be deleting {basedir}centers/ - press y to continue.")
+        if _ == 'y':
+            shutil.rmtree(save_path)
+            os.mkdir(save_path)
+        else:
+            raise ValueError('Stopped Program')
+    else:
+        print(f"Making Centers Dir and Saving Centers - {save_path}")
+        os.mkdir(save_path)
+    
+    if ext == 'tiff':
+        for idx, slc in enumerate(slcs):
+            tif.imsave(f"{save_path}slc-{str(idx).zfill(len(str(len(slcs))))}.tiff", slc)
+
+    elif ext == 'png':
+        for idx, slc in enumerate(slcs):
+            imageio.imsave(f"{save_path}slc-{str(idx).zfill(len(str(len(slcs))))}.png", slc)
+    
 
 if __name__ == "__main__":
     app()
