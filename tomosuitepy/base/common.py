@@ -7,6 +7,23 @@ from tqdm import tqdm
 import itk
 from itkwidgets import view
 
+def get_projection_shape(basedir):
+    """
+    Get a single extracted projection shape.
+    
+    Parameters
+    ----------
+    basedir : str
+        The path to the project
+        
+    Returns
+    -------
+    nd.array
+        The shape of the projection.
+    """
+    files = sorted(os.listdir(f"{basedir}extracted/projections/"))
+    image = tif.imread(f"{basedir}extracted/projections/{files[0]}")
+    return np.shape(image)
 
 def loading_tiff_prj(folder):
     """

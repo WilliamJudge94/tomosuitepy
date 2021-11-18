@@ -45,7 +45,7 @@ def median_filter_nonfinite(data, size=3, verbose=False):
     """
     # Defining a callback function if None is provided
     if verbose:
-        print('\n** Removing Bad Values')
+        print('\n** Removing Non-Finite Values')
 
     # Iterating throug each projection to save on RAM
     for projection in tqdm(data):
