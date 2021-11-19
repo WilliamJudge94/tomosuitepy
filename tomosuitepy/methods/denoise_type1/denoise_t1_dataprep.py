@@ -1,4 +1,4 @@
-from base.common import loading_tiff_prj
+from ...base.common import loading_tiff_prj
 import tifffile as tif
 import numpy as np
 from progressbar import *

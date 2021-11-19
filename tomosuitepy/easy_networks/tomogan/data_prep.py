@@ -1,6 +1,9 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import numpy as np
 from tqdm import tqdm
-from base.common import h5create_file, h5create_dataset
+from ...base.common import h5create_file, h5create_dataset
 
 
 def format_data_tomogan(clean_data, noisy_data, interval=5, dtype=np.float32):
