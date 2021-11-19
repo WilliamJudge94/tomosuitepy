@@ -139,7 +139,6 @@ dependencies:
     - bleach==3.3.1
     - cffi==1.14.6
     - charset-normalizer==2.0.7
-    - click==8.0.3
     - colorcet==2.0.6
     - coverage==6.1.2
     - coveralls==3.3.1
@@ -211,7 +210,6 @@ dependencies:
     - tqdm==4.61.2
     - traitlets==4.3.3
     - traittypes==0.2.1
-    - typer==0.4.0
     - typing-extensions==3.10.0.0
     - urllib3==1.26.7
     - wcwidth==0.2.5
