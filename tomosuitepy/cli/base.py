@@ -1,34 +1,21 @@
-import os
 import sys
 import typer
-import shutil
-import tomopy
 import pathlib
-import imageio
-import dxchange
-import numpy as np
-import tifffile as tif
-from functools import partial
-from skimage import img_as_ubyte
-
 
 current_file = pathlib.Path(__file__).resolve().parents[2]
 sys.path.append(str(current_file))
 
-from tomosuitepy.base.start_project import start_project as start_project_import
-from tomosuitepy.base.extract_projections import extract as extract_import
-from tomosuitepy.base.reconstruct import reconstruct_data as reconstruct_data_import
-from tomosuitepy.base.common import get_projection_shape
-
-
 def tomo_recon(prj, theta, rot_center,
                ncore=1, user_extra=None):
+
+    import tomopy
 
     recon = tomopy.recon(prj, theta,
                         center=rot_center,
                         algorithm='gridrec',
                         ncore=ncore)
     return recon, user_extra
+
 
 dxchange_reader = {
     'aps_32id': dxchange.read_aps_32id,
@@ -41,6 +28,9 @@ app = typer.Typer()
 @app.command()
 def start_project(basedir: str = typer.Argument(..., help="directory absolute/relative path where\
                                                             the User would like to start a project")):
+
+    from tomosuitepy.base.start_project import start_project as start_project_import
+
     start_project_import(basedir)
 
     
@@ -61,6 +51,9 @@ def extract(file: str = typer.Argument(..., help="the file to extract data from"
             verbose: bool = typer.Option(True, help="print useful extraction step names"),
            ):
     
+    from tomosuitepy.base.extract_projections import extract as extract_import
+    import dxchange
+
     split_file = file.split('/')
     fname = split_file[-1]
     datadir = '/'.join(split_file[:-1])
@@ -106,6 +99,12 @@ def find_centers(basedir: str = typer.Argument(..., help="the project directory"
                  
            ): 
 
+    from tomosuitepy.base.reconstruct import reconstruct_data as reconstruct_data_import
+    from tomosuitepy.base.common import get_projection_shape
+    import tifffile as tif
+    import imageio
+    import shutil
+    import os
 
     # Obtaining the rotation center test slices to be plotted at a later time.
     slcs, user_extra = reconstruct_data_import(basedir=basedir,
@@ -165,6 +164,14 @@ def recon(basedir: str = typer.Argument(..., help="directory absolute/relative p
           output_dir: str = typer.Option('recons/', help="dir relative to basedir to save recons to"),
          ):
     
+    from tomosuitepy.base.reconstruct import reconstruct_data as reconstruct_data_import
+    from functools import partial
+    import tifffile as tif
+    import numpy as np
+    import imageio
+    import shutil
+    import os
+
     if network == 'None':
         network = None
 
