@@ -398,7 +398,7 @@ def prepare_tomogan(basedir, types, second_basedir, wedge_removal,
         start = start_row
 
     if end_row == None:
-        end = shape
+        end = prj_data.shape[1]
     else:
         end = end_row
 
@@ -468,7 +468,7 @@ def prepare_base(basedir, wedge_removal, sparse_angle_removal, start_row, end_ro
         start = start_row
 
     if end_row == None:
-        end = shape
+        end = prj_data.shape[1]
     else:
         end = end_row
 
