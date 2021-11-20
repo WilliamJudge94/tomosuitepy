@@ -17,11 +17,6 @@ def tomo_recon(prj, theta, rot_center,
     return recon, user_extra
 
 
-dxchange_reader = {
-    'aps_32id': dxchange.read_aps_32id,
-}
-
-
 app = typer.Typer()
 
 
@@ -53,6 +48,10 @@ def extract(file: str = typer.Argument(..., help="the file to extract data from"
     
     from tomosuitepy.base.extract_projections import extract as extract_import
     import dxchange
+
+    dxchange_reader = {
+    'aps_32id': dxchange.read_aps_32id,
+}
 
     split_file = file.split('/')
     fname = split_file[-1]
