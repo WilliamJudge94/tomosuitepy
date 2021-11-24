@@ -175,8 +175,18 @@ class TestEnv(unittest.TestCase):
         m1 = data1[0]
         m2 = data2[0]
         
-        self.assertTrue(np.array_equal(np.round(m1[::10, ::10, ::10], 4), np.round(m1_old, 4)))
-        self.assertTrue(np.array_equal(np.round(m2[::10, ::10, ::10], 4), np.round(m2_old, 4)))
+        
+        d1 = np.round(m1[::10, ::10, ::10], 4)
+        d1_old = np.round(m1_old, 4)
+        d2 = np.round(m2[::10, ::10, ::10], 4)
+        d2_old = np.round(m2_old, 4)
+        
+        print((d1.min(), d1.max(), d1.mean(), d1_old.min(), d1_old.max(), d1_old.mean()))
+        print((d2.min(), d2.max(), d2.mean(), d2_old.min(), d2_old.max(), d2_old.mean()))
+        print((d1.dtype, d1_old.dtype, d2.dtype, d2_old.dtype))
+        self.assertTrue(np.array_equal(d1, d1_old))
+        self.assertTrue(np.array_equal(d2, d2_old))
+        print(p)
         
         #np.save('/local/data/cabana-hpc1/github_repos/tomosuitepy/tests/recon_test.npy', [m1, m2])
         
