@@ -171,10 +171,8 @@ class TestEnv(unittest.TestCase):
                                         power2pad=power2pad, chunk_recon_size=1)
         
         
-
         m1 = data1[0]
         m2 = data2[0]
-        
         
         d1 = np.round(m1[::10, ::10, ::10], 4)
         d1_old = np.round(m1_old, 4)
@@ -186,7 +184,6 @@ class TestEnv(unittest.TestCase):
         self.assertTrue(np.array_equal(d2.max(), d2_old.max()))
         self.assertTrue(np.isclose(d1.mean(), d1_old.mean()))
         self.assertTrue(np.isclose(d2.mean(), d2_old.mean()))
-        #print((d1.mean(), d1_old.mean()))
         
         #np.save('/local/data/cabana-hpc1/github_repos/tomosuitepy/tests/recon_test.npy', [m1, m2])
         
