@@ -175,14 +175,13 @@ class TestEnv(unittest.TestCase):
         m1 = data1[0]
         m2 = data2[0]
         
-        self.assertTrue(np.array_equal(m1[::10, ::10, ::10], m1_old))
-        self.assertTrue(np.array_equal(m2[::10, ::10, ::10], m2_old))
+        self.assertTrue(np.array_equal(np.round(m1[::10, ::10, ::10], 4), np.round(m1_old, 4)))
+        self.assertTrue(np.array_equal(np.round(m2[::10, ::10, ::10], 4), np.round(m2_old, 4)))
         
         #np.save('/local/data/cabana-hpc1/github_repos/tomosuitepy/tests/recon_test.npy', [m1, m2])
         
         subs = np.subtract(m1, m2)
         value = np.sum(subs)
-        print(value)
         tf = np.array_equal(value, 0.004251825623214245)
         self.assertTrue(value <= 0.005)
 
