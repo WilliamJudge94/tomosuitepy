@@ -11,7 +11,16 @@ import tifffile as tif
 import tifffile as tif
 from warnings import warn
 from pympler import muppy, summary
-from ..base.common import save_metadata
+from ..base.common import save_metadata, chunk_numpy_array
+import matplotlib.pyplot as plt
+
+
+def mupps(muppy_amount):
+    """
+    Making muppy easier to use
+    """
+    all_objects = muppy.get_objects()[:muppy_amount]
+    sum1 = summary.summarize(all_objects)
 
 
 def median_filter_nonfinite(data, size=3, verbose=False):
@@ -83,7 +92,7 @@ def cache_clearing_downsample(data, binning):
     return data
 
 
-def save_prj_ds_chunk(data, iteration, path):
+def save_prj_ds_chunk(data, iteration, path, zfills=5):
     """
     Saving data to iterated numpy files.
 
@@ -102,15 +111,15 @@ def save_prj_ds_chunk(data, iteration, path):
         Saves chunked data to
         {path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy
     """
-    save_path = f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+    save_path = f'{path}/tomsuitepy_downsample_save_it_{str(iteration).zfill(zfills)}.npy'
     try:
         np.save(save_path, data)
     except Exception as ex:
         raise ValueError(
             f"Unable to save data - path={save_path}\nError - {ex}")
+        
 
-
-def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
+def load_prjs_norm_chunk(iterations, total_len, path, img_shape, dtypes, zfills=5):
     """
     Loading saved data chunks for normalization.
 
@@ -130,26 +139,28 @@ def load_prjs_norm_chunk(iterations, path, img_shape, dtypes):
     nd.array
         The complete data - unchunked.
     """
-
-    chunk_amount = img_shape[0]
-
+    
     prj_store = np.zeros(
-        (chunk_amount * iterations, img_shape[1], img_shape[2]))
+        (total_len, img_shape[1], img_shape[2]))
+    
     prj_store = prj_store.astype(dtypes)
-
+    
+    first = 0 
     for idx in tqdm(range(0, iterations), desc='Reading Chunked Data'):
-        first = idx * chunk_amount
-        second = (idx + 1) * chunk_amount
         var = np.load(
-            f'{path}/tomsuitepy_downsample_save_it_{str(idx).zfill(4)}.npy')
-
+            f'{path}/tomsuitepy_downsample_save_it_{str(idx).zfill(zfills)}.npy')
+        
+        second = first + np.shape(var)[0]
         prj_store[first: second] = var.copy()
+        
+        first = first + np.shape(var)[0]
+        
         del var
 
     return prj_store
 
 
-def load_prj_ds_chunk(iterations, path):
+def load_prj_ds_chunk(iterations, path, zfills=5):
     """
     Loading chunked data for the downsampling.
 
@@ -170,15 +181,14 @@ def load_prj_ds_chunk(iterations, path):
 
     for it in tqdm(range(0, iterations), desc='Reading Chunked Data'):
         data.append(
-            np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy'))
-        #print(f'loading - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+            np.load(f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(zfills)}.npy'))
 
     data = np.asarray(data)
     data = np.concatenate(data)
     return data
 
 
-def remove_saved_prj_ds_chunk(iterations, path):
+def remove_saved_prj_ds_chunk(iterations, path, zfills=5):
     """
     Deletes the saved chunked data for downsampling.
 
@@ -195,9 +205,8 @@ def remove_saved_prj_ds_chunk(iterations, path):
         Deletes the chunked data from storage. 
     """
     for it in range(0, iterations):
-        #print(f'removing - {path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
         os.remove(
-            f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(4)}.npy')
+            f'{path}/tomsuitepy_downsample_save_it_{str(it).zfill(zfills)}.npy')
 
 
 def flat_roll_func(flat, flat_roll):
@@ -284,6 +293,8 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
     iteration = 0
     prj_chunk_shape = 0
 
+    list_chunker = chunk_numpy_array(np.shape(prj), chunking_size, axis=0)
+    
     if verbose:
         print('\n** Flat field correction')
 
@@ -291,7 +302,7 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
 
         path_chunker = pathlib.Path('.').absolute()
 
-        for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Flat Field Correction - Chunked'):
+        for prj_ds_chunk in tqdm(np.split(prj, list_chunker), desc='Flat Field Correction - Chunked'):
 
             prj_ds_chunk = tomopy.normalize(
                 prj_ds_chunk, flat, dark, ncore=normalize_ncore)
@@ -299,16 +310,13 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
             save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
             iteration += 1
             del prj_ds_chunk
-            all_objects = muppy.get_objects()[:muppy_amount]
-            sum1 = summary.summarize(all_objects)
+            mupps(muppy_amount)
             time.sleep(1)
 
         del prj
 
         prj = 0
-
-        all_objects = muppy.get_objects()[:muppy_amount]
-        sum1 = summary.summarize(all_objects)
+        mupps(muppy_amount)
 
     else:
         prj = tomopy.normalize(prj, flat, dark, ncore=normalize_ncore)
@@ -316,7 +324,7 @@ def flat_field_corr_func(prj, flat, dark, chunking_size, normalize_ncore, muppy_
     return prj, iteration, prj_chunk_shape
 
 
-def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
+def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount, total_len):
     """
     Containerizing loading chunked data from tomopy.normalize.
 
@@ -340,11 +348,9 @@ def flat_field_load_func(iteration, prj_chunk_shape, dtype, muppy_amount):
 
     path_chunker = pathlib.Path('.').absolute()
 
-    prj = load_prjs_norm_chunk(iteration, path_chunker, prj_chunk_shape, dtype)
+    prj = load_prjs_norm_chunk(iteration, total_len, path_chunker, prj_chunk_shape, dtype)
     remove_saved_prj_ds_chunk(iteration, path_chunker)
-
-    all_objects = muppy.get_objects()[:muppy_amount]
-    sum1 = summary.summarize(all_objects)
+    mupps(muppy_amount)
 
     return prj
 
@@ -370,8 +376,10 @@ def bkg_norm_func(bkg_norm, prj, chunking_size, air):
         The background normalized projections.
     """
 
+    list_chunker = chunk_numpy_array(np.shape(prj), chunking_size, axis=0)
+    
     prj_chunks = []
-    for prj_chunk in tqdm(np.array_split(prj, chunking_size), desc='Bkg Normalize'):
+    for prj_chunk in tqdm(np.split(prj, list_chunker), desc='Bkg Normalize'):
         prj_tmp = tomopy.prep.normalize.normalize_bg(
             prj_chunk, air=air, ncore=1)
         prj_chunks.append(prj_tmp.copy())
@@ -455,16 +463,16 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
         if chunking_size > 1:
 
             path_chunker = pathlib.Path('.').absolute()
-
-            for prj_ds_chunk in tqdm(np.array_split(prj, chunking_size), desc='Applying Minus Log'):
+            list_chunker = chunk_numpy_array(np.shape(prj), chunking_size, axis=0)
+            
+            for prj_ds_chunk in tqdm(np.split(prj, list_chunker), desc='Applying Minus Log'):
 
                 prj_ds_chunk = tomopy.minus_log(prj_ds_chunk)
                 prj_chunk_shape = np.shape(prj_ds_chunk)
                 save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
                 iteration += 1
                 del prj_ds_chunk
-                all_objects = muppy.get_objects()[:muppy_amount]
-                sum1 = summary.summarize(all_objects)
+                mupps(muppy_amount)
                 time.sleep(1)
 
         else:
@@ -474,7 +482,7 @@ def minus_log_func(minus_log, verbose, prj, muppy_amount, chunking_size):
     return prj, iteration, prj_chunk_shape
 
 
-def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
+def minus_log_load_func(iteration, muppy_amount, img_shape, dtype, total_len):
     """
     Loading chunked minus_log data.
 
@@ -497,14 +505,11 @@ def minus_log_load_func(iteration, muppy_amount, img_shape, dtype):
 
     path_chunker = pathlib.Path('.').absolute()
 
-    prj = load_prjs_norm_chunk(iteration, path_chunker, img_shape, dtype)
+    prj = load_prjs_norm_chunk(iteration, total_len, path_chunker, img_shape, dtype)
     remove_saved_prj_ds_chunk(iteration, path_chunker)
-
-    all_objects = muppy.get_objects()[:muppy_amount]
-    sum1 = summary.summarize(all_objects)
+    mupps(muppy_amount)
 
     return prj
-
 
 def neg_nan_inf_func(prj, verbose, remove_neg_vals, remove_nan_vals, remove_inf_vals, removal_val):
     """
@@ -636,8 +641,7 @@ def downsample_func(binning, verbose, muppy_amount, chunking_size, prj):
                 save_prj_ds_chunk(prj_ds_chunk, iteration, path_chunker)
                 iteration += 1
                 del prj_ds_chunk
-                all_objects = muppy.get_objects()[:muppy_amount]
-                sum1 = summary.summarize(all_objects)
+                mupps(muppy_amount)
                 time.sleep(1)
 
             prj = load_prj_ds_chunk(iteration, path_chunker)
@@ -800,12 +804,15 @@ def extract(datadir, fname, basedir,
     else:
         prj, flat, dark, theta = data
 
-    if len(prj) % chunking_size != 0:
-        raise ValueError(
-            f'Length of projections ({len(prj)}) is not divisible by chunking_size ({chunking_size}).')
+    if False:
+        if len(prj) % chunking_size != 0:
+            raise ValueError(
+                f'Length of projections ({len(prj)}) is not divisible by chunking_size ({chunking_size}).')
 
     # Determine how many leading zeros there should be
     digits = len(str(len(prj)))
+    
+    total_len = len(prj)
 
     flat = flat_roll_func(flat, flat_roll)
 
@@ -825,10 +832,9 @@ def extract(datadir, fname, basedir,
         sum1 = summary.summarize(all_objects)
 
         prj = flat_field_load_func(
-            iteration, prj_chunk_shape, dtype, muppy_amount)
+            iteration, prj_chunk_shape, dtype, muppy_amount, total_len=total_len)
 
-    all_objects = muppy.get_objects()[:muppy_amount]
-    sum1 = summary.summarize(all_objects)
+    mupps(muppy_amount)
     time.sleep(2)
 
     if not custom_dataprep:
@@ -845,13 +851,13 @@ def extract(datadir, fname, basedir,
             prj, iteration, prj_chunk_shape = minus_log_func(
                 minus_log, verbose, prj, muppy_amount, chunking_size)
 
-        if chunking_size > 1:
-            del prj
-            all_objects = muppy.get_objects()[:muppy_amount]
-            sum1 = summary.summarize(all_objects)
-            time.sleep(2)
-            prj = minus_log_load_func(
-                iteration, muppy_amount, prj_chunk_shape, dtype)
+            if chunking_size > 1:
+                del prj
+                all_objects = muppy.get_objects()[:muppy_amount]
+                sum1 = summary.summarize(all_objects)
+                time.sleep(2)
+                prj = minus_log_load_func(
+                    iteration, muppy_amount, prj_chunk_shape, dtype, total_len=total_len)
 
         prj = neg_nan_inf_func(prj, verbose, remove_neg_vals,
                                remove_nan_vals, remove_inf_vals, removal_val)
@@ -890,8 +896,7 @@ def extract(datadir, fname, basedir,
         del prj
         del theta
 
-        all_objects = muppy.get_objects()[:muppy_amount]
-        sum1 = summary.summarize(all_objects)
+        mupps(muppy_amount)
 
     else:
         print('   done in %0.3f min' % ((time.time() - start_time)/60))

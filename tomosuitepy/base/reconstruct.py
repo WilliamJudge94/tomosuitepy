@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from pympler import muppy, summary
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
-from ..base.common import loading_tiff_prj, save_metadata
+from ..base.common import loading_tiff_prj, save_metadata, chunk_numpy_array
 from ..base.email4recon import send_email
 from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -267,16 +267,29 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                 chunk_recon_size={chunk_recon_size}. Remainder={prj_shape[1] % chunk_recon_size}')
 
     prj = prj.astype(dtypes)
-    prj_chunked_main = np.array_split(prj, chunk_recon_size, axis=1)
-    prj_chunked_main_shape = np.shape(prj_chunked_main)
-
+    
+    #prj_chunked_main = np.array_split(prj, chunk_recon_size, axis=1)
+    #prj_chunked_main_shape = np.shape(prj_chunked_main)
+    
+    list_chunker = chunk_numpy_array(np.shape(prj), chunk_recon_size, axis=1)
+    prj_chunked_main = np.split(prj, list_chunker, axis=1)
+    
+    first_idx = 0
     # Iterate through the recon chunks
-    for idx, prj_chunked in enumerate(tqdm(prj_chunked_main, desc='Tomo Recon Progress', total=len(prj_chunked_main))):
+    #for idx, prj_chunked in enumerate(tqdm(prj_chunked_main, desc='Tomo Recon Progress', total=len(prj_chunked_main))):
+    
+    for idx, prj_chunked in enumerate(tqdm(prj_chunked_main, desc='Tomo Recon Progress')):
         # Feed into reconstruction function
         recon, user_extra = reconstruct_func(
             prj_chunked.copy(), theta, rot_center=rot_center)
-        recon_store[idx * prj_chunked_main_shape[2]                    : (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
-
+        
+        #print(f"{idx} - {prj_chunked_main_shape[2]} : {idx + 1} - {prj_chunked_main_shape[2]}")
+        #recon_store[idx * prj_chunked_main_shape[2] : (idx + 1) * prj_chunked_main_shape[2]] = recon.copy()
+        second_idx = first_idx + np.shape(recon)[0]
+        recon_store[first_idx : second_idx] = recon.copy()
+        first_idx = first_idx + np.shape(recon)[0]
+        
+                                      
         if chunker_save:
             if os.path.exists(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff"):
 
