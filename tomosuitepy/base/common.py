@@ -7,6 +7,32 @@ from tqdm import tqdm
 import itk
 from itkwidgets import view
 
+
+def chunk_numpy_array(shape_of_data, chunks, axis=0):
+    """
+    Create a list array for numpy.split()
+    
+    Parameters
+    ----------
+    shape_of_data : list
+        the numpy.shape() of the data
+    chunks : int
+        the number of chunks to create
+    axis : int
+        the axis on which to create those chunks
+        
+    Returns
+    -------
+    list
+        a list to be used in numpy.split()
+    """
+    check_shape = shape_of_data[axis]
+    chunk_list = []
+    chunk_amount = int(np.floor(check_shape/chunks))
+    ranger = np.arange(chunk_amount, check_shape, chunk_amount, dtype=int)
+    return ranger
+
+
 def get_projection_shape(basedir):
     """
     Get a single extracted projection shape.

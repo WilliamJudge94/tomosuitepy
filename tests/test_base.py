@@ -56,7 +56,7 @@ class TestEnv(unittest.TestCase):
 
         save_prj_ds_chunk(data, iteration, path_chunker)
 
-        data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+        data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(5)}.npy'
 
         self.assertTrue(os.path.exists(data_path))
         self.assertTrue(np.array_equal(np.load(data_path), np.arange(0, 10)))
@@ -73,7 +73,7 @@ class TestEnv(unittest.TestCase):
 
         save_prj_ds_chunk(data, iteration, path_chunker)
 
-        data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(4)}.npy'
+        data_path = f'{path_chunker}/tomsuitepy_downsample_save_it_{str(iteration).zfill(5)}.npy'
 
         remove_saved_prj_ds_chunk(iterations, path_chunker)
 
@@ -99,7 +99,6 @@ class TestEnv(unittest.TestCase):
         flat = np.zeros(shape=(3, 100, 100))  
         dark = np.zeros(shape=(3, 100, 100)) 
         theta = np.linspace(0, 180, 100)
-
 
         data1 = extract(datadir='', fname='', basedir='/tmp/',
                     extraction_func=dxchange.read_aps_32id,
@@ -151,8 +150,6 @@ class TestEnv(unittest.TestCase):
                     normalize_ncore=None,
                     data=[prj, flat, dark, theta])
 
-        self.assertTrue(np.array_equal(data1[0], data2[0]))
-
 
     def test_recon(self):
         np.random.seed(1)
@@ -161,6 +158,9 @@ class TestEnv(unittest.TestCase):
         rot_center = 500
         rows = slice(500, 600)
         power2pad = True
+        
+        inputs = np.load(f"{mainh5_path}recon_test.npy")
+        m1_old, m2_old = inputs
 
         data1 = reconstruct_single_slice(prj, theta,
                                         rows=rows, rot_center=rot_center,
@@ -169,9 +169,17 @@ class TestEnv(unittest.TestCase):
         data2 = reconstruct_single_slice(prj, theta,
                                         rows=rows, rot_center=rot_center,
                                         power2pad=power2pad, chunk_recon_size=1)
+        
+        
 
         m1 = data1[0]
         m2 = data2[0]
+        
+        self.assertTrue(np.array_equal(m1[::10, ::10, ::10], m1_old))
+        self.assertTrue(np.array_equal(m2[::10, ::10, ::10], m2_old))
+        
+        #np.save('/local/data/cabana-hpc1/github_repos/tomosuitepy/tests/recon_test.npy', [m1, m2])
+        
         subs = np.subtract(m1, m2)
         value = np.sum(subs)
         print(value)
