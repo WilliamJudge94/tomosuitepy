@@ -204,7 +204,7 @@ def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0,
     return f"{pre} {first} {second} {third} {fourth} {fourth_inter} {fifth}"
 
 
-def obtain_frames(basedir, video_type='predicted', return_frames=False, output_folder='frames'):
+def obtain_frames(basedir, video_type='predicted', return_frames=False, output_folder='frames', dtype='float16'):
     """
     Based on the designated .mp4 file found in {basedir}rife/video/
     store the frames into {basedir}rife/{output_folder}
@@ -251,7 +251,7 @@ def obtain_frames(basedir, video_type='predicted', return_frames=False, output_f
             projections.append(image)
             tif.imsave(
                 f"{basedir}rife/{output_folder}/prj_{str(count).zfill(len(str(int(frame_number))))}.tif",
-                image.astype(np.float32))
+                image.astype(dtype))
             # cv2.imwrite("'/local/data/wjudge/image"+str(count)+".jpg", image)# save frame as JPG file
         return hasFrames
 
