@@ -261,10 +261,10 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
     recon_store = recon_store.astype(dtypes)
 
     # Error out when chunker is not the right shape
-    if prj_shape[1] % chunk_recon_size != 0:
-        raise ValueError(
-            f'Projection dimension {prj_shape[1]} cannot be divided evenly by\
-                chunk_recon_size={chunk_recon_size}. Remainder={prj_shape[1] % chunk_recon_size}')
+#     if prj_shape[1] % chunk_recon_size != 0:
+#         raise ValueError(
+#             f'Projection dimension {prj_shape[1]} cannot be divided evenly by\
+#                 chunk_recon_size={chunk_recon_size}. Remainder={prj_shape[1] % chunk_recon_size}')
 
     prj = prj.astype(dtypes)
     
