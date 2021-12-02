@@ -171,18 +171,24 @@ class TestEnv(unittest.TestCase):
                                         power2pad=power2pad, chunk_recon_size=1)
         
         
-
         m1 = data1[0]
         m2 = data2[0]
         
-        self.assertTrue(np.array_equal(m1[::10, ::10, ::10], m1_old))
-        self.assertTrue(np.array_equal(m2[::10, ::10, ::10], m2_old))
+        d1 = np.round(m1[::10, ::10, ::10], 4)
+        d1_old = np.round(m1_old, 4)
+        d2 = np.round(m2[::10, ::10, ::10], 4)
+        d2_old = np.round(m2_old, 4)
+        self.assertTrue(np.array_equal(d1.min(), d1_old.min()))
+        self.assertTrue(np.array_equal(d2.min(), d2_old.min()))
+        self.assertTrue(np.array_equal(d1.max(), d1_old.max()))
+        self.assertTrue(np.array_equal(d2.max(), d2_old.max()))
+        self.assertTrue(np.isclose(d1.mean(), d1_old.mean()))
+        self.assertTrue(np.isclose(d2.mean(), d2_old.mean()))
         
         #np.save('/local/data/cabana-hpc1/github_repos/tomosuitepy/tests/recon_test.npy', [m1, m2])
         
         subs = np.subtract(m1, m2)
         value = np.sum(subs)
-        print(value)
         tf = np.array_equal(value, 0.004251825623214245)
         self.assertTrue(value <= 0.005)
 

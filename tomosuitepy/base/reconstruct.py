@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from pympler import muppy, summary
 from skimage.color import rgb2gray
 from scipy.ndimage import median_filter
-from ..base.common import loading_tiff_prj, save_metadata, chunk_numpy_array
+from ..base.common import loading_tiff_prj, save_metadata, chunk_numpy_array, get_projection_shape
 from ..base.email4recon import send_email
 from ipywidgets import interact, interactive, fixed, widgets
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -783,8 +783,7 @@ def plot_reconstruction(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Gre
         return fig
 
 
-def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), cmap='Greys_r',
-                                absolute_middle_rotation=None, interactive=True):
+def plot_reconstruction_centers(slc_proj, basedir, figsize=(15, 15), clim=(None, None), cmap='Greys_r', interactive=True):
     """
     Allow the User to plot the data that was output from the reconstruction
 
@@ -792,6 +791,9 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
     ----------
     slc_proj : nd.array
         the output from the tomosuite.base.reconstruc.reconstruct_data() function
+    
+    basedir : str
+        location of the project - importing the projection shape
 
     figsize : list
         the figsize to be passed to plt.figure()
@@ -802,9 +804,6 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
     cmap : str
         the cmap passed to plt.imshow()
 
-    absolute_middle_rotation : int
-        The middle pixle idx value.
-
     interactive : bool
         If False the plot slcs individually.
 
@@ -814,7 +813,7 @@ def plot_reconstruction_centers(slc_proj, figsize=(15, 15), clim=(None, None), c
         Shows the plots for the given input data.
     """
 
-    starting_rotation_center = absolute_middle_rotation
+    starting_rotation_center = int(get_projection_shape(basedir)[1]/2)
 
     if starting_rotation_center is None:
         print('Please set starting_ration_center value')
