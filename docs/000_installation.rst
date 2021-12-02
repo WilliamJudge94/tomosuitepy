@@ -4,6 +4,10 @@
 Installation of TomoSuitePY
 ===============================
 
+.. warning::
+
+TomoSuitePY does not work with RedHat.
+
 
 Installing Conda Environment To Jupyter
 =======================================

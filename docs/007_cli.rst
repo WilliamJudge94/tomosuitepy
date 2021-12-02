@@ -1,0 +1,41 @@
+.. _cli:
+
+======================================
+Command Line Interface For TomoSuitepY
+======================================
+
+In order to make TomoSuitePY more accessible for server users. We have added a command line interface for the Basic, TomoGAN, and RIFE networks.
+Some features have been limited to keep the terminal commands reaonsable for Users.
+
+
+Starting
+========
+
+Before you begin you must use the conda install instructions for tomosuitepy basic.yml file. Once this is complete
+and the User has activated the basic conda environment they will be able to move to the ~/tomosuitepy/tomosuitepy/cli/ folder
+inside the provided package. From here users are presented with three file options to run programs from. 
+
+
+basic.py
+========
+
+basic.py can be run by using the following:
+
+
+.. code:: bash
+
+    python basic.py --help
+    python basic.py start-project /location/of/project/
+
+
+The --help functionality allows Users to easily see all functions provided to them for reconstructing tomographic datasets from Sector 32IDC.
+In order to change the imports once must add in this functionality to the basic.py script. 
+
+
+rife.py
+=======
+
+
+tomogan.py
+===========
+
