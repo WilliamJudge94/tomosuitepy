@@ -513,7 +513,9 @@ def prepare_rife(basedir, start_row, end_row, rife_types, verbose):
 
     prj_data = np.asarray(prj_data, dtype=np.float32)
     shape = prj_data.shape[0]
-    theta = tomopy.angles(prj_data.shape[0], 0, 180)
+    
+    _theta = np.load(f"{basedir}extracted/theta/theta.npy")
+    theta = np.linspace(_theta[0], theta[-1], prj_data.shape[0])
 
     if verbose:
         print(f"The shape of this data is: {prj_data.shape}")
