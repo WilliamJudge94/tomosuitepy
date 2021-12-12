@@ -62,7 +62,7 @@ def deal_with_sparse_angle(prj_data, theta,
 
     return prj_data, theta
 
-def view_proj_contrast(basedir, cutoff=None, above_or_below='below'
+def view_prj_contrast(basedir, cutoff=None, above_or_below='below',
                         analysis_func=np.sum, plot=True):
 
     """
@@ -86,7 +86,7 @@ def view_proj_contrast(basedir, cutoff=None, above_or_below='below'
     The index values of the projections to use. Pass into create_prj_mp4()
     """
 
-    prj_data, theta = obtain_prj_data_deepfillv2(basedir, types)
+    prj_data, theta = obtain_prj_data_deepfillv2(basedir, 'base')
     analysis_output = analysis_func(prj_data, axis=(1, 2))
 
     if cutoff is not None:
@@ -95,14 +95,19 @@ def view_proj_contrast(basedir, cutoff=None, above_or_below='below'
         elif above_or_below is 'above':
             analysis_idx = np.argwhere(analysis_output >= cutoff)
         analysis_output = analysis_output[analysis_idx]
+        
+    else:
+        analysis_idx = range(0, len(prj_data))
 
+    analysis_idx = analysis_idx[:, 0]
+    
     if plot:
         plt.plot(analysis_idx, analysis_output)
         plt.xlabel('Prj Idx Value')
         plt.ylabel('Analysis Value')
         plt.show()
 
-    return np.asarray(analysis_idx)
+    return np.asarray(analysis_idx), prj_data[analysis_idx], theta[analysis_idx]
 
 
 
@@ -148,10 +153,12 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
         A mp4 file saved to the User designated loation. This is to be used by RIFE. 
     """
     prj_data, theta = obtain_prj_data_deepfillv2(basedir, types)
-
+    
     if prj_idx is not None:
         prj_data = prj_data[prj_idx]
         theta = theta[prj_idx]
+                      
+    #np.save(f"{basedir}rife/video/{video_type}_theta.npy", theta)
 
     print(f'The inital projection size is: {prj_data.shape}')
 
