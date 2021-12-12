@@ -10,6 +10,7 @@ import numpy as np
 from tqdm import tqdm
 import tifffile as tif
 import sys
+import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(__file__))
 path1 = os.path.dirname(__file__)
@@ -60,6 +61,49 @@ def deal_with_sparse_angle(prj_data, theta,
             f'Prj Data Shape {np.shape(prj_data)} --- Theta Shape {np.shape(theta)}')
 
     return prj_data, theta
+
+def view_proj_contrast(basedir, cutoff=None, above_or_below='below'
+                        analysis_func=np.sum, plot=True):
+
+    """
+    Determine which projections have an appropriate contrast level for RIFE.
+
+    Parameters
+    ----------
+    basedir : str
+        the path to the project
+    cutoff : float
+        cutoff value either above or below to take projections of
+    above_or_below : str
+        either 'above' or 'below' - used for the cutoff value
+    analysis_fun : np.function
+        allows User to change between sum, mean, or median along axis=(1, 2)
+    plot : bool
+        allows user to plot the analysis output or the used projections
+
+    Returns
+    -------
+    The index values of the projections to use. Pass into create_prj_mp4()
+    """
+
+    prj_data, theta = obtain_prj_data_deepfillv2(basedir, types)
+    analysis_output = analysis_func(prj_data, axis=(1, 2))
+
+    if cutoff is not None:
+        if above_or_below is 'below':
+            analysis_idx = np.argwhere(analysis_output <= cutoff)
+        elif above_or_below is 'above':
+            analysis_idx = np.argwhere(analysis_output >= cutoff)
+        analysis_output = analysis_output[analysis_idx]
+
+    if plot:
+        plt.plot(analysis_idx, analysis_output)
+        plt.xlabel('Prj Idx Value')
+        plt.ylabel('Analysis Value')
+        plt.show()
+
+    return analysis_idx
+
 
 
 def create_prj_mp4(basedir, video_type='input', types='base', force_positive=False,
