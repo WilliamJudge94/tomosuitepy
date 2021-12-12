@@ -102,12 +102,12 @@ def view_proj_contrast(basedir, cutoff=None, above_or_below='below'
         plt.ylabel('Analysis Value')
         plt.show()
 
-    return analysis_idx
+    return np.asarray(analysis_idx)
 
 
 
 def create_prj_mp4(basedir, video_type='input', types='base', force_positive=False,
-                   sparse_angle_removal=0, fps=30, torf=False, apply_exp=False):
+                   sparse_angle_removal=0, fps=30, torf=False, apply_exp=False, prj_idx=None):
     """
     Prepare a mp4 video file of the projection files for RIFE.
 
@@ -139,12 +139,19 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
     apply_exp : bool
         Apple np.exp() to data before saving projections to movie file.
 
+    prj_idx : nd.array
+        If not None, these idx values will be selected for the projections to use. 
+
     Returns
     -------
     None
         A mp4 file saved to the User designated loation. This is to be used by RIFE. 
     """
     prj_data, theta = obtain_prj_data_deepfillv2(basedir, types)
+
+    if prj_idx is not None:
+        prj_data = prj_data[prj_idx]
+        theta = theta[prj_idx]
 
     print(f'The inital projection size is: {prj_data.shape}')
 
