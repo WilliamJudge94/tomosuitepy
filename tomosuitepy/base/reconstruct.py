@@ -504,7 +504,10 @@ def prepare_rife(basedir, start_row, end_row, rife_types, verbose):
 
     for file in tqdm(new_files, desc='Loading Data'):
         original = cv2.imread(file, -1)
-        fixed_original = rgb2gray(original)
+        if len(np.shape(original)) == 3:
+            fixed_original = rgb2gray(original)
+        else:
+            fixed_original = original
         if rife_types[2] == True:
             fixed_original = np.log(fixed_original)
         #fixed_original *= 255.0
@@ -515,7 +518,7 @@ def prepare_rife(basedir, start_row, end_row, rife_types, verbose):
     shape = prj_data.shape[0]
     
     _theta = np.load(f"{basedir}extracted/theta/theta.npy")
-    theta = np.linspace(_theta[0], theta[-1], prj_data.shape[0])
+    theta = np.linspace(_theta[0], _theta[-1], prj_data.shape[0])
 
     if verbose:
         print(f"The shape of this data is: {prj_data.shape}")

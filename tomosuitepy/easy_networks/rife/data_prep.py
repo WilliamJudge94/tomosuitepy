@@ -62,6 +62,7 @@ def deal_with_sparse_angle(prj_data, theta,
 
     return prj_data, theta
 
+
 def view_prj_contrast(basedir, cutoff=None, above_or_below='below',
                         analysis_func=np.sum, plot=True):
 
@@ -108,7 +109,6 @@ def view_prj_contrast(basedir, cutoff=None, above_or_below='below',
         plt.show()
 
     return np.asarray(analysis_idx), prj_data[analysis_idx], theta[analysis_idx]
-
 
 
 def create_prj_mp4(basedir, video_type='input', types='base', force_positive=False,
@@ -211,6 +211,7 @@ def create_prj_mp4(basedir, video_type='input', types='base', force_positive=Fal
     out.release()
 
     return prj_data, np.asarray(out_data)
+
 
 
 def rife_predict(basedir, location_of_rife=rife_path, exp=2, scale=1.0,
@@ -349,3 +350,41 @@ def create_prj_mp4_old(basedir, output_file, types='base', sparse_angle_removal=
         out.write((im).astype(np.uint8))
 
     out.release()
+    
+
+def full_res_rife(basedir, location_of_rife=rife_path, exp=2,
+                 gpu='0', output_folder='frames', python_location=''):
+    """
+    Use the neural network called RIFE to upscale the amount of projections.
+
+    Parameters
+    ----------
+    basedir : str
+        Path to the project.
+
+    location_of_rife : str
+        Path to the github repo of RIFE with / at the end.
+
+    exp : int
+        2 to the power of exp that the frames will be upscaled by
+
+    gpu : str
+        The string index of the gpu to use.
+
+    output_folder : str
+        The name of the output folder to be created at {basedir}rife/{output_folder}/
+
+    Returns
+    -------
+    command
+        A command to be used in a terminal with the RIFE conda env variables installed.
+    """
+
+    pre = f'cd {location_of_rife} &&'
+    first = f'{python_location}python inference_img.py'
+    second = f'--exp={exp}'
+    third = f'--basedir={basedir}'
+    fourth_inter = f'--gpu={gpu}'
+    fifth = f"--output={output_folder}"
+
+    return f"{pre} {first} {second} {third} {fourth_inter} {fifth}"
