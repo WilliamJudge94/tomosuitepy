@@ -353,7 +353,7 @@ def create_prj_mp4_old(basedir, output_file, types='base', sparse_angle_removal=
     
 
 def full_res_rife(basedir, location_of_rife=rife_path, exp=2,
-                 gpu='0', output_folder='frames', python_location=''):
+                 gpu='0', output_folder='frames', python_location='', sparse=1):
     """
     Use the neural network called RIFE to upscale the amount of projections.
 
@@ -384,7 +384,8 @@ def full_res_rife(basedir, location_of_rife=rife_path, exp=2,
     first = f'{python_location}python inference_img.py'
     second = f'--exp={exp}'
     third = f'--basedir={basedir}'
+    fourth = f'--sparse={sparse}'
     fourth_inter = f'--gpu={gpu}'
     fifth = f"--output={output_folder}"
 
-    return f"{pre} {first} {second} {third} {fourth_inter} {fifth}"
+    return f"{pre} {first} {second} {third} {fourth} {fourth_inter} {fifth}"
