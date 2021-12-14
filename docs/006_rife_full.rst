@@ -114,8 +114,7 @@ Creating RIFE Terminal Command
 
     from tomosuitepy.easy_networks.rife.data_prep import full_res_rife
 
-    # Take the output of this command and run it through your terminal with the rife conda environment activated
-    output = full_res_rife(basedir)
+    full_res_rife(basedir)
 
 
 

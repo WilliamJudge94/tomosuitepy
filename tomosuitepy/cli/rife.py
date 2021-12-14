@@ -12,7 +12,7 @@ current_file = pathlib.Path(__file__).resolve().parents[2]
 sys.path.append(str(current_file))
 rife_path = str(current_file) + "/hard_networks/RIFE/arXiv2020-RIFE/"
 
-from tomosuitepy.easy_networks.rife.data_prep import create_prj_mp4, rife_predict, obtain_frames, full_res_rife
+from tomosuitepy.easy_networks.rife.data_prep import create_prj_mp4, rife_predict, obtain_frames, full_res_rife_cmd, full_res_rife
 from tomosuitepy.base.common import get_projection_shape
 
 app = typer.Typer()
@@ -74,7 +74,7 @@ def extract_mp4(basedir: str = typer.Argument(..., help="path to the project"),
                   output_folder=output_dir)
     
 @app.command()
-def fullres_rife(basedir: str = typer.Argument(..., help="path to the project"),
+def fullres_rife_cmd(basedir: str = typer.Argument(..., help="path to the project"),
                  exp: int = typer.Option(1, help="2^exp improvment in prj density"),
                  gpu: int = typer.Option(0, help="index of gpu to use"),
                  python_loc: str = typer.Option('', help="path to python to use"),
@@ -85,7 +85,7 @@ def fullres_rife(basedir: str = typer.Argument(..., help="path to the project"),
                  ):
     
                      
-    full_res_rife(basedir=basedir,
+    full_res_rife_cmd(basedir=basedir,
                   location_of_rife=rife_loc,
                   exp=exp, gpu=gpu,
                   output_folder=output_dir,
@@ -93,6 +93,15 @@ def fullres_rife(basedir: str = typer.Argument(..., help="path to the project"),
                   python_location=python_loc)
     
     
+@app.command()
+def fullres_rife(basedir: str = typer.Argument(..., help="path to the project"),
+                 exp: int = typer.Option(1, help="2^exp improvment in prj density"),
+                 gpu: int = typer.Option(0, help="index of gpu to use"),
+                 output_dir: str = typer.Option('frames', help="relative output dir to save frames to"),
+                 sparse: int = typer.Option(1, help="Every 'sparse' angle is used"),
+                 ):  
+    
+    full_res_rife(basedir=basedir, exp=exp, output=output_dir, gpu=str(gpu), sparse=sparse)
     
 if __name__ == "__main__":
     app()

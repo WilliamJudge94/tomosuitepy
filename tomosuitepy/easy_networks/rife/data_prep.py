@@ -16,7 +16,43 @@ sys.path.append(os.path.dirname(__file__))
 path1 = os.path.dirname(__file__)
 path2 = '/'.join(path1.split('/')[:-2])
 rife_path = f'{path2}/hard_networks/RIFE/arXiv2020-RIFE/'
+sys.path.append(rife_path)
 
+total_paths = sys.path
+for path_iter in total_paths:
+    if 'tomosuitepy/hard_networks/noise2noise/' in path_iter:
+        sys.path.remove(path_iter)
+
+
+from jupyter_inference import jupyter_rife
+
+def full_res_rife(basedir, exp=2, output='frames', gpu='0', sparse=1):
+    """
+    Interpolate between projections
+    
+    Parameters
+    ----------
+    basedir : str
+        the location of the project
+    exp : int
+        2**exp interpolation
+    output : str
+        relative rife dir to save frames to
+    gpu : str
+        the string ID of the gpu to use
+    sparse : int
+        every 'sparse' projection is used
+    
+    Returns
+    -------
+    None
+    """
+    
+    jupyter_rife(basedir=basedir,
+                 exp=exp,
+                 output=output,
+                 gpu=gpu,
+                 sparse=sparse)
 
 def convert2gray(images):
     "Also found in ...easy_networks.deepfillv2.data_prep"
@@ -352,7 +388,7 @@ def create_prj_mp4_old(basedir, output_file, types='base', sparse_angle_removal=
     out.release()
     
 
-def full_res_rife(basedir, location_of_rife=rife_path, exp=2,
+def full_res_rife_cmd(basedir, location_of_rife=rife_path, exp=2,
                  gpu='0', output_folder='frames', python_location='', sparse=1):
     """
     Use the neural network called RIFE to upscale the amount of projections.
