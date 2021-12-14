@@ -14,7 +14,9 @@ before attempting to load in the module.
 TomoGAN Conda Environment Installation - Command Line
 =====================================================
 
-Install the required packages to be used for TomoGAN and Noise2Noise networks. Only contains options to use GridRec for reconstructions. You do not need base conda environment unless you plan to use SIRT for reconstructions. 
+Install the required packages to be used for TomoGAN and Noise2Noise networks.
+Only contains options to use GridRec for reconstructions. You do not need base
+conda environment unless you plan to use SIRT for reconstructions. 
 
 .. code:: python
 
@@ -34,7 +36,8 @@ Install the required packages to be used for TomoGAN and Noise2Noise networks. O
 Basic Conda Environment Installation - Command Line
 ====================================================
 
-Basics of tomosuitepy (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networks) - Used for GridRec/SIRT Reconstructions as well as projection extraction.
+Basics of tomosuitepy (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networks)
+- Used for GridRec/SIRT Reconstructions as well as projection extraction.
 
 .. code:: python
 
@@ -56,7 +59,9 @@ Basics of tomosuitepy (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networ
 Starting A Project - Jupyter
 ============================
 
-In order to begin using TomoSuitePY, one must create a project for their .h5 data. Sometimes it is necessary to create multiple projects for a single task, but this is only when one is to use a sacraficial sample for network training. All use cases of a second project are detailed in the documentation of TomoSuite
+In order to begin using TomoSuitePY, one must create a project for their .h5 data. Sometimes it is necessary
+to create multiple projects for a single task, but this is only when one is to use a sacraficial sample for
+network training. All use cases of a second project are detailed in the documentation of TomoSuite
 
 
 It is also imperative that the User has the test_basic conda enviroment installed for this part of the tutorial. 
@@ -94,7 +99,7 @@ Starting A Project
     extract(datadir=datadir,
                 fname=fname,
                 basedir=basedir,
-                shunking_size=10) # Set chunk_size4downsample to 1 if you have a lot of RAM
+                chunking_size=10)
 
 
     
@@ -102,8 +107,8 @@ Starting A Project
 Fake Noise - Denoising
 ======================
 
-This is the first of two methods of experimental denoising.
-This method applies np.poisson() to the raw projection data, uses this new noise data as the "noisy training data",
+This is the first of two methods of experimental denoising. This method applies np.poisson()
+to the raw projection data, uses this new noise data as the "noisy training data",
 while the origianl data is used as the "clean data" during the network training process.
         
 
@@ -142,7 +147,8 @@ This function allows the User to apply the noise level to each projection in the
     
 Training TomoGAN
 ================
-Allows the User to train TomoGAN on these newly created noisy and clean image pairs. Training progress can be viewed in Tensorboard by running tensorboard --logdir='/local/data/project_01/low_dose/logs/' --samples_per_plugin=images=300
+Allows the User to train TomoGAN on these newly created noisy and clean image pairs.
+Training progress can be viewed in Tensorboard by running tensorboard --logdir='/local/data/project_01/low_dose/logs/' --samples_per_plugin=images=300
 
     
 .. code:: python
@@ -201,9 +207,13 @@ Once an appropriate epoch has been chosen through Tensorboard one can use this e
 Reconstructions - TomoGAN - FAKE NOISE
 ======================================
 
-Once the User predicts through tomogan they now have the ability to reconstruct that predicted data. In this case we are looking at DeNoise Type 1 or Type 2. Type 1 is where the User has imput fake noise into their projections, and used tomogan to denoise the original projections. While Type 2 is where the User has a sacraficial sample, which contains multiple projections of the save FOV. 
+Once the User predicts through tomogan they now have the ability to reconstruct that predicted data.
+In this case we are looking at DeNoise Type 1 or Type 2. Type 1 is where the User has imput fake noise into their projections,
+and used tomogan to denoise the original projections. While Type 2 is where the User has a sacraficial sample, which contains multiple projections of the save FOV. 
 
-The main concept is similar to that of the basic reconstruction. The main difference is now the User has to define the network='tomogan' and the types='denoise_fake' for Type 1 or types='denoise_exp' for Type 2. This tells the reconstruct_data function to import the data related to tomogan and make sure you import the denoised data based on the fake noise training or the sacraficial sample training. 
+The main concept is similar to that of the basic reconstruction. The main difference is now the User has to define the network='tomogan'
+and the types='denoise_fake' for Type 1 or types='denoise_exp' for Type 2. This tells the reconstruct_data function to import the data
+related to tomogan and make sure you import the denoised data based on the fake noise training or the sacraficial sample training. 
 
 .. code:: python
 
@@ -211,7 +221,7 @@ The main concept is similar to that of the basic reconstruction. The main differ
     import tomopy
 
     # Import TomoSuite helper functions
-    from tomosuite.base.reconstruct import reconstruct_data, plot_reconstruction
+    from tomosuitepy.base.reconstruct import reconstruct_data, plot_reconstruction
 
     # Define your own tomography reconstruction function. This is the TomoSuite's default
     def tomo_recon(prj, theta, rot_center, user_extra=None):
@@ -236,3 +246,34 @@ The main concept is similar to that of the basic reconstruction. The main differ
 
     # Plot the reconstruction
     plot_reconstruction(slcs[0:10])
+    
+    
+Command Line Interface (CLI)
+============================
+
+TomoSuitePY also comes with a command line interface for TomoGAN with fake poisson noise.
+The following can be run in a bash terminal, however it does have limited features compared to 
+it's Jupyter function counterpart.
+
+.. bash::
+
+    source activate basic_env
+    
+    cd /path/to/tomosuitepy/github/clone/
+    cd /tomosuitepy/cli/
+    
+    python tomogan.py test-noise --help
+    
+    python tomogan.py setup-noise --help
+    
+    python tomogan.py train --help
+     
+    python tomogan.py predict --help
+    
+    python base.py find-centers --help
+    
+    python base.py recon --help
+    
+    python base.py recon --network tomogan --types denoise_fake
+
+

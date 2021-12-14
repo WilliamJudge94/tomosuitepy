@@ -6,7 +6,8 @@ Using RIFE Network to DeSparse - Full
 
 If you are using the PyPi version of TomoSuitePY,
 Please view :ref:`installation` and :ref:`starting_project`
-before attempting to load in the module. 
+before attempting to load in the module.
+
 
 RIFE Conda Environment Installation - Command Line
 ===================================================
@@ -42,7 +43,9 @@ Basics of tomosuitepy (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networ
 Starting A Project - Jupyter
 ============================
 
-In order to begin using TomoSuitePY, one must create a project for their .h5 data. Sometimes it is necessary to create multiple projects for a single task, but this is only when one is to use a sacraficial sample for network training. All use cases of a second project are detailed in the documentation of TomoSuite
+In order to begin using TomoSuitePY, one must create a project for their .h5 data. Sometimes it is necessary to
+create multiple projects for a single task, but this is only when one is to use a sacraficial sample for network training.
+All use cases of a second project are detailed in the documentation of TomoSuite
 
 
 It is also imperative that the User has the test_basic conda enviroment installed for this part of the tutorial. 
@@ -58,6 +61,7 @@ Importing TomoSuitePY
 
     from tomosuitepy.base.start_project import start_project
     from tomosuitepy.base.extract_projections import extract
+
 
 Starting A Project
 ------------------
@@ -83,8 +87,6 @@ Starting A Project
                 chunking_size=10) # Set chunk_size4downsample to 1 if you have a lot of RAM
 
 
-
-
 DeSparse Angle With Rife Neural Network
 ========================================
 
@@ -104,38 +106,17 @@ Loading In TomoSuitePY - Jupyter
 
 
 
-Placing Projections Into .MP4 - Jupyter
----------------------------------------
+Creating RIFE Terminal Command
+-------------------------------
 
 
 .. code:: python
 
-    from tomosuitepy.easy_networks.rife.data_prep import create_prj_mp4, rife_predict, obtain_frames
-
-
-    output = create_prj_mp4(basedir, # Project file - definition in Start Project docs
-                            sparse_angle_removal=1, # Use ever x frame
-                            fps=10, # fps of output movie - 10fps is standard
-                            apply_exp=False # If the User would like to apply a log to the frames
-                            )
-    
-
-Obtain Network Prediction Command - Jupyter + Command Line
------------------------------------------------------------
-    
-.. code:: python   
+    from tomosuitepy.easy_networks.rife.data_prep import full_res_rife
 
     # Take the output of this command and run it through your terminal with the rife conda environment activated
-    rife_predict(basedir, exp=2, gpu='0')
-    
- 
-Read The Network Prediction And Save New Projections - Jupyter
----------------------------------------------------------------
+    output = full_res_rife(basedir)
 
-.. code:: python   
-
-    frames = obtain_frames(basedir, video_type='predicted', output_folder='frames')
-    
 
 
 Interactive Fine Tune Rotation Center - Jupyter
@@ -171,10 +152,9 @@ For this section please make sure that the base conda environment is activated
                         edge_transition=None, # Keep this to None for rotation_center_check
                         chunk_recon_size=1, 
                         rot_center_shift_check=40 # Number of rotation centers to try before and after absolute image center
-                                       )
-     # absolute_middle_rotation is printed out when rot_center_shift_check is initalized                                 
+                                       )                             
                                        
-    plot_reconstruction_centers(slcs[0:], clim=(0, 0.01), absolute_middle_rotation=612, figsize=(20, 20))
+    plot_reconstruction_centers(slcs[0:], basedir, clim=(0, 0.01), figsize=(20, 20))
     
 
 .. figure:: img/human_tuned_v2.png
@@ -185,7 +165,8 @@ For this section please make sure that the base conda environment is activated
 Use TomoSuite To Reconstruct New Frames - Jupyter
 =================================================
 
-Use the "base" conda environment for this step. Tomopy/Astra do not play well with the RIFE network requirements. View installation documentation for this step.
+Use the "base" conda environment for this step. Tomopy/Astra do not play well with the RIFE network requirements.
+View installation documentation for this step.
 
 .. code:: python   
      
@@ -205,3 +186,26 @@ Use the "base" conda environment for this step. Tomopy/Astra do not play well wi
 
 
     fig = plot_reconstruction(slcs_v1, clim=(None, None), cmap='rainbow')
+
+
+Command Line Interface (CLI)
+============================
+
+TomoSuitePY also comes with a command line interface for RIFE.
+The following can be run in a bash terminal, however it does have limited features compared to 
+it's Jupyter function counterpart.
+
+.. bash::
+
+    source activate basic_env
+    
+    cd /path/to/tomosuitepy/github/clone/
+    cd /tomosuitepy/cli/
+    
+    python rife.py fullres-rife --help
+    
+    python base.py find-centers --help
+    
+    python base.py recon --help
+    
+    python base.py recon --network rife
