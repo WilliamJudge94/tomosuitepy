@@ -82,11 +82,13 @@ Install the required packages to be used for RIFE networks.
 Installing Through (PyPi)
 ==========================
 
+
 .. warning::
 
 The PyPi package has no dependencies listed.
 Users must complete the instructions listed above
 before installing the PyPi version of TomoSuitePY.
+
 
 .. code:: bash
     

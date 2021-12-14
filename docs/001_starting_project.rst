@@ -71,13 +71,13 @@ It is also possible to use your own extracted data instead of relying on dxchang
                 
 .. note::
     
-    For most extractions the above is acceptable. However, when your material has high absorbance
-    the detector counts may equal the background counts. Creating significant zero or nan values in
-    the dataset. The nan_inf_selective variable is not well suited for this task. To mitigate the 
-    effects of highly absorbing materials please set the following:
-    nan_inf_selective=False, remove_nan_vals=True, remove_inf_vals=True, removal_val=0.001.
-    While the nan_inf_selective applies an intelligent median blur to the non-finite values,
-    these new settings will replace non-finite values with the value set as removal_val.
+For most extractions the above is acceptable. However, when your material has high absorbance
+the detector counts may equal the background counts. Creating significant zero or nan values in
+the dataset. The nan_inf_selective variable is not well suited for this task. To mitigate the 
+effects of highly absorbing materials please set the following:
+nan_inf_selective=False, remove_nan_vals=True, remove_inf_vals=True, removal_val=0.001.
+While the nan_inf_selective applies an intelligent median blur to the non-finite values,
+these new settings will replace non-finite values with the value set as removal_val.
     
     
 Command Line Interface (CLI)
@@ -101,7 +101,7 @@ it's Jupyter function counterpart.
 
 .. note::
 
-    Right now only APS Sector 32 is available for CLI integration. If Users would like to add more
-    please edit the base.py file. Go to the def extract() function and add in the desired dxchange
-    function to the dxchange_reader = {} dictionary.
+Right now only APS Sector 32 is available for CLI integration. If Users would like to add more
+please edit the base.py file. Go to the def extract() function and add in the desired dxchange
+function to the dxchange_reader = {} dictionary.
 
