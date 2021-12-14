@@ -23,7 +23,7 @@ While replacing thre environment name with the appropriate name on your computer
     ipython kernel install --user --name=env_tomosuite
 
     # install where you are running your jupyter lab - allows for interactive viewing
-    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager itk-jupyter-widgets
 
 
 Basic Conda Environment
