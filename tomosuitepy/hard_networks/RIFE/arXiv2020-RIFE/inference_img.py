@@ -1,10 +1,11 @@
-import os, sys, warnings, cv2, argparse
+import os, sys, warnings, cv2, argparse, shutil
 
 parser = argparse.ArgumentParser(description='Interpolation for a pair of images')
 parser.add_argument('--basedir', type=str, required=True)
 parser.add_argument('--exp', default=2, type=int)
 parser.add_argument('--output', default='frames_check', type=str)
 parser.add_argument('--gpu', default=0, type=int)
+parser.add_argument('--sparse', default=1, type=int)
 
 args = parser.parse_args()
 args.ratio = float(0.0) # inference ratio between two images with 0 - 1 range
@@ -39,7 +40,11 @@ model.device()
 
 # Load in all the images
 total_prjs = load_extracted_prj(args.basedir)
+total_prjs = total_prjs[::args.sparse]
 save_location = f"{args.basedir}rife/{args.output}/"
+if os.path.isdir(save_location):
+    shutil.rmtree(save_location)
+os.mkdir(save_location)
 prj_max = total_prjs.max()
 total_prjs = total_prjs / prj_max
 total_prjs = total_prjs * 255.0
@@ -104,7 +109,7 @@ for iteration in tqdm(range(0, len(total_prjs)-1), desc='Interpolation'):
     if not os.path.exists(save_location):
         os.mkdir(save_location)
     for i in range(len(img_list)):
-        im2save = (img_list[i][0] * 255).cpu().numpy().transpose(1, 2, 0)[:h, :w]
+        im2save = (img_list[i][0] * prj_max).cpu().numpy().transpose(1, 2, 0)[:h, :w]
         im2save = rgb2gray(im2save)
         tif.imsave(f'{save_location}/img_{str(current_frame).zfill(zfill_val)}.tif', im2save)
         current_frame += 1
