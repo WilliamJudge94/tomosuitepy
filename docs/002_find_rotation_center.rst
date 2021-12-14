@@ -12,7 +12,8 @@ General Trends of Rotation Center
 =================================
 
 When taking a 180 degree scan there should be a correlation betweent the first and the last scan taken.
-Appending the inverted and flipped sinogram data to the original sinogram data should produce the full 360 degree sinogram with a small offset where they meet.
+Appending the inverted and flipped sinogram data to the original sinogram data should produce the full
+360 degree sinogram with a small offset where they meet.
 
 Moving the inverted and flipped sinogram left and right,
 taking the FFT of each shifted set, and summing the resulting patterns,

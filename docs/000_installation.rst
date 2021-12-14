@@ -6,7 +6,7 @@ Installation of TomoSuitePY
 
 .. warning::
 
-TomoSuitePY does not work with RedHat.
+TomoSuitePY DOES NOT work with RedHat.
 
 
 Installing Conda Environment To Jupyter
@@ -39,6 +39,7 @@ Basics of tomosuite (excluding RIFE, Noise2Noise, TomoGAN, and Deepfill networks
     
     source activate basic
     
+    # Initilizing env for Jupyter
     ipython kernel install --user --name=basic
 
 
@@ -76,6 +77,7 @@ Install the required packages to be used for RIFE networks.
     source activate rife_tomosuitepy
     
     ipython kernel install --user --name=rife_tomosuitepy
+
 
 Installing Through (PyPi)
 ==========================

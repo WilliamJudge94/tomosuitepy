@@ -12,7 +12,7 @@ current_file = pathlib.Path(__file__).resolve().parents[2]
 sys.path.append(str(current_file))
 rife_path = str(current_file) + "/hard_networks/RIFE/arXiv2020-RIFE/"
 
-from tomosuitepy.easy_networks.rife.data_prep import create_prj_mp4, rife_predict, obtain_frames
+from tomosuitepy.easy_networks.rife.data_prep import create_prj_mp4, rife_predict, obtain_frames, full_res_rife
 from tomosuitepy.base.common import get_projection_shape
 
 app = typer.Typer()
@@ -72,6 +72,27 @@ def extract_mp4(basedir: str = typer.Argument(..., help="path to the project"),
                   video_type=input_dir,
                   return_frames=False,
                   output_folder=output_dir)
+    
+@app.command()
+def fullres_rife(basedir: str = typer.Argument(..., help="path to the project"),
+                 exp: int = typer.Option(1, help="2^exp improvment in prj density"),
+                 gpu: int = typer.Option(0, help="index of gpu to use"),
+                 python_loc: str = typer.Option('', help="path to python to use"),
+                 rife_loc: str = typer.Option(rife_path, help="path to RIFE directory"),
+                 output_dir: str = typer.Option('frames', help="relative output dir to save frames to"),
+                 sparse: int = typer.Option(1, help="Every 'sparse' angle is used"),
+                 
+                 ):
+    
+                     
+    full_res_rife(basedir=basedir,
+                  location_of_rife=rife_loc,
+                  exp=exp, gpu=gpu,
+                  output_folder=output_dir,
+                  sparse=sparse,
+                  python_location=python_loc)
+    
+    
     
 if __name__ == "__main__":
     app()
