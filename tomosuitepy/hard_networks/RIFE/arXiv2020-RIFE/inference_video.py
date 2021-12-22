@@ -3,9 +3,14 @@ import sys
 import argparse
 
 sys.path.append(os.path.dirname(__file__))
-path1 = os.path.dirname(os.path.abspath(__file__))
-path2 = '/'.join(path1.split('/')[:-2])
-rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
+#path1 = os.path.dirname(os.path.abspath(__file__))
+#path2 = '/'.join(path1.split('/')[:-2])
+#rife_path = f'{path2}/RIFE/arXiv2020-RIFE/'
+
+path1 = pathlib.Path(__file__)
+sys.path.append(path1)
+path2 = path1.absolute().parents[2]
+rife_path = str(path2.joinpath('hard_networks', 'RIFE', 'arXiv2020-RIFE', 'demo'))[:-4]
 sys.path.append(rife_path)
 
 parser = argparse.ArgumentParser(description='Interpolation for a pair of images')

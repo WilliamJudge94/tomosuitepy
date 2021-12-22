@@ -10,16 +10,27 @@ import numpy as np
 from tqdm import tqdm
 import tifffile as tif
 import sys
+import pathlib
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(__file__))
-path1 = os.path.dirname(__file__)
-path2 = '/'.join(path1.split('/')[:-2])
-rife_path = f'{path2}/hard_networks/RIFE/arXiv2020-RIFE/'
+#path1 = os.path.dirname(__file__)
+#path2 = '/'.join(path1.split('/')[:-2])
+#rife_path = f'{path2}/hard_networks/RIFE/arXiv2020-RIFE/'
+#sys.path.append(rife_path)
+
+path1 = pathlib.Path(__file__)
+sys.path.append(path1)
+path2 = path1.absolute().parents[2]
+rife_path = str(path2.joinpath('hard_networks', 'RIFE', 'arXiv2020-RIFE', 'demo'))[:-4]
 sys.path.append(rife_path)
 
 total_paths = sys.path
 for path_iter in total_paths:
+    if type(path_iter) == str:
+        pass
+    else:
+        path_iter = str(path_iter)
     if 'tomosuitepy/hard_networks/noise2noise/' in path_iter:
         sys.path.remove(path_iter)
 

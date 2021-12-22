@@ -2,15 +2,15 @@ import sys
 import os
 import pathlib
 
-cwd1 = pathlib.Path.cwd()
-cdw2 = cdw1.joinpath('hard_networks', 'TomoGAN')
-cdw3 = cdw1.joinpath('hard_networks', 'generative_inpainting')
-cdw4 = cdw1.joinpath('hard_networks', 'noise2noise')
+cwd1 = pathlib.Path(__file__)
+cwd2 = cwd1.joinpath('hard_networks', 'TomoGAN')
+cwd3 = cwd1.joinpath('hard_networks', 'generative_inpainting')
+cwd4 = cwd1.joinpath('hard_networks', 'noise2noise')
 
-sys.path.append(cdw1)
-sys.path.append(cdw2)
-sys.path.append(cdw3)
-sys.path.append(cdw4)
+sys.path.append(cwd1)
+sys.path.append(cwd2)
+sys.path.append(cwd3)
+sys.path.append(cwd4)
 
 #sys.path.append(os.path.dirname(__file__))
 #sys.path.append(f'{os.path.dirname(__file__)}/hard_networks/TomoGAN/')
