@@ -191,7 +191,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              minus_val=0,
                              chunker_save=False,
                              basedir=None,
-                             emailer=None):
+                             emailer=None,
+                             notification_func=None):
 
     prj_data -= minus_val
 
@@ -293,12 +294,16 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
         if chunker_save:
             if os.path.exists(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff"):
 
-                if emailer is not None:
-                    recipient, gmail_user, gmail_pass, divider = emailer
+                if notification_func is not None:
+                    #recipient, gmail_user, gmail_pass, divider = emailer
                     email_im = save_load_delete_image_email(
                         recon[0, pad:-pad1, pad:-pad1], basedir)
-                    send_email(recipient, email_im, f"ABOUT TO OVERWRITE FILES",
-                               f"Move chunked recon files in {basedir}.", gmail_user, gmail_pass)
+                    #send_email(recipient, email_im, f"ABOUT TO OVERWRITE FILES",
+                    #           f"Move chunked recon files in {basedir}.", gmail_user, gmail_pass)
+                    
+                    notification_func(f"ABOUT TO OVERWRITE FILES",
+                                      f"Move chunked recon files in {basedir}.",
+                                      email_im)
 
                 _ = input(
                     f"You are about to overwrite chunked files. They are in {basedir}. Move them or hit ENTER to continue.")
@@ -306,13 +311,19 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
             tiff.imsave(f"{basedir}/tomsuitepy_recon_save_it_{str(idx).zfill(4)}.tiff",
                         recon[:, pad:-pad1, pad:-pad1])
 
-        if emailer is not None:
-            recipient, gmail_user, gmail_pass, divider = emailer
+        if notification_func is not None:
+            #recipient, gmail_user, gmail_pass, divider = emailer
             if idx % divider == 0:
                 email_im = save_load_delete_image_email(
                     recon[0, pad:-pad1, pad:-pad1], basedir)
-                send_email(
-                    recipient, email_im, f"Iteration {idx} out of {chunk_recon_size}", f"Recon {basedir}", gmail_user, gmail_pass)
+                
+                notification_func(f"Iteration {idx} out of {chunk_recon_size}",
+                      f"Recon {basedir}",
+                      email_im)
+                
+                #send_email(
+                #    recipient, email_im,
+                #f"Iteration {idx} out of {chunk_recon_size}", f"Recon {basedir}", gmail_user, gmail_pass)
 
         all_objects = muppy.get_objects()[:muppy_amount]
         sum1 = summary.summarize(all_objects)
@@ -566,7 +577,8 @@ def reconstruct_data(basedir,
                      minus_val=0,
                      chunker_save=False,
                      emailer=None,
-                     select_prjs2use=None):
+                     select_prjs2use=None,
+                     notification_func=None):
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
 
     Parameters
@@ -659,6 +671,9 @@ def reconstruct_data(basedir,
     emailer : array
         if not None the set to the following to send emails
         [recipient_email_str, sender_email_str, sender_pass_str, send_every_X_chunks_int]
+    
+    notification_func : function
+        a function with inputs of (subject, body, image). use the functools.partial to remove all other variables
 
     select_prjs2use : ndarray
         an array containing integers of which projectsion to use during the recon. This allows users to remove bad projections.
@@ -738,7 +753,10 @@ def reconstruct_data(basedir,
                                                     muppy_amount=muppy_amount,
                                                     zero_pad_amount=zero_pad_amount,
                                                     view_one=view_one, minus_val=minus_val,
-                                                    chunker_save=chunker_save, basedir=basedir, emailer=emailer)
+                                                    chunker_save=chunker_save,
+                                                    basedir=basedir,
+                                                    emailer=emailer,
+                                                    notification_func=notification_func)
 
     return slc_proj, user_extra
 
