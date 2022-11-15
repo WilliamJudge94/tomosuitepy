@@ -3,12 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
    
-.. title:: TomoSuite Documentation
+.. title:: TomoSuitePY Documentation
 
-Welcome to TomoSuite's documentation!
+Welcome to TomoSuitePY's documentation!
 =====================================
 
-Python library for applying Machine Learning to **Tomography** data.
+Python library for applying Machine Learning to **Tomography** data. TomoSuitePY is a culmination of machine learning networks and data preparation methods for those networks to enhance poor-quality tomographic datasets. Novel implementations of existing architectures are available for Users to de-noise, de-wedge artifact, de-sparse angle artifact, and de-ring artifact their own datasets without the need for obtaining any true ground truth datasets. This project aims not only to bring these networks into the tomographic world, but to make them as user friendly as possible, expanding the usability to novices in the machine learning domain.
 
 .. warning:: This documentation and the code are under active
 	     development. We make every effort to ensure the code is
@@ -18,12 +18,15 @@ Python library for applying Machine Learning to **Tomography** data.
    :maxdepth: 2
    :caption: Contents:
 
-   00_introduction
-   02_starting_project
-   03_denoise_with_1
-   04_denoise_with_sacra
-   20_TomoGAN-general
-   00_reconstructions
+   0000_installation
+   000_installation
+   001_starting_project
+   002_find_rotation_center
+   003_tomogan_general
+   004_tomogan_fake_full
+   006_rife_full
+   007_cli
+   107_reconstructions
 
 
 Indices and tables
