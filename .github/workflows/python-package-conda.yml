@@ -25,5 +25,6 @@ jobs:
         conda env update --file envs/basic.yml --name tom_env
     - name: Test with pytest
       run: |
-        conda activate tom_env
+        #conda activate tom_env
+        source activate tom_env
         pytest --cov=tomosuitepy tests/
