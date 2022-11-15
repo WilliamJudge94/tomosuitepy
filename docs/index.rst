@@ -18,7 +18,7 @@ Python library for applying Machine Learning to **Tomography** data. TomoSuitePY
    :maxdepth: 2
    :caption: Contents:
 
-   0000_installation
+   0000_introduction
    000_installation
    001_starting_project
    002_find_rotation_center
