@@ -192,7 +192,8 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
                              chunker_save=False,
                              basedir=None,
                              emailer=None,
-                             notification_func=None):
+                             notification_func=None,
+                             output_change={}):
 
     prj_data -= minus_val
 
@@ -333,7 +334,7 @@ def reconstruct_single_slice(prj_data, theta, rows=(604, 606),
 
     # Saving chunked data if requested and deleting the chunks
     if chunker_save:
-        tiff.imsave(f"{basedir}/tomsuitepy_recon_FINAL.tiff",
+        tiff.imsave(f"{output_change.get('directory', basedir)}/{output_change.get('filename', 'tomsuitepy_recon_FINAL')}.tiff",
                     recon_store[:, pad:-pad1, pad:-pad1])
         for it in range(0, idx+1):
             os.remove(
@@ -578,7 +579,9 @@ def reconstruct_data(basedir,
                      chunker_save=False,
                      emailer=None,
                      select_prjs2use=None,
-                     notification_func=None):
+                     notification_func=None,
+                     output_change={}):
+    
     """Determine the tomographic reconstruction of data loaded into the TomoSuite data structure.
 
     Parameters
@@ -677,6 +680,9 @@ def reconstruct_data(basedir,
 
     select_prjs2use : ndarray
         an array containing integers of which projectsion to use during the recon. This allows users to remove bad projections.
+    
+    output_change : dict
+        a dict with entries of dict(directory: '', filename: '',)
 
     Returns
     -------
@@ -756,7 +762,8 @@ def reconstruct_data(basedir,
                                                     chunker_save=chunker_save,
                                                     basedir=basedir,
                                                     emailer=emailer,
-                                                    notification_func=notification_func)
+                                                    notification_func=notification_func,
+                                                    output_change=output_change,)
 
     return slc_proj, user_extra
 
